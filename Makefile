@@ -6,7 +6,6 @@ DIRS =	common\
 		ecolorconf\
 		econtrol\
 		efinder\
-		ehelpbook\
 		eiconman\
 		eiconsconf\
 		einstaller\
