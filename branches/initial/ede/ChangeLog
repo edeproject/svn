@@ -1,0 +1,136 @@
+1.0.2
+* new build system
+* netscape and opera replaced with mozilla everywhere
+* startede:
+- fix: xscreensaver wasn't started
+* edewm:
+- fixed artefacts on window's borders when window is resized
+- dialog windows should now act as dialog windows (no resizing or 
+		animation of resizing)
+- dialogs have same titlebar height as other windows
+- don't show minimize button in titlebar for dialogs
+- better checks is window resizable
+- several fixes into Set Size widget
+- fix bug with titlebar buttons difficult to click
+- configurable keyboard shortcuts
+* eworkpanel:
+- make applets and menu title configurable
+- new panel applet - Show Desktop
+- tooltips are showed without clicking on panel itself
+- fixed crash with network monitor
+- fix bug: panel doesn't autohide when a menu is open
+- allow workspace names to be localized
+- fix wrong icon filenames in main menu
+- a better icon for submenus in the main menu
+* taskbar applet:
+- fix a bug where window will minimize instead of coming to front
+- draw active taskbar button in lighter color
+* eiconman:
+- fix locale related problems in icon properties
+* elauncher: 
+- new program and url launching framework
+* evolume: 
+- add volume control applet to standard distribution
+- replaced evolume icon in panel
+* emenueditor:
+- fix: invisible entries created with some locales
+* keyboard chooser applet:
+- get list of keymaps from X, instead of hardcoded
+- display descriptive names
+- don't show everything at once
+- keep a list of recently used keyboards
+* ewmconf: 
+- fix titlebar resizing to zero when changing theme
+* ehelpbook:
+- scrollbars are now visible
+- removed (too much broken)
+* etip:
+- make etip modal
+- don't always show the same tip
+
+
+1.0.1.1
+* fixed desktop crashing when choosing wallpaper (sometimes will chrash due
+		bug in efltk library)
+* fixed logout icon showing
+* fixed einstaller icon showing
+* complitelly fixed and revised control panel
+* etip strings revised
+* fixed desktop links in makefile
+
+1.0.1
+* many unstabile programs from EDE package are removed,
+	so now only ede-core (old name) is provide as standard distribution
+* small fixes with workpanel and run-dialog on it
+* compiling and installation scripts improved
+* added in configure script debug options
+* fixed EDE's X exit, but on some distributions not work well (SuSE 8.1)
+* fixed icons showing on Control Panel, ehelpbook, etc.
+* fixed screensaver showing in preview window
+* small menu decorations :) 
+* added in main distribution EFinder, and that will become standard part
+* now you can with double click start programs from run-dialog on workpanel
+* and many, many stability fixes 
+
+1.0beta
+* nice EDE library complement what is in FLTK missing
+* a lot of changes in ede-core (new icons and support for them thanks Edelib)
+* fixed a lot of bugs
+* new applications like epdfreader
+* heavy changes in filemanager (basics works fine, archive viewing and extracting
+				works fine, archive creating ok, ftp works but still 
+				a lot to do)
+* locale support, still have to create some .po-s
+* eprintconf, eprint utilities to manage printers (CUPS needed)
+* huge amount of work
+
+0.6
+* erun separated - <Ctrl+F12> keybinding, cause alt+f12 use window manager
+* efinder - works, basis implemented <Ctrl+F3> keybinding
+* bugs fixes
+* ede-exec script that support prefixes, see erun
+* efstabedit works
+* ecdplayer - cddb support(basic)
+* window manager is based on icewm code
+* new config utilities
+* eiconmanager changes
+* ehelpbook changes - it is useable with simple html, for help enought.
+* configure scripts
+
+0.5
+* separated icon staff as eiconmanager
+* new apps(still devel) - efilemanager, ehelpbook, efstabedit(init staff)
+* design changes, icons - hopefully until 1.0 it will be stabilized ...
+* font choosing...
+* color changing somewhat buggy(not core dump of course) (It is bug in EDE or in latest fltk, something changed ... that is a question)
+
+0.4
+****************
+* Cd player rewrite
+* I add better icons because my draw skills are not very well, still need something but what
+* window manager - design changes
+* eworkpanel - design changes
+* all apps new use dynamic linking, so you can use also theme plugins
+		   ~~~~~~~    
+* you can use default X keyboard
+* you can jpeg images on desktop (for now using xsetbg(xloadimage package))
+* dialogs changes
+* programs name change
+
+0.3
+****************
+* panel shows tasks
+* icons on desktop
+* design changes
+* begin from code reorganization
+* color setting dialog - still todo
+* icon on panel that run eqmixer, ...
+
+0.2
+***************
+* better color settings, still not perfect, some small things
+
+0.1
+***************
+* initial release
+
