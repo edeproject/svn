@@ -1,9 +1,11 @@
 1.0.3
 - fixed silent option for configure script
+- fixed "make clean" issue
 * locales:
 - enable building translations
 - fix several translation-related problems (by Nemeth Otto)
 - add Hungarian (hu) language (by Nemeth Otto)
+- fix for efinder locale installation
 * eiconman:
 - fix problem with dragging icons
 * ecolorconf:
@@ -15,6 +17,7 @@
 - disable editing subdirs
 * ehelpbook:
 - removed
+
 
 
 1.0.2
