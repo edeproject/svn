@@ -70,7 +70,7 @@ AC_ARG_ENABLE(debug, [  --enable-debug          compile with debug information],
 
 AC_ARG_ENABLE(silent, [  --disable-silent        show compiler output],
 			[
-			 if eval "test x$disable_silent = xyes"; then
+			 if eval "test x$enable_silent = xno"; then
 				 SILENT=""
 			 fi
 			])
