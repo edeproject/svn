@@ -1,0 +1,11 @@
+
+[Theme]
+  Frame color=RGB(90,125,189)
+  Title image=title.xpm
+  Close image up=close.xpm
+  Close image down=closeD.xpm
+  Maximize image up=max.xpm
+  Maximize image down=maxD.xpm
+  Minimize image up=min.xpm
+  Minimize image down=minD.xpm
+
