@@ -111,6 +111,7 @@ void MainMenu::scan_programitems(const char *path)
 {
     EItemGroup *mNewGroup;
     Fl_String NameEntry;
+    bool added = false;
 
     Fl_String localizedName;
     if(!locale().empty())
@@ -132,6 +133,7 @@ void MainMenu::scan_programitems(const char *path)
 
             if(fl_is_dir(filename))
             {
+                added=true;
                 mNewGroup = new EItemGroup(this, APP_GROUP);
                 mNewGroup->image(programs_pix);
                 mNewGroup->dir(filename);
@@ -186,6 +188,7 @@ void MainMenu::scan_programitems(const char *path)
 
             if(!ItemConfig.error() && !NameEntry.empty())
             {
+                added=true;
                 EItem *mNewItem = new EItem(this);
                 mNewItem->type(EItem::FILE);
                 mNewItem->label(NameEntry);
@@ -206,4 +209,6 @@ void MainMenu::scan_programitems(const char *path)
     }
 
     if(count>0 && files) free(files);
+    if(!added)
+        Fl_Divider *mDivider = new Fl_Divider();
 }
