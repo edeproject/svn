@@ -167,7 +167,7 @@ int parse_hotkey(char *hotkey)
 			if ((f[0] >= 'a') && (f[0] <= 'z')) {
 				parsed += f[0];
 			} else if ((f[0] >= 'A') && (f[0] <= 'Z')) {
-				parsed += (f[0] - 'a' + 'A');
+				parsed += (f[0] - 'A' + 'a');
 			}
 		}
 	}
