@@ -122,6 +122,7 @@ void clockRefresh(void *)
 {
     mClockBox->label(Fl_Date_Time::Now().time_string().sub_str(0, 5));
 
+    strncpy(Fl_Date_Time::datePartsOrder, _("MDY"), 3);
     Fl_String pClockTooltip = Fl_Date_Time::Now().day_name() + ", ";
     pClockTooltip += Fl_Date_Time::Now().date_string() + ", " + Fl_Date_Time::Now().time_string();
     mClockBox->tooltip(pClockTooltip);
