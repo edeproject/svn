@@ -1,10 +1,10 @@
 
 CPPFILES = efinder.cpp eglob.cpp
-TARGET   = efinder 
+TARGET   = efinder
 
 POFILES = locale/ru.po\
 			locale/sk.po\
-			locale/hu.po\
+			locale/hu.po
 
 include ../makeinclude
 
