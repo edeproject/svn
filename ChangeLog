@@ -1,5 +1,19 @@
 1.0.3
 - fixed silent option for configure script
+* locales:
+- enable building translations
+- fix several translation-related problems (by Nemeth Otto)
+- add Hungarian (hu) language (by Nemeth Otto)
+* eiconman:
+- fix problem with dragging icons
+* ecolorconf:
+- fix crash and other problems with fonts
+- reorganize colors
+* edewm:
+- disable killing eiconman/eworkpanel using hotkeys
+* emenueditor:
+- disable editing subdirs
+
 
 1.0.2
 * new build system
