@@ -1,26 +1,14 @@
-//
-// "$Id$"
+// Font chooser widget for EDE
+// Copyright (c) 2000. - 2005. EDE Authors
+// This program is licenced under terms of the
+// GNU General Public Licence version 2 or newer.
+// See COPYING for details.
+
+// Based on:
 //
 // Font demo program for the Fast Light Tool Kit (FLTK).
 //
 // Copyright 1998-1999 by Bill Spitzak and others.
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Library General Public
-// License as published by the Free Software Foundation; either
-// version 2 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Library General Public License for more details.
-//
-// You should have received a copy of the GNU Library General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-// USA.
-//
-// Please report all bugs and problems to "fltk-bugs@easysw.com".
 //
 
 #include <efltk/Fl.h>
@@ -109,9 +97,11 @@ void font_cb(Fl_Widget *, long)
   if (italic_button->value()) f = f->italic();
   textobj->font = f;
 
+  // Populate the encobj (browser for font encodings)
   char saved[30];
   strncpy(saved, textobj->encoding, 29);
   encobj->clear();
+
   const char** encodings;
   int ne = f->encodings(encodings);
   int picked = -1;
@@ -125,6 +115,7 @@ void font_cb(Fl_Widget *, long)
   textobj->encoding = encodings[picked];
   encobj->value(picked);
 
+  // Populate the sizeobj (browser for font sizes)
   sizeobj->clear();
   int *s;
   int n = f->sizes(s);
@@ -327,8 +318,12 @@ Fl_String fl_font_dialog()
 
   if (return_value)
   {
-    return find_best_font(id_box->label(), atoi(sizeobj->text(sizeobj->value())),
-    encobj->text(encobj->value()));
+    char *tmpencoding;
+    if (encobj->children() > 0) 
+        tmpencoding = encobj->text(encobj->value());
+    else
+        tmpencoding = "";
+    return find_best_font(id_box->label(), atoi(sizeobj->text(sizeobj->value())), tmpencoding);
   }			   
   else return "";
 
