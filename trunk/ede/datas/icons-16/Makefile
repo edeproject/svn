@@ -220,3 +220,4 @@ install:
 uninstall:
 	$(RM) -r $(icons16dir)
 
+clean:

@@ -15,3 +15,5 @@ install:
 uninstall:
 	$(RM) -r $(DIR)
 	$(RM) $(bindir)/startede
+
+clean:

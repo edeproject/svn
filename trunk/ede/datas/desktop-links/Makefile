@@ -11,3 +11,5 @@ install:
 
 uninstall:
 	$(RM) -r $(desktopdir)
+
+clean:

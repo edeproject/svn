@@ -205,3 +205,5 @@ install:
 
 uninstall:
 	$(RM) -r $(icons48dir)
+
+clean:
