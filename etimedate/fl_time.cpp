@@ -387,14 +387,26 @@ Fl_Color Fl_Time::textcolor()
 
 void getCurrentTimeZone()
 {
-    char szZone[100];
+    char szZone[100],tempstring[101];
+    FILE *f;
 
     if(readlink("/etc/localtime", szZone, sizeof(szZone)-1)>0) {
         char **tz = fl_split(szZone, "/zoneinfo/", 2);
         timeZonesList->value(tz[1]);
         fl_freev(tz);
     } else {
-        timeZonesList->value(_("Zone information not found."));
+        // some distros just copy the file instead of symlinking
+        // thus try /etc/sysconfig/clock
+        if((f = fopen("/etc/sysconfig/clock", "r")) != NULL) {
+            while (fgets(tempstring,100,f) != NULL) {
+                if (strstr(tempstring,"ZONE=") == tempstring) {
+                    // last char is newline, let's strip that:
+                    timeZonesList->value(fl_trimright(tempstring+5));
+                }
+            }
+        } else {
+            timeZonesList->value(_("Zone information not found."));
+        }
     }
 }
 
