@@ -14,7 +14,11 @@
 
 extern Fl_Widget* fl_did_clipping;
 
-// PanelMenu
+
+// class PanelMenu 
+// This is a standard eworkpanel applet class. It is a button that pops
+// up menu when pressed. Typical use is workspace switcher.
+
 PanelMenu::PanelMenu(int x, int y, int w, int h, Fl_Boxtype up_c, Fl_Boxtype down_c, const char *label)
     : Fl_Menu_Button(x, y, w, h, label)
 {
@@ -28,6 +32,9 @@ PanelMenu::PanelMenu(int x, int y, int w, int h, Fl_Boxtype up_c, Fl_Boxtype dow
     accept_focus(false);
 }
 
+
+// This function is modified from Fl_Menu_Button
+
 void PanelMenu::draw()
 {
     Fl_Boxtype box = up;
@@ -35,18 +42,22 @@ void PanelMenu::draw()
     Fl_Color color;
 
     if (!active_r()) {
+        // Button is disabled
         flags = FL_INACTIVE;
         color = this->color();
-    } else if (belowmouse()) {
-        flags = FL_HIGHLIGHT;
-        color = highlight_color();
-        if (!color) color = this->color();
     } else if (m_open) {
+        // Menu is open, make the button pushed and highlighted
         flags = FL_HIGHLIGHT;
         color = highlight_color();
         if (!color) color = this->color();
         box = down;
+    } else if (belowmouse()) {
+        // Menu is not open, but button is below mouse - highlight
+        flags = FL_HIGHLIGHT;
+        color = highlight_color();
+        if (!color) color = this->color();
     } else {
+        // Plain
         flags = 0;
         color = this->color();
     }
@@ -66,6 +77,9 @@ void PanelMenu::draw()
     draw_inside_label(x,y,w,h,flags);
 }
 
+
+// Used to properly redraw menu
+
 void PanelMenu::calculate_height()
 {
     Fl_Style *s = Fl_Style::find("Menu");
@@ -80,9 +94,14 @@ void PanelMenu::calculate_height()
     }
 }
 
+
+// Popup the menu. Global property m_open is useful to detect 
+// if the menu is visible, e.g. to disable autohiding panel.
+
 int PanelMenu::popup()
 {
     m_open = true;
+    redraw(); // push down button
     calculate_height();
     int retval = Fl_Menu_::popup(0, 0-Height);//, w(), h());
     m_open = false;
@@ -91,7 +110,9 @@ int PanelMenu::popup()
 }
 
 
-// PanelButton - as opposed to PanelMenu - by Vedran
+// class PanelButton 
+// A simplified case of PanelMenu - by Vedran
+// Used e.g. by show desktop button
 
 PanelButton::PanelButton(int x, int y, int w, int h, Fl_Boxtype up_c, Fl_Boxtype down_c, const char *label)
     : Fl_Button(x, y, w, h, label)
@@ -102,6 +123,7 @@ PanelButton::PanelButton(int x, int y, int w, int h, Fl_Boxtype up_c, Fl_Boxtype
     accept_focus(false);
 }
 
+
 void PanelButton::draw()
 {
     Fl_Boxtype box = up;
@@ -110,6 +132,7 @@ void PanelButton::draw()
 
     if (belowmouse())
     {
+        // Highlight button when below mouse
         flags = FL_HIGHLIGHT;
         color = highlight_color();
         if (!color) color = this->color();
@@ -118,6 +141,8 @@ void PanelButton::draw()
         flags = 0;
         color = this->color();
     }
+    
+    if (value()) box=down; // Push down button when pressed
 
     if(!box->fills_rectangle()) {
         fl_push_clip(0, 0, this->w(), this->h());
