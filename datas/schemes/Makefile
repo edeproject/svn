@@ -29,3 +29,5 @@ install:
 
 uninstall:
 	$(RM) -r $(schemesdir)
+
+clean:

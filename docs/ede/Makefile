@@ -1,6 +1,16 @@
 include ../../makeinclude
 
-Data = ede-small.gif index.html authors.html changelog.html copying.html help.html logoinvert100.png getede.png ede.png style.css
+Data = ede-small.gif\
+	   index.html\
+	   authors.html\
+	   changelog.html\
+	   copying.html\
+	   help.html\
+	   logoinvert100.png\
+	   getede.png\
+	   ede.png\
+	   style.css
+
 DIR = $(datadir)/ede/doc
 
 install:
@@ -12,3 +22,5 @@ install:
 
 uninstall:
 	$(RM) -r $(DIR)
+
+clean:

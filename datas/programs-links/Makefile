@@ -154,3 +154,4 @@ uninstall:
 	$(RM) -r $(Rootdir)
 	$(RM) -r $(Developmentdir)
 
+clean:
