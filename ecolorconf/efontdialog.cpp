@@ -26,13 +26,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#define MAXSIZE 32767
+#include "ecolorutils.h"
+
+#define MAXSIZE 64
 
 Fl_Window *form;
+
+
+// class for font preview window
 
 class FontDisplay : public Fl_Widget {
   void draw();
@@ -54,114 +56,144 @@ void FontDisplay::draw() {
   fl_font(font, size);
   fl_color(FL_BLACK);
   char buffer[32];
+//#if HAVE_XUTF8
   char outbuf[64];
+//#endif
   for (int Y = 1; Y < 8; Y++) {
       for (int X = 0; X < 32; X++) buffer[X] = (32*Y+X);
-#if HAVE_XUTF8
+//#if HAVE_XUTF8
       int len = fl_latin12utf((uint8*)buffer, 32, outbuf);
       fl_draw(outbuf, len, 3, 3+fl_height()*Y);
-#else
-      fl_draw(buffer, 32, 3, 3+fl_height()*Y);
-#endif
+//#else
+//      fl_draw(buffer, 32, 3, 3+fl_height()*Y);
+//#endif
   }
   fl_encoding(saved_encoding);
   fl_pop_clip();
 }
 
+
+
+// other variables
+
 FontDisplay *textobj;
 
 Fl_Browser *fontobj, *sizeobj, *encobj;
 
-Fl_Font* fonts; // list returned by fltk
+Fl_Font* all_fonts; // list returned by fltk
 
 Fl_Group *button_group;
 Fl_Check_Button* bold_button, *italic_button;
 Fl_Box* id_box;
 Fl_Button *ok_button, *cancel_button;
 
-int pickedsize = 14;
-
 bool return_value = false;
+
+
+
+// callback functions
+
+
+// callback for list of fonts
 
 void font_cb(Fl_Widget *, long) 
 {
-  int fn = fontobj->value();
-  //printf("font: %d    name: %s   bigname: %s\n", fn, fonts[fn]->name(), fonts[fn]->system_name());
+	int fn = fontobj->value();
+	Fl_Font f = all_fonts[fn];
 
-  Fl_Font f = fonts[fn];
-  if (f->bold() == f) bold_button->deactivate();
-  else bold_button->activate();
-  if (f->italic() == f) italic_button->deactivate();
-  else italic_button->activate();
-  if (bold_button->value()) f = f->bold();
-  if (italic_button->value()) f = f->italic();
-  textobj->font = f;
+	// are bold and italic available?
+	if (f->bold() == f) 
+		bold_button->deactivate();
+	else 
+		bold_button->activate();
+	if (f->italic() == f) 
+		italic_button->deactivate();
+	else 
+		italic_button->activate();
+	if (bold_button->value()) f = f->bold();
+	if (italic_button->value()) f = f->italic();
 
-  // Populate the encobj (browser for font encodings)
-  char saved[30];
-  strncpy(saved, textobj->encoding, 29);
-  encobj->clear();
+	textobj->font = f;
 
-  const char** encodings;
-  int ne = f->encodings(encodings);
-  int picked = -1;
-  int iso8859 = 0;
-  for (int i = 0; i < ne; i++) {
-      encobj->add(encodings[i]);
-      if (!strcmp(encodings[i], saved)) picked = i;
-      if (!strcmp(encodings[i], fl_encoding())) iso8859 = i;
-  }
-  if (picked < 0) picked = iso8859;
-  textobj->encoding = encodings[picked];
-  encobj->value(picked);
+	// Populate the encobj (browser for font encodings)
+	char saved[30];
+	strncpy(saved, textobj->encoding, 29);
+	encobj->clear();
 
-  // Populate the sizeobj (browser for font sizes)
-  sizeobj->clear();
-  int *s;
-  int n = f->sizes(s);
-  if(!n) {
-      // no sizes (this only happens on X)
-      fl_font(f, pickedsize);
-      textobj->size = (int)fl_height();
-  } else if (s[0] == 0) {
-      // many sizes;
-      int j = 1;
-      for (int i = 1; i<64 || i<s[n-1]; i++) {
-          char buf[20];
-          sprintf(buf,"%d",i);
-          Fl_Widget *w = sizeobj->add(buf);
-          if (j < n && i==s[j]) {
-              w->label_font(w->label_font()->bold());
-              w->label_color(FL_RED);
-              j++;
-          }
-      }
-      sizeobj->value(pickedsize-1);
-      textobj->size = pickedsize;
-  } else {
-      // some sizes
-      int w = 0;
-      for (int i = 0; i < n; i++) {
-          if (s[i]<=pickedsize) w = i;
-          char buf[20];
-          sprintf(buf,"%d",s[i]);
-          Fl_Widget *w = sizeobj->add(buf);
-          w->label_font(w->label_font()->bold());
-      }
-      sizeobj->value(w);
-      textobj->size = s[w];
-  }
+	const char** encodings;
+	int ne = f->encodings(encodings);
+	int picked = -1;
+	int iso8859 = 0;
+	for (int i = 0; i < ne; i++) {
+		encobj->add(encodings[i]);
+		if (!strcmp(encodings[i], saved)) picked = i;
+		if (!strcmp(encodings[i], fl_encoding())) iso8859 = i;
+	}
+	if (picked < 0) picked = iso8859;
+	textobj->encoding = encodings[picked];
+	encobj->value(picked);
 
-  encobj->redraw();
-  sizeobj->redraw();
-  textobj->redraw();
-  encobj->relayout();
-  sizeobj->relayout();
-  textobj->relayout();
+	// Populate the sizeobj (browser for font sizes)
+	int pickedsize;
+	if (sizeobj->value() > 0) {
+		pickedsize = atoi(sizeobj->text(sizeobj->value()));
+	} else {
+		pickedsize = 14;
+	}
+	sizeobj->clear();
 
-  id_box->label(textobj->font->system_name());
-  id_box->redraw();
-  button_group->redraw();
+	int *s;
+	int n = f->sizes(s);
+	if(!n) {
+		// no sizes (this only happens on X)
+		for (int i = 1; i<MAXSIZE; i++) {
+			char buf[20];
+			sprintf(buf,"%d",i);
+			sizeobj->add(buf);
+		}
+		sizeobj->value(pickedsize-1);
+		textobj->size = pickedsize;
+		
+		// fl_font(f, pickedsize); lets fix this...
+	} else if (s[0] == 0) {
+		// many sizes;
+		int j = 1;
+		for (int i = 1; i<MAXSIZE || i<s[n-1]; i++) {
+			char buf[20];
+			sprintf(buf,"%d",i);
+			Fl_Widget *w = sizeobj->add(buf);
+			if (j < n && i==s[j]) {
+				w->label_font(w->label_font()->bold());
+				w->label_color(FL_RED);
+				j++;
+			}
+		}
+		sizeobj->value(pickedsize-1);
+		textobj->size = pickedsize;
+	} else {
+		// some sizes -- when is this used?
+		int w = 0;
+		for (int i = 0; i < n; i++) {
+			if (s[i]<=pickedsize) w = i;
+			char buf[20];
+			sprintf(buf,"%d",s[i]);
+			Fl_Widget *w = sizeobj->add(buf);
+			w->label_font(w->label_font()->bold());
+		}
+		sizeobj->value(w);
+		textobj->size = s[w];
+	}
+
+	encobj->redraw();
+	sizeobj->redraw();
+	textobj->redraw();
+	encobj->relayout();
+	sizeobj->relayout();
+	textobj->relayout();
+
+//  id_box->label(textobj->font->system_name());
+//  id_box->redraw();
+	button_group->redraw();	// needed?
 }
 
 void encoding_cb(Fl_Widget *, long) {
@@ -175,8 +207,7 @@ void size_cb(Fl_Widget *, long) {
   int i = sizeobj->value();
   const char *c = sizeobj->text(i);
   while (*c < '0' || *c > '9') c++;
-  pickedsize = atoi(c);
-  textobj->size = pickedsize;
+  textobj->size = atoi(c);
   textobj->redraw();
   id_box->redraw();
 }
@@ -186,6 +217,8 @@ void return_cb(Fl_Widget *, long ret) {
     form->hide();
 }
 
+
+// TODO: rewrite this in eflud...
 void create_the_forms() 
 {
   form = new Fl_Window(550, 420, _("Select font..."));
@@ -224,110 +257,83 @@ void create_the_forms()
 }
 
 
-/////////////////////////
-
-// return dash number N, or pointer to ending null if none:
-const char *font_word(const char* p, int n)
+// search for largest <= selected size:
+int find_best_size(Fl_Font font, int selected)
 {
-  while (*p) {if (*p=='-') {if (!--n) break;} p++;}
-  return p;
-}
+	int *allsizes;
+	int numsizes = font->sizes(allsizes);
 
-// return a pointer to a number we think is "point size":
-char* fl_find_fontsize(char* name)
-{
-    char* c = name;
-    // for standard x font names, try after 7th dash:
-    if (*c == '-') {
-        c = (char*)font_word(c,7);
-        if (*c++ && isdigit(*c)) return c;
-        return 0; // malformed x font name?
-    }
-    char* r = 0;
-    // find last set of digits:
-    for (c++;* c; c++)
-        if (isdigit(*c) && !isdigit(*(c-1))) r = c;
-    return r;
+//	This is a bug in efltk
+	if (numsizes <= 1) return selected;
+
+	for (int i=1; i<numsizes; i++) {
+		if (allsizes[i] > selected)
+			return allsizes[i-1];
+	}
+
+	return allsizes[numsizes-1];
 }
 
 
-
-static char *find_best_font(const char *fname, int size, char *encoding)
+EDEFont fl_font_dialog(EDEFont current_font) 
 {
-    // search for largest <= font size:
-    char* name = (char*)fname;
-    int ptsize = 0; // best one found so far
-    static char namebuffer[1024]; // holds scalable font name
+	EDEFont return_font;
 
-    char* thisname = name;
+	create_the_forms();
+	int numfonts = fl_list_fonts(all_fonts);
 
-    char *c = (char*)fl_find_fontsize(thisname);
-    int thissize = c ? strtol(c,NULL,10) : MAXSIZE;
+	// populate list of fonts
+	Fl_String currentname = current_font.font->name();
+	for(int i = 0; i < numfonts; i++) {
+		Fl_String fontname = all_fonts[i]->name();
+		fontobj->add(fontname);
+ 		if (currentname.lower_case().pos(fontname.lower_case())==0) // it's a substring
+			fontobj->value(i);
+	}
 
-    if (thissize == size) {
-            // exact match, use it:
-        name = thisname;
-        ptsize = size;
-        return name;
+	// set bold, italic
+	if (currentname.pos(" bold italic") == currentname.length()-12) {
+		bold_button->value(true);
+		italic_button->value(true);
+	} else if (currentname.pos(" italic") == currentname.length()-7) {
+		italic_button->value(true);
+	} else if (currentname.pos(" bold") == currentname.length()-5) {
+		bold_button->value(true);
+	}
 
-    } 
-    else if (!thissize && ptsize!=size) 
-    {
-        // Use a scalable font if no exact match found:
-        int l = c-thisname;
-        memcpy(namebuffer,thisname,l);
-        // print the pointsize into it:
-        if (size>=100) namebuffer[l++] = size/100+'0';
-        if (size>=10) namebuffer[l++] = (size/10)%10+'0';
-        namebuffer[l++] = (size%10)+'0';
-        while (*c == '0') c++;
-        strcpy(namebuffer+l,c);
-	char *enc = (char*)font_word(namebuffer, 13);
-        if(enc && *enc++) {
-    	    strcpy(enc, encoding);
-        }
-        name = namebuffer;
-        ptsize = size;
-        return name;
+	// populate other lists
+	textobj->encoding = current_font.encoding; // TODO: what if we're using XFT?
+	font_cb(fontobj,0);
+	for (int i=0; i < sizeobj->children(); i++) {
+		if (atoi(sizeobj->text(i)) == current_font.size) {
+			sizeobj->value(i);
+			size_cb(sizeobj,0);
+		}
+	}
 
-    } else if (!ptsize ||       // no fonts yet
-           thissize < ptsize && ptsize > size || // current font too big
-           thissize > ptsize && thissize <= size // current too small
-          ) {
-            name = thisname;
-            ptsize = thissize;
-    }
+	form->exec();
+	form->show();
 
-    return name;
-}
+	// we have to construct a proper EDEFont to return
+	return_font.defined = false;
+	if (return_value)
+	{
+		return_font.font = fl_find_font(fontobj->text(fontobj->value()));
+		if (bold_button->value()) return_font.font = return_font.font->bold();
+		if (italic_button->value()) return_font.font = return_font.font->italic();
 
-Fl_String fl_font_dialog() 
-{
-  create_the_forms();
-  int numfonts = fl_list_fonts(fonts);
+		int size = atoi(sizeobj->text(sizeobj->value()));
+		return_font.size = find_best_size(return_font.font, size);
 
-  for(int i = 0; i < numfonts; i++) {
-      fontobj->add(fonts[i]->name());
-  }
-
-  fontobj->value(0);
-  textobj->encoding = fl_encoding();
-  font_cb(fontobj,0);
-  form->exec();
-  form->show();
-
-  if (return_value)
-  {
-    char *tmpencoding;
-    if (encobj->children() > 0) 
-        tmpencoding = encobj->text(encobj->value());
-    else
-        tmpencoding = "";
-    return find_best_font(id_box->label(), atoi(sizeobj->text(sizeobj->value())), tmpencoding);
-  }			   
-  else return "";
-
-  return "";
+		// on XFT encoding is always Unicode, so this field can be blank
+		if (encobj->children() > 0) 
+			return_font.encoding = encobj->text(encobj->value());
+		else
+			return_font.encoding = "";
+		
+		return_font.defined = true;
+	}
+	return return_font;
 }
 
 //

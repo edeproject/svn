@@ -44,6 +44,15 @@
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
 
+// this struct can hold slightly more information than Fl_Font
+typedef struct {
+	Fl_Font font;
+	Fl_String encoding;
+	int size;
+	bool defined;
+} EDEFont;
+
+
 extern void updateFontAll();
 extern void getSchemeColors();
 extern void saveActiveScheme();
@@ -53,5 +62,10 @@ extern void fillItems();
 extern void loadEfltkConfig();
 extern void saveEfltkConfig();
 
+// font stuff
+Fl_String font_nice_name(EDEFont);
+extern void labelfont_cb();
+extern void textfont_cb();
+extern EDEFont fl_font_dialog(EDEFont);
 
 #endif

@@ -26,6 +26,8 @@
 #include "ecolorutils.h"
 #include "ecolorconf.h"
 
+EDEFont labelfont, textfont;
+
 static void sendClientMessage(Window w, Atom a, long x)
 {
   XEvent ev;
@@ -291,13 +293,13 @@ void saveScheme(char *scheme)
     char *keys[] = 
     {
         "color", "label color", "selection color",
-        "selection text color", "highlight color", "off color", "text color",
+        "selection text color", "highlight color", "text color",
         "highlight label color",
     };
-    Fl_Button *colorBoxes[8] = 
+    Fl_Button *colorBoxes[7] = 
     {
         colorBox, labelColorBox, selectionColorBox, selectionTextColorBox,
-        highlightColorBox, offColorBox, textColorBox, highlightLabelColorBox
+        highlightColorBox, textColorBox, highlightLabelColorBox
     };
 
     if (schemeListBox->size() > 1) 
@@ -310,16 +312,24 @@ void saveScheme(char *scheme)
             Fl_Config colorConfig(scheme); //save to "active".scheme
 
             colorConfig.set_section("widgets/default");
-            for (int boxIndex=0; boxIndex<8; boxIndex++) {
+            for (int boxIndex=0; boxIndex<7; boxIndex++) {
                 colorConfig.write(keys[boxIndex], (int)colorBoxes[boxIndex]->color());
             }
 
             colorConfig.write("text background", (int)textBackgroundBox->color());
-            colorConfig.write("label font", labelFontInput->value());
-	    colorConfig.write("text font", textFontInput->value());
-            colorConfig.write("label size", labelSize->value());
-            colorConfig.write("text size",  textSize->value());
-	    colorConfig.write("font encoding",  fontEncoding->value());
+
+	    // we don't want to lose leading space...
+	    char tr[128];
+	    strncpy (tr, labelfont.font->system_name(), 128);
+	    if (tr[0] == ' ') tr[0] = '_';
+            colorConfig.write("label font", tr);
+	    strncpy (tr, textfont.font->system_name(), 128);
+	    if (tr[0] == ' ') tr[0] = '_';
+	    colorConfig.write("text font", tr);
+
+            colorConfig.write("label size", labelfont.size);
+            colorConfig.write("text size",  textfont.size);
+	    colorConfig.write("font encoding",  textfont.encoding);
 
             colorConfig.set_section("widgets/tooltip");
 	    colorConfig.write("color", (int)tooltipBox->color());
@@ -415,13 +425,13 @@ void getSchemeColors()
     char *keys[] = 
     {  
         "color", "label color", "selection color",
-        "selection text color", "highlight color", "off color", "text color",
+        "selection text color", "highlight color", "text color",
         "highlight label color",
     };
-    Fl_Button *colorBoxes[8] = 
+    Fl_Button *colorBoxes[7] = 
     {
         colorBox, labelColorBox, selectionColorBox, selectionTextColorBox,
-        highlightColorBox, offColorBox, textColorBox, highlightLabelColorBox
+        highlightColorBox, textColorBox, highlightLabelColorBox
     };
 
     if (schemeListBox->size() > 1)
@@ -440,7 +450,7 @@ void getSchemeColors()
             colorConfig = new Fl_Config(pathScheme);
         }
 
-        for(int boxIndex = 0; boxIndex < 8; boxIndex++)
+        for(int boxIndex = 0; boxIndex < 7; boxIndex++)
 	{
             colorConfig->set_section("widgets/default");
             if(!colorConfig->read(keys[boxIndex], ir)) {
@@ -464,15 +474,32 @@ void getSchemeColors()
             textBackgroundBox->color((Fl_Color)ir);
             textBackgroundBox->highlight_color((Fl_Color)ir);
         }
-        if(!colorConfig->read("label font", tr, 0, sizeof(tr))) { labelFontInput->value(tr); }
 
-        if(!colorConfig->read("text font", tr, 0, sizeof(tr))) { textFontInput->value(tr); }
+        Fl_String tmpencoding;
+        if(!colorConfig->read("font encoding", tr, 0, sizeof(tr))) { tmpencoding = tr; }
 
-        if(!colorConfig->read("font encoding", tr, 0, sizeof(tr))) { fontEncoding->value(tr); }
+        if(!colorConfig->read("label font", tr, 0, sizeof(tr))) { 
+		if (tr[0] == '_') tr[0] = ' ';	// converted leading space
+		Fl_Font thefont = fl_create_font(tr);
+		labelfont.font = thefont;
+		labelfont.encoding = tmpencoding;
+		labelfont.defined = true;
 
-        if(!colorConfig->read("label size", tr, 0, sizeof(tr))) { labelSize->value(tr); }
+		if(!colorConfig->read("label size", tr, 0, sizeof(tr))) { labelfont.size = atoi(tr); }
+	}
 
-        if(!colorConfig->read("text size", tr, 0, sizeof(tr))) { textSize->value(tr); }
+	if(!colorConfig->read("text font", tr, 0, sizeof(tr))) { 
+		if (tr[0] == '_') tr[0] = ' ';
+		Fl_Font thefont = fl_create_font(tr);
+		textfont.font = thefont;
+		textfont.encoding = tmpencoding;
+		textfont.defined = true;
+
+		if(!colorConfig->read("text size", tr, 0, sizeof(tr))) { textfont.size = atoi(tr); }
+	}
+
+	labelFontInput->label(font_nice_name(labelfont));
+	textFontInput->label(font_nice_name(textfont));
 
         colorConfig->set_section("global colors");
         if(!colorConfig->read("background", ir)) backgroundBox->color((Fl_Color)ir);
@@ -560,3 +587,44 @@ void saveEfltkConfig()
     }
 }
 
+
+// FONT STUFF:
+// returns nice name for a font
+Fl_String font_nice_name(EDEFont font) {
+	if (!font.defined)
+		return Fl_String("Unknown");
+
+	Fl_String nicename = font.font->name();
+
+	// capitalize bold, italic
+	nicename.sub_replace("bold","Bold");
+	nicename.sub_replace("italic","Italic");
+
+	nicename = nicename + " (";
+	nicename = nicename + Fl_String(font.size);
+	nicename = nicename + ")";
+	
+	return nicename;
+}
+
+
+// callback for button to set label font
+void labelfont_cb() {
+	EDEFont ret = fl_font_dialog(labelfont);
+
+	if (ret.defined) {
+		labelfont = ret;
+		labelFontInput->label(font_nice_name(labelfont));
+	}
+}
+
+
+// callback for button to set label font
+void textfont_cb() {
+	EDEFont ret = fl_font_dialog(textfont);
+	
+	if (ret.defined) {
+		textfont = ret;
+		textFontInput->label(font_nice_name(textfont));
+	}
+}
