@@ -1,0 +1,10 @@
+Window manager themes
+*********************
+* All pixmaps are 20x20 pixels in size
+* default.theme is the main configuration file
+
+Usage
+*****
+*Copy theme dir somewhere - for ex. /usr/share/ede/wm-themes/...
+*Use EDE->Programs->Settings->Window manager settings->Misc tab and select
+ theme file
