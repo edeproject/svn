@@ -1,3 +1,6 @@
+1.0.3
+- fixed silent option for configure script
+
 1.0.2
 * new build system
 * netscape and opera replaced with mozilla everywhere
