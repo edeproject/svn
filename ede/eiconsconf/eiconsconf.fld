@@ -1,0 +1,122 @@
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2,0003 
+images_dir ./icons 
+i18n 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+decl {// Icons configuration for EDE is (C) Copyright 2001-2002 by Martin Pekar, this program is provided under the terms of GNU GPL v.2, see file COPYING for more information.} {} 
+
+decl {\#include <efltk/Fl_Color_Chooser.h>} {} 
+
+decl {\#include <efltk/Fl_Locale.h>} {} 
+
+decl {\#include <edeconf.h>} {selected
+} 
+
+decl {\#include "eicon.h"} {} 
+
+Function {} {open
+} {
+  code {fl_init_locale_support("eiconsconf", PREFIX"/share/locale");
+readIconsConfiguration();} {}
+  Fl_Window iconsConfWindow {
+    label {Icons settings} open
+    xywh {54 60 265 314} resizable visible
+  } {
+    Fl_Button {} {
+      label {&OK}
+      callback {writeIconsConfiguration();
+sendUpdateInfo();
+exit(0);}
+      xywh {25 280 75 25}
+    }
+    Fl_Button {} {
+      label {&Cancel}
+      callback {exit(0);}
+      xywh {185 280 75 25}
+    }
+    Fl_Button {} {
+      label {&Apply}
+      callback {writeIconsConfiguration();
+sendUpdateInfo();}
+      xywh {105 280 75 25}
+    }
+    Fl_Tabs {} {open
+      xywh {3 5 257 265} color 0xfffffffe
+    } {
+      Fl_Group {} {
+        label {Look&&feel} open
+        xywh {1 23 255 241} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+      } {
+        Fl_Button colorButton {
+          label {Background color: }
+          callback {changeBoxColor(colorButton);
+label_background = (int) colorButton->color();}
+          xywh {165 17 60 18} align FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
+          extra_code {o->color((Fl_Color) label_background);
+if(label_trans) o->deactivate();}
+        }
+        Fl_Button colorButton1 {
+          label {Label color: }
+          callback {changeBoxColor(colorButton1);
+label_foreground = (int) colorButton1->color();}
+          xywh {165 47 60 18} align FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
+          extra_code {o->color((Fl_Color) label_foreground);}
+        }
+        Fl_Value_Slider maxWidthSlider {
+          label {Maximum width: }
+          callback {label_maxwidth = (int) maxWidthSlider->value();}
+          xywh {115 95 125 20} type HORIZONTAL align FL_ALIGN_LEFT|FL_ALIGN_WRAP minimum 48 maximum 200 step 1 value 50 slider_size 10
+          extra_code {o->value(label_maxwidth);}
+        }
+        Fl_Value_Slider fontsizeSlider {
+          label {Font height: }
+          callback {label_fontsize = (int)  fontsizeSlider->value();}
+          xywh {115 125 125 20} type {HORIZONTAL|Fl_Slider::TICK_ABOVE} align FL_ALIGN_LEFT|FL_ALIGN_WRAP minimum 8 maximum 48 step 1 value 10 slider_size 10
+          extra_code {o->value(label_fontsize);}
+        }
+        Fl_Value_Slider gridspaceSlider {
+          label {Grid spacing: }
+          callback {label_gridspacing = (int) gridspaceSlider->value();}
+          xywh {115 155 125 20} type {HORIZONTAL|Fl_Slider::TICK_ABOVE} align FL_ALIGN_LEFT|FL_ALIGN_WRAP minimum 1 maximum 50 step 1 value 10 slider_size 10
+          extra_code {o->value(label_gridspacing);}
+        }
+        Fl_Check_Button autoArrButton {
+          label {Auto arrange icons}
+          callback {auto_arr = (o->value()>0);}
+          xywh {25 215 222 20} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP
+          extra_code {o->value(auto_arr);}
+        }
+        Fl_Check_Button engageButton {
+          label {Engage with just one click}
+          callback {label_engage_1click = (int) engageButton->value();}
+          xywh {25 190 222 20} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP
+          extra_code {o->value(label_engage_1click);}
+        }
+        Fl_Check_Button bg_color_check {
+          callback {if(o->value()) colorButton->activate();
+else colorButton->deactivate();
+label_trans = (o->value()==0);}
+          tooltip {Clear this, to get transparent background.}
+          xywh {227 17 20 18}
+          extra_code {if(!label_trans) o->set_value();}
+        }
+      }
+    }
+  }
+} 
+
+Function {changeBoxColor(Fl_Button *box)} {return_type void
+} {
+  code {Fl_Button *colorBox = box;
+Fl_Color oldColor = colorBox->color();
+Fl_Color defColor = oldColor;
+fl_color_chooser(_("Choose color"), defColor);
+if ( defColor != oldColor ) {
+	colorBox->color(defColor);
+	colorBox->redraw();
+}} {}
+} 
