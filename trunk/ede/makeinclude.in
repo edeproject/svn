@@ -33,7 +33,7 @@ MKINSTALLDIRS	= @HOME_DIR@/mkinstalldirs
 INSTALL_LOCALE=\
 	for f in $(MOFILES); do\
 		$(MKINSTALLDIRS) $(LOCALEDIR)/`basename $$f .mo`/LC_MESSAGES;\
-		$(INSTALL_DATA) $$f $(LOCALEDIR)/`basename $$f .mo`/LC_MESSAGES/$(TARGET).mo;\	
+		$(INSTALL_DATA) $$f $(LOCALEDIR)/`basename $$f .mo`/LC_MESSAGES/$(TARGET).mo;\
 	done
 
 # compiler flags
