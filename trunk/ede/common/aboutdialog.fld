@@ -1,0 +1,57 @@
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2,0003 
+images_dir ./ 
+i18n 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+decl {\#include <efltk/Fl_Util.h>} {} 
+
+decl {\#include <edeconf.h>} {} 
+
+class AboutDialog {open selected : Fl_Window
+} {} 
+
+Function {about_window()} {open return_type void
+} {
+  Fl_Window aboutWindow {
+    label {About Control panel} open
+    xywh {511 284 275 190} resizable visible
+  } {
+    Fl_Box {} {
+      label {Control panel 1.0}
+      xywh {5 5 265 44} align FL_ALIGN_INSIDE|FL_ALIGN_WRAP label_size 18
+    }
+    Fl_Box {} {
+      label {This program is licenced under terms of the GNU General Public License version 2 or newer.}
+      xywh {5 98 265 30} align FL_ALIGN_TOP|FL_ALIGN_INSIDE|FL_ALIGN_WRAP label_size 10
+    }
+    Fl_Box {} {
+      label {(C) Copyright 2001-2005 EDE Authors}
+      xywh {5 74 265 20} align FL_ALIGN_INSIDE|FL_ALIGN_WRAP
+    }
+    Fl_Box {} {
+      label {Part of Equinox Desktop Environment v1.0.2}
+      xywh {5 49 265 20} align FL_ALIGN_INSIDE|FL_ALIGN_WRAP
+    }
+    Fl_Button {} {
+      label {Click here for details.}
+      callback {showCopyingInfo();}
+      xywh {65 120 145 20} box NO_BOX button_box NO_BOX label_color 4 highlight_label_color 1 label_size 10
+    }
+    Fl_Button {} {
+      label {&Close}
+      callback {aboutWindow->hide();}
+      xywh {95 152 80 25}
+    }
+  }
+  code {aboutWindow->end();
+aboutWindow->show();} {}
+} 
+
+Function {showCopyingInfo()} {open
+} {
+  code {fl_start_child_process("elauncher file:/usr/share/ede/doc/copyleft.html",false);} {}
+} 
