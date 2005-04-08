@@ -977,20 +977,22 @@ void Frame::restack_and_focus(Frame* f)
 	// we must have at least n+2 elem. First two is 
 	// root window and desktop
 	int sz = stack_order.size();
-	if(sz > 2) {
+	if(sz > 2) 
+	{
 		// operator[] access them like in plain array
 		Frame *tf = stack_order[sz - 1];
 		if(tf)
 			tf->activate();
 	}
 }
+
 void Frame::iconize()
 {
 	DBG("Frame::iconize()");
 	if(window_type()==TYPE_NORMAL || is_transient_for(this) && state() != UNMAPPED)
 	{
 		state(ICONIC);
-			restack_and_focus(this);
+		restack_and_focus(this);
 	}
 }
 
@@ -1099,6 +1101,7 @@ void Frame::set_size(int nx, int ny, int nw, int nh)
 	
 
 	send_configurenotify();
+	redraw();
 	//XSync(fl_display, False);
 }
 
@@ -1184,10 +1187,12 @@ void Frame::close()
 {
 	DBG("Frame::close()");
 
-	restack_and_focus(this);
 
 	if(frame_flag(DELETE_WIN_PRT))
+	{
+		restack_and_focus(this);
 		sendMessage(_XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW);
+	}
 	else
 		kill();
 
