@@ -13,6 +13,7 @@
 - reorganize colors
 * edewm:
 - disable killing eiconman/eworkpanel using hotkeys
+- fixed border redraw when window itself change width or height
 * emenueditor:
 - disable editing subdirs
 * ehelpbook:
