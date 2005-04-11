@@ -319,6 +319,7 @@ Frame::~Frame()
 
 }
 
+
 void Frame::destroy_frame()
 {
 	if(shown()) {
@@ -367,7 +368,8 @@ void Frame::destroy_frame()
 		WindowManager::update_client_list();
 	}
 
-	if(strut_) {
+	if(strut_) 
+	{
 		delete strut_;
 		strut_=0;
 		root->update_workarea(true);
@@ -542,22 +544,6 @@ void Frame::getLabel(bool del, Atom from_atom)
 	title->redraw();
 }
 
-#if 0
-////////////////////////////////////////////////////////////////
-
-int max_w_switch;
-// return width of contents when maximize button pressed:
-int Frame::maximize_width() {
-	return 0;
-}
-
-int max_h_switch;
-int Frame::maximize_height() {
-	return 0;
-}
-
-////////////////////////////////////////////////////////////////
-#endif
 
 void Frame::getColormaps(void)
 {
@@ -645,6 +631,7 @@ bool Frame::activate()
 	DBG("Frame::activate()");
 
 	// see if a modal & newer window is up:
+	//for(uint n=map_order.size(); n--;)
 	for(uint n=map_order.size(); n--;)
 	{
 		Frame *c = map_order[n];
@@ -742,9 +729,11 @@ void Frame::content_click()
 	XAllowEvents(fl_display, ReplayPointer, CurrentTime);
 }
 
-// get rid of the focus by giving it to somebody, if possible:
+// get rid of the focus by giving it to somebody, if possible,
+// but not to workpanel
 void Frame::throw_focus(int destructor)
 {
+	
 	if(!active()) return;
 
 	DBG("Frame::throw_focus(%d)", destructor);
@@ -752,14 +741,15 @@ void Frame::throw_focus(int destructor)
 	if(!destructor) deactivate();
 	active_ = 0;
 
-	if (revert_to && revert_to->activate()) {
-		revert_to->raise();
-		return;
-	}
-	for(uint n=map_order.size(); n--;) {
-		Frame *f = map_order[n];
-		if (f != this && f->activate()) {
-			f->raise();
+	bool is_active;
+	for(uint i = stack_order.size(); --i;)
+	{
+		Frame *f = stack_order[i];
+		if(f != 0 && f != this && f->window_type() != TYPE_DOCK)
+		{
+			is_active = f->activate();
+			if(is_active) 
+				f->raise();
 			return;
 		}
 	}
@@ -966,25 +956,6 @@ void Frame::lower()
 	root->restack_windows();
 }
 
-void Frame::restack_and_focus(Frame* f)
-{
-	if(!f)
-		return;
-	stack_order.remove(f);
-	stack_order.prepend(f);
-	root->restack_windows();
-
-	// we must have at least n+2 elem. First two is 
-	// root window and desktop
-	int sz = stack_order.size();
-	if(sz > 2) 
-	{
-		// operator[] access them like in plain array
-		Frame *tf = stack_order[sz - 1];
-		if(tf)
-			tf->activate();
-	}
-}
 
 void Frame::iconize()
 {
@@ -992,7 +963,7 @@ void Frame::iconize()
 	if(window_type()==TYPE_NORMAL || is_transient_for(this) && state() != UNMAPPED)
 	{
 		state(ICONIC);
-		restack_and_focus(this);
+		throw_focus(1);
 	}
 }
 
@@ -1089,16 +1060,12 @@ void Frame::set_size(int nx, int ny, int nw, int nh)
 	x(nx);
 	y(ny);
 
-	// Fixes XMMS BUG! They dont set resize flag at all...
-	/*if(!func_flag(RESIZE)) {
-		XMoveWindow(fl_display, fl_xid(this), nx, ny);
-	} else*/
-	
 	if(nw != w()) w(nw);
 	if(nh != h()) h(nh);
-	XMoveResizeWindow(fl_display, fl_xid(this), nx, ny, nw, nh);
+
+	XMoveWindow(fl_display, fl_xid(this), nx, ny);
+	XResizeWindow(fl_display, fl_xid(this), nw, nh);
 	XResizeWindow(fl_display, window_, nw-offset_w, nh-offset_h);
-	
 
 	send_configurenotify();
 	redraw();
@@ -1186,13 +1153,8 @@ void Frame::close(Window wid)
 void Frame::close()
 {
 	DBG("Frame::close()");
-
-
 	if(frame_flag(DELETE_WIN_PRT))
-	{
-		restack_and_focus(this);
 		sendMessage(_XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW);
-	}
 	else
 		kill();
 
@@ -1201,7 +1163,6 @@ void Frame::close()
 void Frame::kill()
 {
 	DBG("Frame::kill()");
-	restack_and_focus(this);
 	XUnmapWindow(fl_display, fl_xid(this));
 	XUnmapWindow(fl_display, window_);
 	XUnmapWindow(fl_display, fl_xid(title));
@@ -1215,12 +1176,12 @@ void Frame::kill()
 
 void Frame::draw()
 {
-	if((!decor_flag(BORDER) || !decor_flag(THIN_BORDER)) && !decor_flag(TITLEBAR)) {
+	if((!decor_flag(BORDER) || !decor_flag(THIN_BORDER)) && !decor_flag(TITLEBAR)) 
 		return;
-	}
-	if(!(damage()&FL_DAMAGE_ALL|FL_DAMAGE_EXPOSE) ) {
+	
+	if(!(damage()&FL_DAMAGE_ALL|FL_DAMAGE_EXPOSE) )
 		return;
-	}
+	
 
 	DBG("Frame::draw(%x)", damage());
 
@@ -1470,10 +1431,9 @@ int Frame::handle(int e)
 			nw = W;
 			nw -= (nw-offset_w)%size_hints->width_inc;
 		}
-		if(nh!=h()) {
+		if(nh!=h()) 
 			nh = H;
-			//nh -= (nh-offset_h)%size_hints->height_inc;
-		}
+	
 
 		if(what & FL_ALIGN_LEFT) nx = ix+iw-nw;
 		if(what & FL_ALIGN_TOP) ny = iy+ih-nh;
@@ -1502,60 +1462,55 @@ int Frame::handle(int e)
 
 // Handle events that fltk did not recognize (mostly ones directed
 // at the desktop):
+
 int Frame::handle(const XEvent* ei)
 {
 	switch (ei->type)
 	{
-	case VisibilityNotify: return visibility_event(&(ei->xvisibility));
-
-	case ConfigureRequest: return configure_event(&(ei->xconfigurerequest));
-
-	case MapRequest:	   return map_event(&(ei->xmaprequest));
-
-	case UnmapNotify:	   return unmap_event(&(ei->xunmap));
-
-	case DestroyNotify:    return destroy_event(&(ei->xdestroywindow));
-
-	case ReparentNotify:   return reparent_event(&(ei->xreparent));
-
-	case ClientMessage:    return clientmsg_event(&(ei->xclient));
-
-	case ColormapNotify:   return colormap_event(&(ei->xcolormap));
-
-	case PropertyNotify:   return property_event(&(ei->xproperty));
-
-	case EnterNotify: {
-		// see if cursor skipped over frame and directly to interior:
-		if (ei->xcrossing.detail == NotifyVirtual || ei->xcrossing.detail == NotifyNonlinearVirtual) {
-			cursor_inside = this;
-		} else {
-			// cursor is now pointing at frame:
-			cursor_inside = 0;
-			set_cursor(0);
+		case VisibilityNotify: return visibility_event(&(ei->xvisibility));
+		case ConfigureRequest: return configure_event(&(ei->xconfigurerequest));
+		case MapRequest:	   return map_event(&(ei->xmaprequest));
+		case UnmapNotify:	   return unmap_event(&(ei->xunmap));
+		case DestroyNotify:    return destroy_event(&(ei->xdestroywindow));
+		case ReparentNotify:   return reparent_event(&(ei->xreparent));
+		case ClientMessage:    return clientmsg_event(&(ei->xclient));
+		case ColormapNotify:   return colormap_event(&(ei->xcolormap));
+		case PropertyNotify:   return property_event(&(ei->xproperty));
+		case EnterNotify: 
+		{
+			// see if cursor skipped over frame and directly to interior:
+			if (ei->xcrossing.detail == NotifyVirtual || ei->xcrossing.detail == NotifyNonlinearVirtual) 
+				cursor_inside = this;
+			else 
+			{
+				// cursor is now pointing at frame:
+				cursor_inside = 0;
+				set_cursor(0);
+			}
+			return 1;
 		}
-		return 1;
-	}
 
-	case LeaveNotify: {
-		if (ei->xcrossing.detail == NotifyInferior) {
-			// cursor moved from frame to interior
-			cursor_inside = this;
-			set_cursor(0);
+		case LeaveNotify: 
+		{
+			if (ei->xcrossing.detail == NotifyInferior) 
+			{
+				// cursor moved from frame to interior
+				cursor_inside = this;
+				set_cursor(0);
+			}
+			return 1;
 		}
-		return 1;
-	}
 
-	default:
+		default:
 #ifdef SHAPE
-		if(ei->type == (root->XShapeEventBase + ShapeNotify))
-			return shape_event((XShapeEvent *)&ei);
+			if(ei->type == (root->XShapeEventBase + ShapeNotify))
+				return shape_event((XShapeEvent *)&ei);
 #endif
 		break;
 	}
 
 	return 0;
 }
-
 
 // X utility routines:
 

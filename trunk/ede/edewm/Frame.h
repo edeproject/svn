@@ -285,9 +285,6 @@ public:
     short state() const {return state_;}
     void state(short newstate); // don't call this unless you know what you are doing!
 
-    // restack windows and focus the latest
-    void restack_and_focus(Frame *f);
-
     int active() const {return active_==this;}
     static Frame* activeFrame() {return active_;}
 
