@@ -407,7 +407,11 @@ void Frame::get_funcs_from_type()
 		desktop_ = 0;
 		clear_func_flags();
 		clear_decor_flags();
-		set_frame_flag(SKIP_LIST);
+
+		if(wintype == TYPE_DOCK)
+			set_frame_flag(SKIP_LIST|SKIP_FOCUS);
+		else
+			set_frame_flag(SKIP_LIST);
 		break;
 	case TYPE_TOOLBAR:
 	case TYPE_MENU:
