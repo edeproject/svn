@@ -22,6 +22,8 @@ extern Atom _XATOM_MWM_HINTS;
 extern Atom _XATOM_MOTIF_WM_INFO;
 
 // Extended WM Hints:
+// NetWM support
+// http://standards.freedesktop.org/wm-spec/
 #define _NET_WM_MOVERESIZE_SIZE_TOPLEFT      0
 #define _NET_WM_MOVERESIZE_SIZE_TOP          1
 #define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT     2
@@ -55,10 +57,22 @@ extern Atom _XA_NET_WORKAREA;
 extern Atom _XA_NET_SUPPORTING_WM_CHECK;
 //_NET_VIRTUAL_ROOTS, XA_WINDOW[]/32
 extern Atom _XA_NET_VIRTUAL_ROOTS;
+//_NET_DESKTOP_LAYOUT, orientation, columns, rows, starting_corner CARDINAL[4]/32
+// (not implemented, used by pagers)
+extern Atom _XA_NET_DESKTOP_LAYOUT;
+//_NET_SHOWING_DESKTOP desktop, CARDINAL/32
+// (not implemented)
+extern Atom _XA_NET_SHOWING_DESKTOP;
 //_NET_CLOSE_WINDOW - closes active window
 extern Atom _XA_NET_CLOSE_WINDOW;
 //_NET_WM_MOVERESIZE | C
 extern Atom _XA_NET_WM_MOVERESIZE;
+//_NET_RESTACK_WINDOW
+// (not implemented, used by pagers)
+extern Atom _XA_NET_RESTACK_WINDOW;
+// _NET_REQUEST_FRAME_EXTENTS
+// (not implemented, used to detect frame size)
+extern Atom _XA_NET_REQUEST_FRAME_EXTENTS;
 //_NET_WM_NAME - UTF8
 extern Atom _XA_NET_WM_NAME;
 //_NET_WM_VISIBLE_NAME, UTF8
@@ -88,8 +102,31 @@ extern Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
 extern Atom _XA_NET_WM_STATE_SHADED;
 extern Atom _XA_NET_WM_STATE_SKIP_TASKBAR;
 extern Atom _XA_NET_WM_STATE_SKIP_PAGER;
+extern Atom _XA_NET_WM_STATE_HIDDEN; // new in spec. 1.3
+extern Atom _XA_NET_WM_STATE_FULLSCREEN; // new in spec. 1.3
+extern Atom _XA_NET_WM_STATE_ABOVE; // new in spec. 1.3
+extern Atom _XA_NET_WM_STATE_BELOW; // new in spec. 1.3
+extern Atom _XA_NET_WM_STATE_DEMANDS_ATTENTION; // new in spec. 1.3
+//_NET_WM_ALLOWED_ACTIONS, ATOM[]
+// (not implemented, used to manipulate stuff from taskbar)
+extern Atom _XA_NET_WM_ALLOWED_ACTIONS;
+extern Atom _XA_NET_WM_ACTION_MOVE;
+extern Atom _XA_NET_WM_ACTION_RESIZE;
+extern Atom _XA_NET_WM_ACTION_MINIMIZE;
+extern Atom _XA_NET_WM_ACTION_SHADE;
+extern Atom _XA_NET_WM_ACTION_STICK;
+extern Atom _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
+extern Atom _XA_NET_WM_ACTION_MAXIMIZE_VERT;
+extern Atom _XA_NET_WM_ACTION_FULLSCREEN;
+extern Atom _XA_NET_WM_ACTION_CHANGE_DESKTOP;
+extern Atom _XA_NET_WM_ACTION_CLOSE;
 //_NET_WM_STRUT, CARDINAL[4]/32
 extern Atom _XA_NET_WM_STRUT;
+//_NET_WM_STRUT_PARTIAL, left, right, top, bottom, left_start_y, left_end_y,
+//right_start_y, right_end_y, top_start_x, top_end_x, bottom_start_x,
+//bottom_end_x,CARDINAL[12]/32
+// (not implemented)
+extern Atom _XA_NET_WM_STRUT_PARTIAL;
 //_NET_WM_ICON_GEOMETRY, CARDINAL[4] - array of x,y,w,h of type CARDINAL, format 32
 extern Atom _XA_NET_WM_ICON_GEOMETRY;
 //_NET_WM_ICON CARDINAL[][2+n]/32 - 32bit packed CARDINAL ARGB with high byte being A, low byte being B
@@ -98,9 +135,19 @@ extern Atom _XA_NET_WM_ICON;
 extern Atom _XA_NET_WM_PID;
 //_NET_WM_HANDLED_ICONS
 extern Atom _XA_NET_WM_HANDLED_ICONS;
+//_NET_WM_USER_TIME CARDINAL/32
+// (not implemented, used by e.g. autoaway in chat programs)
+extern Atom _XA_NET_WM_USER_TIME;
+//_NET_FRAME_EXTENTS, left, right, top, bottom, CARDINAL[4]/32
+// (not implemented, used to detect frame size)
+extern Atom _XA_NET_FRAME_EXTENTS;
 //_NET_WM_PING
 extern Atom _XA_NET_WM_PING;
+//_NET_WM_SYNC_REQUEST
+// (not implemented, used for XSync extension)
+extern Atom _XA_NET_WM_SYNC_REQUEST;
 // the next one is not in the spec but KDE use it
+// obsoleted by _NET_WM_STATE_ABOVE
 extern Atom _XA_NET_WM_STATE_STAYS_ON_TOP;
 	
 // KDE1 icon support, thats all of it :)
