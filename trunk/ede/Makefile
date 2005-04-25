@@ -9,6 +9,7 @@ DIRS =	common\
 		eiconman\
 		eiconsconf\
 		einstaller\
+		ekeyconf\
 		emenueditor\
 		epanelconf\
 		erun\
