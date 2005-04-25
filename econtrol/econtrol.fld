@@ -53,7 +53,7 @@ o->size_range(o->w(), o->h());}
         }
       }
       Fl_Item_Group {} {
-        label {&Help} open selected
+        label {&Help} open
         align FL_ALIGN_RIGHT|FL_ALIGN_INSIDE
       } {
         Fl_Item {} {
@@ -157,6 +157,15 @@ if (Fl::event_clicks())
 	fl_start_child_process("epanelconf &");}
             tooltip {Panel configuration.}
             private xywh {215 15 60 75} align FL_ALIGN_TOP|FL_ALIGN_INSIDE|FL_ALIGN_WRAP box HIGHLIGHT_DOWN_BOX image {icons/panel.xpm} color 7 highlight_color 7 highlight_label_color 32 label_size 10
+          }
+          Fl_Button {} {
+            label Keyboard
+            callback {help_window->label(_("Configure keyboard shortcuts and other options."));
+help_window->redraw();
+if (Fl::event_clicks())
+	fl_start_child_process("ekeyconf &");} selected
+            tooltip {Keyboard settings}
+            private xywh {275 15 60 75} align FL_ALIGN_TOP|FL_ALIGN_INSIDE|FL_ALIGN_WRAP box HIGHLIGHT_DOWN_BOX button_box NO_BOX image {icons/keyboard.xpm} color 7 highlight_color 7 highlight_label_color 32 label_size 10
           }
         }
       }
