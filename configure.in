@@ -10,8 +10,8 @@ dnl Should we add AC_HELP_STRING ???
 dnl It seems that RH 7.2 have old autoconf without this macro
 
 AC_PREREQ(2.16)
-AC_INIT(EDE, 1.0.2, [karijes@users.sourceforge.net])
-AC_DEFINE(VERSION, 102, [Short version number])
+AC_INIT(EDE, 1.0.3, [karijes@users.sourceforge.net])
+AC_DEFINE(VERSION, 103, [Short version number])
 AC_CONFIG_HEADER(edeconf.h:edeconf.h.in)
 
 AC_PROG_CXX
