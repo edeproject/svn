@@ -14,6 +14,8 @@
 * edewm:
 - disable killing eiconman/eworkpanel using hotkeys
 - fixed border redraw when window itself change width or height
+- fixed focus issue (again)
+- fixed OpenOffice redraw problem
 * emenueditor:
 - disable editing subdirs
 * ehelpbook:
