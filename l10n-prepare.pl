@@ -27,7 +27,7 @@ print "Copying files...\n";
 while ($nextname = <*/locale/*.po>) {
 	if ($nextname =~ /(.*?)\/locale\/(.*?)\.po/) {
 		$dest = "l10n/$2/$1".".po";
-		`mkdir l10n/$2 &>/dev/null`;
+		`mkdir -p l10n/$2`;
 		`cp -f $nextname $dest`;
 	} else {
 		print "Error: $nextname\n";
