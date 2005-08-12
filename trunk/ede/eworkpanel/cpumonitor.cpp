@@ -26,8 +26,6 @@
 #include <kstat.h>
 #endif
 
-#if (defined(linux) || defined(HAVE_KSTAT_H))
-
 #define UPDATE_INTERVAL .5f
 
 void cpu_timeout_cb(void *d) {
@@ -385,5 +383,4 @@ void CPUMonitor::get_cpu_info()
 
 #endif /* have_kstat_h */
 }
-#endif
 
