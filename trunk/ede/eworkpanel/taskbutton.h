@@ -32,6 +32,9 @@ public:
     //Are buttons variable width
     static bool variable_width;
 
+    // Windows from all desktops
+    static bool dejan;
+
     void layout();
 
     void update();
