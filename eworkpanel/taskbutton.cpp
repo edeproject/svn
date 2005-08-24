@@ -190,6 +190,7 @@ static int GetState(Window w);
 
 Window TaskBar::active = 0;
 bool   TaskBar::variable_width = true;
+bool   TaskBar::dejan = false;
 
 TaskBar::TaskBar()
 : Fl_Group(0,0,0,0)
@@ -201,6 +202,7 @@ TaskBar::TaskBar()
     
     Fl_Config pConfig(fl_find_config_file("ede.conf", true));
     pConfig.get("Panel", "VariableWidthTaskbar",variable_width,true);
+    pConfig.get("Panel", "AllDesktops",dejan,false);
 
     update();
     end();
@@ -272,7 +274,7 @@ void TaskBar::update()
     Fl_Int_List winlist;
     int current_workspace = Fl_WM::get_current_workspace();
     for(n=0; n<num_windows; n++) {
-        if(current_workspace == Fl_WM::get_window_desktop(wins[n]) && GetState(wins[n])>0)
+        if((dejan || current_workspace == Fl_WM::get_window_desktop(wins[n])) && GetState(wins[n])>0)
             winlist.append(wins[n]);
     }
 
