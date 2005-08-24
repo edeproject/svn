@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <sys/signal.h>
 
 #include <efltk/Fl.h>
 #include <efltk/Fl_Locale.h>
