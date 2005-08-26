@@ -167,6 +167,7 @@ int Icon::handle(int e)
     static int x_icon, y_icon;
     static int X, Y;
     static bool button1 = false;
+    static bool moving = false;
     int dx, dy;
     
 
@@ -183,6 +184,7 @@ int Icon::handle(int e)
                 micon = new MovableIcon(this);
                 micon->show();
             }
+            moving = true;
 
             dx = ((Fl::event_x_root()-bx)/label_gridspacing) * label_gridspacing;
             dy = ((Fl::event_y_root()-by)/label_gridspacing) * label_gridspacing;
@@ -200,8 +202,8 @@ int Icon::handle(int e)
 
         case FL_RELEASE:
 
-            // This happens only when there was no drag
-            if(Fl::event_is_click()) {
+            // This *should* happen only when there was no drag
+            if(!moving && Fl::event_is_click()) {
                 if (one_click_exec)
                     cb_execute_i();
                 return 1;
@@ -209,6 +211,7 @@ int Icon::handle(int e)
 
             // We will update config only on FL_RELEASE, when 
             // dragging is over
+            moving = false;
             if(micon) {
                 delete micon;
                 micon = 0;
@@ -261,6 +264,22 @@ int Icon::handle(int e)
         take_focus();
         desktop->redraw();
         if(Fl::event_button()==3) {
+            // Stop moving
+            if (moving) {
+		moving = false;
+		if(micon) {
+			delete micon;
+			micon = 0;
+		}
+	
+		position(X-desktop->x(), Y-desktop->y());
+		desktop->redraw();
+	
+		cfg->set_section("Desktop Entry");
+		cfg->write("X", x());
+		cfg->write("Y", y());
+		cfg->flush();
+            }
             menu_item = this;
             popup->popup();
             menu_item = 0;
