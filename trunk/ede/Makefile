@@ -10,10 +10,12 @@ DIRS =	common\
 		eiconsconf\
 		einstaller\
 		ekeyconf\
+		elauncher\
 		emenueditor\
 		epanelconf\
 		erun\
 		esvrconf\
+		etimedate\
 		etip\
 		ewmconf\
 		eworkpanel\
