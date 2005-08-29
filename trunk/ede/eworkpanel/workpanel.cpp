@@ -596,6 +596,7 @@ int main(int argc, char **argv)
 		mClockBox->callback( (Fl_Callback*)startUtility, (void*)"Time and date");
 	}
  
+	dock->add_to_tray(new Fl_Box(0, 0, 5, 20));
 	dock->add_to_tray(mClockBox);
 	dock->add_to_tray(mKbdSelect);
 	
