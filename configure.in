@@ -29,6 +29,7 @@ AC_CHECK_HEADER(dirent.h, AC_DEFINE(HAVE_DIRENT_H))
 AC_CHECK_HEADER(ndir.h, AC_DEFINE(HAVE_NDIR_H))
 AC_CHECK_HEADER(sys/dir.h, AC_DEFINE(HAVE_SYS_DIR_H))
 AC_CHECK_HEADER(sys/ndir.h, AC_DEFINE(HAVE_SYS_NDIR_H))
+AC_CHECK_HEADER(linux/soundcard.h, AC_DEFINE(HAVE_ALSA))
 
 if test "$prefix" = NONE; then
 	INSTALL_DIR="/usr/local"
@@ -151,9 +152,24 @@ dnl  	esac
 dnl fi
 
 
+if test $ac_cv_header_linux_soundcard_h = yes; then
+	EVOLUME=evolume/
+else
+	echo
+	echo "***************************************"
+	echo "*         ALSA WAS NOT FOUND          *"
+	echo "*                                     *"
+	echo "* Sadly, evolume is ALSA-only at this *"
+	echo "* moment. It will be disabled.        *"
+	echo "***************************************"
+	EVOLUME=
+fi
+
+
 AC_SUBST(CXXFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(SILENT)
 AC_SUBST(HOME_DIR)
+AC_SUBST(EVOLUME)
 
 AC_OUTPUT(makeinclude datas/startede)

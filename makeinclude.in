@@ -12,6 +12,7 @@ mandir		= @mandir@
 srcdir		= @srcdir@
 sysconfdir  = @sysconfdir@
 VPATH		= @srcdir@
+EVOLUME		= @EVOLUME@
 
 #locale directory
 LOCALEDIR	= @prefix@/share/locale
