@@ -12,6 +12,7 @@
 #include <efltk/Fl_WM.h>
 #include <efltk/Fl_Image.h>
 #include <efltk/Fl_Renderer.h>
+#include <efltk/x.h>
 
 #include <edeconf.h>
 
@@ -459,8 +460,13 @@ void WPaper::_draw(int dx, int dy, int dw, int dh,
     }
     if(id) {
         // convert to Xlib coordinates:
+        Pixmap pix = (Pixmap) id;
         fl_transform(dx,dy);
-        fl_copy_offscreen(dx,dy,dw,dh,(Pixmap)id,0,0);
+        fl_copy_offscreen(dx,dy,dw,dh,pix,0,0);
+
+        // Set X root (used by terms for 'transparency')
+        Atom prop_root = XInternAtom(fl_display, "_XROOTPMAP_ID", False);
+        XChangeProperty(fl_display, RootWindow(fl_display, fl_screen), prop_root, XA_PIXMAP, 32, PropModeReplace, (unsigned char *) &pix, 1);	
     }
 }
 
