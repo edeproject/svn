@@ -576,7 +576,7 @@ ur computer."));
           o->align(133|FL_ALIGN_INSIDE);
           ;
         }
-         {Fl_Check_Button* o = nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
+         {nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
           ;
         }
         o->end();

@@ -17,75 +17,76 @@ TaskButton *TaskButton::pushed = 0;
 
 int calculate_height(Fl_Menu_ *m)
 {
-    Fl_Style *s = Fl_Style::find("Menu");
-    int Height = s->box->dh();
-    for(int n=0; n<m->children(); n++)
-    {
-        Fl_Widget *i = m->child(n);
-        if(!i) break;
-        if(!i->visible()) continue;
-        fl_font(i->label_font(), i->label_size());
-        Height += i->height()+s->leading;
-    }
-    return Height;
+	Fl_Style *s = Fl_Style::find("Menu");
+	int Height = s->box->dh();
+	for(int n=0; n<m->children(); n++)
+	{
+		Fl_Widget *i = m->child(n);
+		if(!i) break;
+		if(!i->visible()) continue;
+		fl_font(i->label_font(), i->label_size());
+		Height += i->height()+s->leading;
+	}
+	return Height;
 }
 
 void task_button_cb(TaskButton *b, Window w)
 {
-    if(Fl::event_button()==FL_RIGHT_MOUSE) {
-        TaskButton::pushed = b;
+	if(Fl::event_button()==FL_RIGHT_MOUSE) {
+		TaskButton::pushed = b;
 
-        TaskButton::menu->color(b->color());
-        TaskButton::menu->popup(Fl::event_x(), Fl::event_y()-calculate_height(TaskButton::menu));
+		TaskButton::menu->color(b->color());
+		TaskButton::menu->popup(Fl::event_x(), Fl::event_y()-calculate_height(TaskButton::menu));
 
-    } else {
-        if(TaskBar::active==w) {
-            XIconifyWindow(fl_display, w, fl_screen);
-            XSync(fl_display, True);
-            TaskBar::active = 0;
-        } else {
-            Fl_WM::set_active_window(w);
-        }
-    }
+	} else {
+		if(TaskBar::active==w) {
+			XIconifyWindow(fl_display, w, fl_screen);
+			XSync(fl_display, True);
+			TaskBar::active = 0;
+		} else {
+			Fl_WM::set_active_window(w);
+		}
+	}
 }
 
 #define CLOSE 1
 #define KILL  2
 #define MIN   3
-//#define MAX   4
+//#define MAX	4
 #define SET_SIZE 5
 #define RESTORE 6
 
 void menu_cb(Fl_Menu_ *menu, void *)
 {
-    // try to read information how much window can be maximized
-    Fl_Config wm_config(fl_find_config_file("wmanager.conf", true));
+	// try to read information how much window can be maximized
+	Fl_Config wm_config(fl_find_config_file("wmanager.conf", true));
 
 //pGlobalConfig.get("Panel", "RunHistory", historyString,"");
-    Window win = TaskButton::pushed->argument();
-    int ID = menu->item()->argument();
-    int x, y, width, height, title_height;
+	Window win = TaskButton::pushed->argument();
+	int ID = menu->item()->argument();
+//	int x, y, width, height;
+	int title_height;
 
-     wm_config.get("TitleBar", "Height",title_height);
+	wm_config.get("TitleBar", "Height",title_height);
 
-    switch(ID) {
+	switch(ID) {
 
-    case CLOSE:
-        if(Fl_WM::close_window(win))
-            break;
-        // Fallback to kill..
+	case CLOSE:
+		if(Fl_WM::close_window(win))
+			break;
+		// Fallback to kill..
 
-    case KILL:
-        XKillClient(fl_display, win);
-        break;
+	case KILL:
+		XKillClient(fl_display, win);
+		break;
 
-    case MIN:
-        XIconifyWindow(fl_display, win, fl_screen);
-        XSync(fl_display, True);
-        TaskBar::active = 0;
-        break;
+	case MIN:
+		XIconifyWindow(fl_display, win, fl_screen);
+		XSync(fl_display, True);
+		TaskBar::active = 0;
+		break;
 
-    /*case MAX:
+	/*case MAX:
 	   // This will come in next version
 	   Fl_WM::get_workarea(x, y, width, height);
 
@@ -94,88 +95,88 @@ void menu_cb(Fl_Menu_ *menu, void *)
 
 	   XMoveResizeWindow(fl_display, win, x, y, width, height);
 	   XSync(fl_display, True);
-        break;*/
+		break;*/
 /*
 	case SET_SIZE:
 	   {
-        	Fl_Window *win = new Fl_Window(300, 110, _("Set Size"));
-        	win->begin();
+			Fl_Window *win = new Fl_Window(300, 110, _("Set Size"));
+			win->begin();
 
-        	Fl_Box *b = new Fl_Box(_("Set size to window:"), 20);
-        	b->label_font(b->label_font()->bold());
-        	//b = new Fl_Box(menu_frame->label(), 20); //here goes title of window
+			Fl_Box *b = new Fl_Box(_("Set size to window:"), 20);
+			b->label_font(b->label_font()->bold());
+			//b = new Fl_Box(menu_frame->label(), 20); //here goes title of window
 
-        	Fl_Group *g = new Fl_Group("", 23);
+			Fl_Group *g = new Fl_Group("", 23);
 
-        	Fl_Value_Input *w_width = new Fl_Value_Input(_("Width:"), 70, FL_ALIGN_LEFT, 60);
-        	w_width->step(1);
-        	Fl_Value_Input *w_height = new Fl_Value_Input(_("Height:"), 70, FL_ALIGN_LEFT, 60);
-        	w_height->step(1);
+			Fl_Value_Input *w_width = new Fl_Value_Input(_("Width:"), 70, FL_ALIGN_LEFT, 60);
+			w_width->step(1);
+			Fl_Value_Input *w_height = new Fl_Value_Input(_("Height:"), 70, FL_ALIGN_LEFT, 60);
+			w_height->step(1);
 
-        	g->end();
+			g->end();
 
-        	Fl_Divider *div = new Fl_Divider(10, 15);
-        	div->layout_align(FL_ALIGN_TOP);
+			Fl_Divider *div = new Fl_Divider(10, 15);
+			div->layout_align(FL_ALIGN_TOP);
 
-        	g = new Fl_Group("", 50, FL_ALIGN_CLIENT);
+			g = new Fl_Group("", 50, FL_ALIGN_CLIENT);
 
-        	//Fl_Button *but = ok_button = new Fl_Button(40,0,100,20, _("&OK"));
-        	//but->callback(real_set_size_cb);
+			//Fl_Button *but = ok_button = new Fl_Button(40,0,100,20, _("&OK"));
+			//but->callback(real_set_size_cb);
 
-        	but = new Fl_Button(155,0,100,20, _("&Cancel"));
-        	//but->callback(close_set_size_cb);
+			but = new Fl_Button(155,0,100,20, _("&Cancel"));
+			//but->callback(close_set_size_cb);
 
-        	g->end();
+			g->end();
 
-        	win->end();
+			win->end();
 
-    		//w_width->value(menu_frame->w());
-    		//w_height->value(menu_frame->h());
-    		//ok_button->user_data(menu_frame);
+			//w_width->value(menu_frame->w());
+			//w_height->value(menu_frame->h());
+			//ok_button->user_data(menu_frame);
 
-    		//win->callback(close_set_size_cb);
-    		win->show();
+			//win->callback(close_set_size_cb);
+			win->show();
 
-    		}
+			}
 	   break;*/
 
 
-    case RESTORE:
-        Fl_WM::set_active_window(win);
-        break;
-    }
+	case RESTORE:
+		Fl_WM::set_active_window(win);
+		break;
+	}
 
-    Fl::redraw();
+	Fl::redraw();
 }
 
 TaskButton::TaskButton(Window win) : Fl_Button(0,0,0,0)
 {
-    layout_align(FL_ALIGN_LEFT);
-    callback((Fl_Callback1*)task_button_cb, win);
+	layout_align(FL_ALIGN_LEFT);
+	callback((Fl_Callback1*)task_button_cb, win);
 
-    if(!menu) {
-        Fl_Group *saved = Fl_Group::current();
-        Fl_Group::current(0);
+	if(!menu) {
+		Fl_Group *saved = Fl_Group::current();
+		Fl_Group::current(0);
 
-        menu = new Fl_Menu_();
-        menu->callback((Fl_Callback*)menu_cb);
+		menu = new Fl_Menu_();
+		menu->callback((Fl_Callback*)menu_cb);
 
-        //Fl_Widget* add(const char*, int shortcut, Fl_Callback*, void* = 0, int = 0);
+		//Fl_Widget* add(const char*, int shortcut, Fl_Callback*, void* = 0, int = 0);
 	   
-        menu->add(_(" Close   "), 0, 0, (void*)CLOSE, FL_MENU_DIVIDER);
-	   new Fl_Divider(10, 15);
-        menu->add(_(" Kill"), 0, 0, (void*)KILL, FL_MENU_DIVIDER);
-	   new Fl_Divider(10, 15);
+		menu->add(_(" Close   "), 0, 0, (void*)CLOSE, FL_MENU_DIVIDER);
+		new Fl_Divider(10, 15);
+		menu->add(_(" Kill"), 0, 0, (void*)KILL, FL_MENU_DIVIDER);
+		new Fl_Divider(10, 15);
 
 	   //Comes in next version
-        //menu->add(" Maximize", 0, 0, (void*)MAX);
-        menu->add(_(" Minimize"), 0, 0, (void*)MIN);
-        menu->add(_(" Restore"), 0, 0, (void*)RESTORE);
+		//menu->add(" Maximize", 0, 0, (void*)MAX);
+		menu->add(_(" Minimize"), 0, 0, (void*)MIN);
+		menu->add(_(" Restore"), 0, 0, (void*)RESTORE);
 	   //menu->add(" Set size", 0, 0, (void*)SET_SIZE, FL_MENU_DIVIDER);
-        //-----
+		//-----
 
-        Fl_Group::current(saved);
-    }
+		Fl_Group::current(saved);
+	}
 }
 
 /////////////////////////
@@ -195,263 +196,263 @@ bool   TaskBar::dejan = false;
 TaskBar::TaskBar()
 : Fl_Group(0,0,0,0)
 {
-    m_max_taskwidth = 150;
+	m_max_taskwidth = 150;
 
-    layout_align(FL_ALIGN_CLIENT);
-    layout_spacing(2);
-    
-    Fl_Config pConfig(fl_find_config_file("ede.conf", true));
-    pConfig.get("Panel", "VariableWidthTaskbar",variable_width,true);
-    pConfig.get("Panel", "AllDesktops",dejan,false);
+	layout_align(FL_ALIGN_CLIENT);
+	layout_spacing(2);
+	
+	Fl_Config pConfig(fl_find_config_file("ede.conf", true));
+	pConfig.get("Panel", "VariableWidthTaskbar",variable_width,true);
+	pConfig.get("Panel", "AllDesktops",dejan,false);
 
-    update();
-    end();
+	update();
+	end();
 }
 
 void TaskBar::layout()
 {
-    if(!children()) return;
+	if(!children()) return;
 
-    int maxW = w()-layout_spacing()*2;
-    int avgW = maxW / children();
-    int n;
+	int maxW = w()-layout_spacing()*2;
+	int avgW = maxW / children();
+	int n;
 
-    int buttonsW = layout_spacing()*2;
-    for(n=0; n<children(); n++) {
-        int W = child(n)->width(), tmph;
+	int buttonsW = layout_spacing()*2;
+	for(n=0; n<children(); n++) {
+		int W = child(n)->width(), tmph;
 
-        if(TaskBar::variable_width) {
-            child(n)->preferred_size(W, tmph);
-            W += 10;
-        } else
-            W = avgW;
+		if(TaskBar::variable_width) {
+			child(n)->preferred_size(W, tmph);
+			W += 10;
+		} else
+			W = avgW;
 
-        if(W > m_max_taskwidth) W = m_max_taskwidth;
+		if(W > m_max_taskwidth) W = m_max_taskwidth;
 
-        child(n)->w(W);
-        buttonsW += W+layout_spacing();
-    }
+		child(n)->w(W);
+		buttonsW += W+layout_spacing();
+	}
 
-    float scale = 0.0f;
-    if(buttonsW > maxW)
-        scale = (float)maxW / (float)buttonsW;
+	float scale = 0.0f;
+	if(buttonsW > maxW)
+		scale = (float)maxW / (float)buttonsW;
 
-    int X=layout_spacing();
-    for(n=0; n<children(); n++) {
-        Fl_Widget *widget = child(n);
-        int W = widget->w();
-        if(scale>0.0f)
-            W = (int)((float)W * scale);
+	int X=layout_spacing();
+	for(n=0; n<children(); n++) {
+		Fl_Widget *widget = child(n);
+		int W = widget->w();
+		if(scale>0.0f)
+			W = (int)((float)W * scale);
 
-        widget->resize(X, 0, W, h());
-        X += widget->w()+layout_spacing();
-    }
+		widget->resize(X, 0, W, h());
+		X += widget->w()+layout_spacing();
+	}
 
-    Fl_Widget::layout();
+	Fl_Widget::layout();
 }
 
 void TaskBar::update()
 {
-    Fl_WM::clear_handled();
+	Fl_WM::clear_handled();
 
-    int n;
+	int n;
 
-    // Delete all icons:
-    for(n=0; n<children(); n++)
-    {
-        Fl_Image *i = child(n)->image();
-        if(i!=&default_icon)
-            delete i;
-    }
-    clear();
+	// Delete all icons:
+	for(n=0; n<children(); n++)
+	{
+		Fl_Image *i = child(n)->image();
+		if(i!=&default_icon)
+			delete i;
+	}
+	clear();
 
-    Window *wins=0;
-    int num_windows = Fl_WM::get_windows_mapping(wins);
+	Window *wins=0;
+	int num_windows = Fl_WM::get_windows_mapping(wins);
 
-    if(num_windows<=0)
-        return;
+	if(num_windows<=0)
+		return;
 
-    Fl_Int_List winlist;
-    int current_workspace = Fl_WM::get_current_workspace();
-    for(n=0; n<num_windows; n++) {
-        if((dejan || current_workspace == Fl_WM::get_window_desktop(wins[n])) && GetState(wins[n])>0)
-            winlist.append(wins[n]);
-    }
+	Fl_Int_List winlist;
+	int current_workspace = Fl_WM::get_current_workspace();
+	for(n=0; n<num_windows; n++) {
+		if((dejan || current_workspace == Fl_WM::get_window_desktop(wins[n])) && GetState(wins[n])>0)
+			winlist.append(wins[n]);
+	}
 
-    if(winlist.size()>0) {
-        for(n=0; n<(int)winlist.size(); n++) {
-            add_new_task(winlist[n]);
-        }
-    }
-    delete []wins;
+	if(winlist.size()>0) {
+		for(n=0; n<(int)winlist.size(); n++) {
+			add_new_task(winlist[n]);
+		}
+	}
+	delete []wins;
 
-    relayout();
-    redraw();
-    parent()->redraw();
+	relayout();
+	redraw();
+	parent()->redraw();
 }
 
 void TaskBar::update_active(Window active)
 {
-    for(int n=0; n<children(); n++)
-    {
-        Fl_Widget *w = child(n);
-        Window win = w->argument();
+	for(int n=0; n<children(); n++)
+	{
+		Fl_Widget *w = child(n);
+		Window win = w->argument();
 
-        if(GetState(win) == IconicState)
-            w->label_color(fl_inactive(FL_BLACK));
-        else
-            w->label_color(Fl_Button::default_style->label_color);
+		if(GetState(win) == IconicState)
+			w->label_color(fl_inactive(FL_BLACK));
+		else
+			w->label_color(Fl_Button::default_style->label_color);
 
-        if(active==win) {
-            TaskBar::active = win;
-            w->set_value();
-            w->color(fl_lighter(Fl_Button::default_style->color));
-            w->highlight_color(fl_lighter(Fl_Button::default_style->color));
-        } else {
-            w->clear_value();
-            w->color(Fl_Button::default_style->color);
-            w->highlight_color(Fl_Button::default_style->highlight_color);
-        }
-    }
-    redraw();
+		if(active==win) {
+			TaskBar::active = win;
+			w->set_value();
+			w->color(fl_lighter(Fl_Button::default_style->color));
+			w->highlight_color(fl_lighter(Fl_Button::default_style->color));
+		} else {
+			w->clear_value();
+			w->color(Fl_Button::default_style->color);
+			w->highlight_color(Fl_Button::default_style->highlight_color);
+		}
+	}
+	redraw();
 }
 
 void TaskBar::update_name(Window win)
 {
-    for(int n=0; n<children(); n++)
-    {
-        Fl_Widget *w = child(n);
-        Window window = w->argument();
+	for(int n=0; n<children(); n++)
+	{
+		Fl_Widget *w = child(n);
+		Window window = w->argument();
 
-        if(window==win) {
-            char *name = 0;
-            bool ret = Fl_WM::get_window_icontitle(win, name);
-            if(!ret || !name) ret = Fl_WM::get_window_title(win, name);
+		if(window==win) {
+			char *name = 0;
+			bool ret = Fl_WM::get_window_icontitle(win, name);
+			if(!ret || !name) ret = Fl_WM::get_window_title(win, name);
 
-            if(ret && name) {
-                w->label(name);
-                w->tooltip(name);
-                free(name);
-            } else {
-                w->label("...");
-                w->tooltip("...");
-            }
+			if(ret && name) {
+				w->label(name);
+				w->tooltip(name);
+				free(name);
+			} else {
+				w->label("...");
+				w->tooltip("...");
+			}
 
-            // Update icon also..
-            Fl_Image *icon = w->image();
-            if(icon!=&default_icon) delete icon;
+			// Update icon also..
+			Fl_Image *icon = w->image();
+			if(icon!=&default_icon) delete icon;
 
-            if(Fl_WM::get_window_icon(win, icon, 16, 16))
-                w->image(icon);
-            else
-                w->image(default_icon);
+			if(Fl_WM::get_window_icon(win, icon, 16, 16))
+				w->image(icon);
+			else
+				w->image(default_icon);
 
-            w->redraw();
-            break;
-        }
-    }
-    redraw();
+			w->redraw();
+			break;
+		}
+	}
+	redraw();
 }
 
 void TaskBar::minimize_all()
 {
-    Window *wins=0;
-    int num_windows = Fl_WM::get_windows_mapping(wins);
+	Window *wins=0;
+	int num_windows = Fl_WM::get_windows_mapping(wins);
 
-    int current_workspace = Fl_WM::get_current_workspace();
-    for(int n=0; n<num_windows; n++) {
-        if(current_workspace == Fl_WM::get_window_desktop(wins[n]) && GetState(wins[n])>0)
-            XIconifyWindow(fl_display, wins[n], fl_screen);
-    }
-    XSync(fl_display, True);
-    active = 0;
+	int current_workspace = Fl_WM::get_current_workspace();
+	for(int n=0; n<num_windows; n++) {
+		if(current_workspace == Fl_WM::get_window_desktop(wins[n]) && GetState(wins[n])>0)
+			XIconifyWindow(fl_display, wins[n], fl_screen);
+	}
+	XSync(fl_display, True);
+	active = 0;
 }
 
 void TaskBar::add_new_task(Window w)
 {
-    // Add to Fl_WM module handled windows.
-    Fl_WM::handle_window(w);
+	// Add to Fl_WM module handled windows.
+	Fl_WM::handle_window(w);
 
-    TaskButton *b;
-    char *name = 0;
-    Fl_Image *icon = 0;
+	TaskButton *b;
+	char *name = 0;
+	Fl_Image *icon = 0;
 
-    if (!w) return;
+	if (!w) return;
 
-    begin();
+	begin();
 
-    b = new TaskButton(w);
+	b = new TaskButton(w);
 
-    bool ret = Fl_WM::get_window_icontitle(w, name);
-    if(!ret || !name) ret = Fl_WM::get_window_title(w, name);
+	bool ret = Fl_WM::get_window_icontitle(w, name);
+	if(!ret || !name) ret = Fl_WM::get_window_title(w, name);
 
-    if(ret && name) {
-        b->label(name);
-        b->tooltip(name);
-        free(name);
-    } else {
-        b->label("...");
-        b->tooltip("...");
-    }
+	if(ret && name) {
+		b->label(name);
+		b->tooltip(name);
+		free(name);
+	} else {
+		b->label("...");
+		b->tooltip("...");
+	}
 
-    if(Fl_WM::get_window_icon(w, icon, 16, 16)) {
-        b->image(icon);
-    } else {
-        b->image(default_icon);
-    }
+	if(Fl_WM::get_window_icon(w, icon, 16, 16)) {
+		b->image(icon);
+	} else {
+		b->image(default_icon);
+	}
 
-    b->accept_focus(false);
-    b->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
+	b->accept_focus(false);
+	b->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
-    if(Fl_WM::get_active_window()==w) {
-        b->value(1);
-        active = w;
-    }
+	if(Fl_WM::get_active_window()==w) {
+		b->value(1);
+		active = w;
+	}
 
-    if(GetState(w) == IconicState)
-        b->label_color(fl_inactive(FL_BLACK));
+	if(GetState(w) == IconicState)
+		b->label_color(fl_inactive(FL_BLACK));
 
-    end();
+	end();
 }
 
 //////////////////////////
 
 static void* getProperty(Window w, Atom a, Atom type, unsigned long *np, int *ret)
 {
-    Atom realType;
-    int format;
-    unsigned long n, extra;
-    int status;
-    uchar *prop=0;
-    status = XGetWindowProperty(fl_display, w, a, 0L, 0x7fffffff,
-                                False, type, &realType,
-                                &format, &n, &extra, (uchar**)&prop);
-    if(ret) *ret = status;
-    if (status != Success) return 0;
-    if (!prop) { return 0; }
-    if (!n) { XFree(prop); return 0; }
-    if (np) *np = n;
-    return prop;
+	Atom realType;
+	int format;
+	unsigned long n, extra;
+	int status;
+	uchar *prop=0;
+	status = XGetWindowProperty(fl_display, w, a, 0L, 0x7fffffff,
+								False, type, &realType,
+								&format, &n, &extra, (uchar**)&prop);
+	if(ret) *ret = status;
+	if (status != Success) return 0;
+	if (!prop) { return 0; }
+	if (!n) { XFree(prop); return 0; }
+	if (np) *np = n;
+	return prop;
 }
 
 static int getIntProperty(Window w, Atom a, Atom type, int deflt, int *ret)
 {
-    void* prop = getProperty(w, a, type, 0, ret);
-    if(!prop) return deflt;
-    int r = int(*(long*)prop);
-    XFree(prop);
-    return r;
+	void* prop = getProperty(w, a, type, 0, ret);
+	if(!prop) return deflt;
+	int r = int(*(long*)prop);
+	XFree(prop);
+	return r;
 }
 
 // 0 ERROR
 // Otherwise state
 static int GetState(Window w)
 {
-    static Atom _XA_WM_STATE = 0;
-    if(!_XA_WM_STATE) _XA_WM_STATE = XInternAtom(fl_display, "WM_STATE", False);
+	static Atom _XA_WM_STATE = 0;
+	if(!_XA_WM_STATE) _XA_WM_STATE = XInternAtom(fl_display, "WM_STATE", False);
 
-    int ret=0;
-    int state = getIntProperty(w, _XA_WM_STATE, _XA_WM_STATE, 0, &ret);
-    if(ret!=Success) return 0;
-    return state;
+	int ret=0;
+	int state = getIntProperty(w, _XA_WM_STATE, _XA_WM_STATE, 0, &ret);
+	if(ret!=Success) return 0;
+	return state;
 }

@@ -254,8 +254,8 @@ int main (int argc, char **argv) {
           o->end();
         }
         new Fl_Clock(235, 5, 165, 165);
-         {Fl_Time* o = timeBox = new Fl_Time(235, 180, 165, 25);
-        }
+        timeBox = new Fl_Time(235, 180, 165, 25);
+        
         o->end();
       }
        {Fl_Group* o = new Fl_Group(0, 20, 405, 220, _("Timezones"));

@@ -854,8 +854,8 @@ int main (int argc, char **argv) {
        {Fl_Button* o = new Fl_Button(215, 2, 90, 23, _("&Next >>"));
         o->callback((Fl_Callback*)cb_Next);
       }
-       {Fl_Box* o = new Fl_Box(0, 0, 157, 30);
-      }
+       new Fl_Box(0, 0, 157, 30);
+      
        {Fl_Button* o = new Fl_Button(320, 2, 70, 23, _("&Close"));
         o->callback((Fl_Callback*)cb_Close);
       }

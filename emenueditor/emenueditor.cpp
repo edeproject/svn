@@ -241,7 +241,7 @@ void Menu_Edit_Dialog(int edit)
 	    char *this_value = 0;
 	    filename_field_e->value(name);
 	    
-            const char *tfield = filename_field_e->value();
+            //const char *tfield = filename_field_e->value();
 
             Fl_Config flconfig(c_file);
             flconfig.set_section("Desktop Entry");

@@ -210,5 +210,5 @@ void MainMenu::scan_programitems(const char *path)
 
     if(count>0 && files) free(files);
     if(!added)
-        Fl_Divider *mDivider = new Fl_Divider();
+        new Fl_Divider();
 }
