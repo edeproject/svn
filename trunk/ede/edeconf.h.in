@@ -45,6 +45,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the <linux/soundcard.h> header file. */
+#undef HAVE_ALSA
+
 /* Define 1 if XWindows has Xutf extension. */
 #undef HAVE_X11_UTF_TEXT_PROP
 

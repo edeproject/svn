@@ -14,13 +14,10 @@ DIRS =	common\
 		epanelconf\
 		erun\
 		esvrconf\
-		etimedate\
 		etip\
 		ewmconf\
 		eworkpanel\
 		edisplayconf\
-		elauncher\
-		evolume\
 		edewm\
 		datas\
 		datas/programs-links\
@@ -28,7 +25,7 @@ DIRS =	common\
 		datas/icons-16\
 		datas/icons-48\
 		datas/schemes\
-		docs/ede
+		docs/ede $(EVOLUME)
 
 all: makeinclude
 	for dir in $(DIRS); do\
