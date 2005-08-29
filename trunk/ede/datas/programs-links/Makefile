@@ -56,7 +56,6 @@ Applications_DATA = \
 
 Graphics_DATA = \
 	acroread.desktop \
-	eimgviewer.desktop \
 	GIMP.desktop \
 	gv.desktop \
 	xdvi.desktop \
@@ -75,12 +74,10 @@ Settings_DATA =	\
 	colorsconf.desktop \
 	control.desktop \
 	edisplayconf.desktop \
-	ehardware.desktop \
 	eiconconf.desktop \
 	epanelconf.desktop \
 	etimedate.desktop \
 	ewmconf.desktop \
-	printers.desktop \
 	scrsaver.desktop
 
 
