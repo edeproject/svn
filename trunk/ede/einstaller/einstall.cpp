@@ -37,6 +37,7 @@ void install_package()
     if (strlen(e)<1) 
     {
 	result_output->insert(_("Please enter the name of the package.\n"));
+	result_output->relayout();
 	return; 
     }
     
@@ -67,6 +68,7 @@ void install_package()
     else 
     {   
         result_output->insert(_("Please enter the name of the package.\n"));
+	result_output->relayout();
 	return;
     }	
 
@@ -78,6 +80,7 @@ void install_package()
 	{
     	    result_output->insert(line);
   	}
+	result_output->relayout();
   	fclose(log);
     }
     unlink(logname);    
