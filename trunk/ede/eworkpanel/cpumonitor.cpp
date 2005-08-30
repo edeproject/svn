@@ -497,7 +497,7 @@ void CPUMonitor::get_cpu_info()
     cpu[samples()-1][IWM_SYS] = cp_diff[CP_SYS];
     cpu[samples()-1][IWM_IDLE] = cp_diff[CP_IDLE];
 
-#if 1
+#if 0
     fprintf(stderr, "cpu: %d %d %d %d\n",
             cpu[samples()-1][IWM_USER], cpu[samples()-1][IWM_NICE],
             cpu[samples()-1][IWM_SYS],  cpu[samples()-1][IWM_IDLE]);
