@@ -516,6 +516,7 @@ static void cb_Browse(Fl_Button*, void*) {
       if (f) { 
   	package_name_input->value(f);
       }
+  next_button->activate();
 ;}
 
 Fl_Check_Button* nodeps_button;
@@ -532,6 +533,7 @@ static void cb_prev_button(Fl_Button*, void*) {
   step1_group->show();
   step2_group->hide();
   prev_button->deactivate();
+  next_button->activate();
 }
 
 Fl_Button* next_button;
@@ -540,6 +542,7 @@ static void cb_next_button(Fl_Button*, void*) {
   step1_group->hide();
   step2_group->show();
   prev_button->activate();
+  next_button->deactivate();
   install_package();
 }
 
@@ -576,7 +579,7 @@ ur computer."));
           o->align(133|FL_ALIGN_INSIDE);
           ;
         }
-         {nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
+         {Fl_Check_Button* o = nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
           ;
         }
         o->end();
@@ -604,6 +607,7 @@ ur computer."));
     }
      {Fl_Button* o = next_button = new Fl_Button(315, 280, 80, 25, _("&Install"));
       o->callback((Fl_Callback*)cb_next_button);
+      o->deactivate();
       ;
     }
      {Fl_Button* o = new Fl_Button(415, 280, 80, 25, _("&Close"));
