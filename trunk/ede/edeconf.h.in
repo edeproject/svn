@@ -48,6 +48,9 @@
 /* Define to 1 if you have the <linux/soundcard.h> header file. */
 #undef HAVE_ALSA
 
+/* Define to 1 if you have the <time.h> header file and it defines stime() function. */
+#undef HAVE_STIME
+
 /* Define 1 if XWindows has Xutf extension. */
 #undef HAVE_X11_UTF_TEXT_PROP
 
