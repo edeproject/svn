@@ -568,7 +568,7 @@ int main (int argc, char **argv) {
         o->box(FL_ENGRAVED_BOX);
          {Fl_Input* o = package_name_input = new Fl_Input(10, 132, 250, 23, _("Enter the name of software package you want to install:"));
           o->align(133);
-          ;
+          
         }
          {Fl_Button* o = new Fl_Button(265, 132, 80, 25, _("&Browse..."));
           o->callback((Fl_Callback*)cb_Browse);
@@ -577,11 +577,11 @@ int main (int argc, char **argv) {
 ur computer."));
           o->label_size(18);
           o->align(133|FL_ALIGN_INSIDE);
-          ;
+          
         }
-         {Fl_Check_Button* o = nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
-          ;
-        }
+         nodeps_button = new Fl_Check_Button(7, 165, 338, 25, _("Ignore dependencies"));
+          
+        
         o->end();
       }
        {Fl_Group* o = step2_group = new Fl_Group(5, 5, 350, 270);
@@ -589,12 +589,12 @@ ur computer."));
         o->hide();
          {Fl_Text_Editor* o = result_output = new Fl_Text_Editor(10, 25, 335, 155, _("Installation results:"));
           o->align(133);
-          ;
+          
           o->buffer(out_buffer);
         }
          {Fl_ProgressBar* o = install_progress = new Fl_ProgressBar(10, 215, 335, 20, _("Installation status:"));
           o->align(FL_ALIGN_TOP | FL_ALIGN_LEFT);
-          ;
+          
         }
         o->end();
       }
@@ -603,18 +603,18 @@ ur computer."));
      {Fl_Button* o = prev_button = new Fl_Button(230, 280, 80, 25, _("<< &Previous"));
       o->callback((Fl_Callback*)cb_prev_button);
       o->deactivate();
-      ;
+      
     }
      {Fl_Button* o = next_button = new Fl_Button(315, 280, 80, 25, _("&Install"));
       o->callback((Fl_Callback*)cb_next_button);
       o->deactivate();
-      ;
+      
     }
      {Fl_Button* o = new Fl_Button(415, 280, 80, 25, _("&Close"));
       o->callback((Fl_Callback*)cb_Close);
-      ;
+      
     }
-    ;
+    
     o->end();
   }
   w->show(argc, argv);

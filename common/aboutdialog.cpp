@@ -40,7 +40,7 @@ AboutDialog::AboutDialog(const char *progname, const char *progversion, const ch
 			o->align(FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
 			o->label(o->label() + Fl_String(" "PACKAGE_VERSION));
 		}
-		 {Fl_Box* o = new Fl_Box(5, 74, 265, 20, _("(C) Copyright 2000-2005 EDE Authors"));
+		 {Fl_Box* o = new Fl_Box(5, 74, 265, 20, _("Copyright (c) 2000-2005 EDE Authors"));
 			o->align(FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
 		}
 		 {Fl_Box* o = new Fl_Box(5, 98, 265, 30, _("This program is licenced under terms of the GNU General Public License versio\

@@ -14,8 +14,7 @@ void AboutDialog(Fl_Widget*, void*) {
    {Fl_Window* o = mAboutDialogWindow = new Fl_Window(355, 305, _("About Equinox Desktop Environment"));
     w = o;
     o->shortcut(0xff1b);
-     {Fl_Box* o = new Fl_Box(5, 10, 345, 35, _("Equinox Desktop Environment "PACKAGE_VERSION));
-      o->box(FL_BORDER_FRAME);
+     {Fl_Box* o = new Fl_Box(5, 25, 345, 35, _("Equinox Desktop Environment "PACKAGE_VERSION));
       o->label_font(fl_fonts+1);
       o->color((Fl_Color)56);
       o->label_color((Fl_Color)32);
@@ -40,11 +39,11 @@ is program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave,\
       o->align(FL_ALIGN_WRAP);
     }
     new Fl_Divider(5, 260, 345, 15, _("label"));
-     {Fl_Box* o = new Fl_Box(5, 70, 345, 15, _("(C)Copyright 2000-2004 EDE Authors"));
+     {Fl_Box* o = new Fl_Box(5, 60, 345, 15, _("Copyright (c) 2000-2005 EDE Authors"));
       o->label_size(10);
       o->align(FL_ALIGN_TOP|FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
     }
-//    o->set_modal();
+    o->set_modal();
     o->end();
     o->resizable(o);
   }
