@@ -1,3 +1,30 @@
+1.0.4
+(NOTE: I would like to thank Google Summer of Code for funding my work on (among else)
+EDE 1.0.4. Thanks guys! You rock :) Vedran <vljubovic at smartnet dot ba>)
+* general
+- improved Russian translations
+* econtrol
+- re-add ekeyconf (left out by mistake)
+* eiconman
+- patch by Mike "elleo" - make transparent terminals work
+- fix bug with icons getting on top of other windows
+* einstaller
+- fix bug 949024 "Install new program window smears"
+- disable Install button a) when no package is selected b) after installation
+* elauncher
+- fix compilation on *BSD systems
+* etimedate
+- fix for systems with no stime() function (*BSD etc.)
+* evolume
+- disable compilation on systems without ALSA (e.g. non-Linux)
+* eworkpanel
+- show windows from all virtual desktops - to enable, edit ede.conf
+and in section [Panel] add "AllDesktops=true"
+- fix compilation on non-Linux systems
+- CPU monitor: add support for FreeBSD (currently supports Linux and Solaris)
+- layout fixes
+
+
 1.0.3
 - fixed silent option for configure script
 - fixed "make clean" issue
