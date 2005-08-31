@@ -38,7 +38,7 @@
 // Stupid BSD has no stime() function
 int stime(time_t *t) 
 {
-    struct tm time = gmtime(t);
+    struct tm *time = gmtime(t);
     char s[18];
     strftime (s, 18, "date %m%d%H%M.%S", time);
     fl_start_child_process(s);
