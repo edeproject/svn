@@ -31,6 +31,9 @@ AC_CHECK_HEADER(sys/dir.h, AC_DEFINE(HAVE_SYS_DIR_H))
 AC_CHECK_HEADER(sys/ndir.h, AC_DEFINE(HAVE_SYS_NDIR_H))
 AC_CHECK_HEADER(linux/soundcard.h, AC_DEFINE(HAVE_ALSA))
 
+AC_CHECK_HEADER(time.h, AC_DEFINE(HAVE_TIME_H))
+AC_CHECK_FUNCS(stime, AC_DEFINE(HAVE_STIME))
+
 if test "$prefix" = NONE; then
 	INSTALL_DIR="/usr/local"
 else

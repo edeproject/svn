@@ -34,6 +34,18 @@
 #include "etimedate.h"
 #include "fl_time.h"
 
+#ifndef HAVE_STIME
+// Stupid BSD has no stime() function
+int stime(time_t *t) 
+{
+    struct tm time = gmtime(t);
+    char s[18];
+    strftime (s, 18, "date %m%d%H%M.%S", time);
+    fl_start_child_process(s);
+    return 0;
+}
+#endif /* HAVE_STIME */
+
 Fl_Time::Fl_Time(int x, int y, int w, int h, char *l) : Fl_Group(x, y, w, h, l)
 {
     int button_width = (int)(w/7);
