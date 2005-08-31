@@ -26,7 +26,7 @@
 #include <kstat.h>
 #endif
 
-#ifdef freebsd
+#ifdef __FreeBSD__
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #if __FreeBSD_version < 500101
@@ -39,7 +39,7 @@
 
 
 
-#ifdef freebsd
+#ifdef __FreeBSD__
 
 /* The part ripped from top... */
 /*
@@ -475,7 +475,7 @@ void CPUMonitor::get_cpu_info()
 #endif /* have_kstat_h */
 
 
-#ifdef freebsd
+#ifdef __FreeBSD__
 //    char *p, buf[128];
 //    long cur[IWM_STATES];
 //    int len, fd = open("/proc/stat", O_RDONLY);
