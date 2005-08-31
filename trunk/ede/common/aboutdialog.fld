@@ -43,7 +43,7 @@ class AboutDialog {open
         extra_code {o->label(o->label() + Fl_String(" "PACKAGE_VERSION));}
       }
       Fl_Box {} {
-        label {(C) Copyright 2000-2005 EDE Authors}
+        label {Copyright (c) 2000-2005 EDE Authors}
         xywh {5 74 265 20} align FL_ALIGN_INSIDE|FL_ALIGN_WRAP
       }
       Fl_Box {} {
