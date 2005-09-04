@@ -1,0 +1,9 @@
+[Theme]
+  Frame color=RGB(29,111,174)
+  Title image=back.xpm
+  Close image up=kreuz_unclicked.xpm
+  Close image down=kreuz_clicked.xpm
+  Maximize image up=mitte_unclicked.xpm
+  Maximize image down=mitte_clicked.xpm
+  Minimize image up=links_unclicked.xpm
+  Minimize image down=links_clicked.xpm
