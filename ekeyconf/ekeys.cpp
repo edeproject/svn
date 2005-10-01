@@ -20,6 +20,8 @@ static struct {
 	{"FastRun",		"Run program"},
 	{"FindFile",		"Find file"},
 	{"CloseWindow",		"Close window"},
+	{"MinimizeWindow",		"Minimize window"},
+	{"MaximizeWindow",		"Maximize window"},
 	{"Desktop1",		"Workspace 1"},
 	{"Desktop2",		"Workspace 2"},
 	{"Desktop3",		"Workspace 3"},
