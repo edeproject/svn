@@ -13,6 +13,30 @@
 
 extern void show_tabmenu(int dir);
 
+// Minimize presently active window
+static void MinimizeWindow()
+{ 
+	Frame *act = Frame::activeFrame();
+	int acttype = act->window_type();
+	
+	if ((acttype != TYPE_DESKTOP) && (acttype != TYPE_DOCK) && (acttype != TYPE_SPLASH))
+		act->iconize();
+}
+
+// Maximize presently active window
+static void MaximizeWindow()
+{ 
+	Frame *act = Frame::activeFrame();
+	int acttype = act->window_type();
+	
+	if ((acttype != TYPE_DESKTOP) && (acttype != TYPE_DOCK) && (acttype != TYPE_SPLASH)) {
+//		act->iconize();
+		// FIXME: a function for maximize operation like Frame::iconize()
+		Fl_Button *tmp; // this will never be used
+		act->cb_button_max(tmp);
+	}
+}
+
 // Close presently active window
 static void CloseWindow()
 { 
@@ -202,6 +226,8 @@ void read_hotkeys_configuration()
 		{"FindUtil",	FindUtil,	"Ctrl+F3"},
 		{"FastRun",	FastRun,	"Ctrl+F12"},
 		{"CloseWindow",	CloseWindow,	"Ctrl+F4"},
+		{"MinimizeWindow",	MinimizeWindow,	"Ctrl+F7"},
+		{"MaximizeWindow",	MaximizeWindow,	"Ctrl+F8"},
 		{""}
 	};
 
