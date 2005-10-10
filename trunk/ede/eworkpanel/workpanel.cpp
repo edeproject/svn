@@ -9,6 +9,7 @@
 #include "panelbutton.h"
 #include "taskbutton.h"
 #include "cpumonitor.h"
+#include "batterymonitor.h"
 #include "dock.h"
 #include "mainmenu.h"
 #include "keyboardchooser.h"
@@ -444,6 +445,8 @@ int main(int argc, char **argv)
 	pGlobalConfig.get("Panel", "SoundMixer", doSoundMixer, true);
 	bool doCpuMonitor;
 	pGlobalConfig.get("Panel", "CPUMonitor", doCpuMonitor, true);
+	bool doBatteryMonitor;
+	doBatteryMonitor=true;	// blah
 	
 	// Group that holds everything..
 	Fl_Group *g = new Fl_Group(0,0,0,0);
@@ -620,6 +623,14 @@ int main(int argc, char **argv)
 		cpumon = new CPUMonitor();
 		cpumon->hide();
 		dock->add_to_tray(cpumon);
+	}
+
+	// Battery monitor
+	if (doBatteryMonitor) {
+		BatteryMonitor *batmon;
+		batmon = new BatteryMonitor();
+		batmon->hide();
+		dock->add_to_tray(batmon);
 	}
 
 
