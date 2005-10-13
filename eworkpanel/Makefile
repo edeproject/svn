@@ -1,5 +1,5 @@
 
-CPPFILES = aboutdialog.cpp logoutdialog.cpp panelbutton.cpp keyboardchooser.cpp taskbutton.cpp workpanel.cpp item.cpp cpumonitor.cpp dock.cpp mainmenu.cpp mainmenu_scan.cpp
+CPPFILES = aboutdialog.cpp logoutdialog.cpp panelbutton.cpp keyboardchooser.cpp taskbutton.cpp workpanel.cpp item.cpp cpumonitor.cpp batterymonitor.cpp dock.cpp mainmenu.cpp mainmenu_scan.cpp
 TARGET   = eworkpanel
 
 POFILES = locale/ru.po\
