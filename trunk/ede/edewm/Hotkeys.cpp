@@ -14,7 +14,7 @@
 extern void show_tabmenu(int dir);
 
 // Minimize presently active window
-static void MinimizeWindow()
+static void MinimizeWindow(char*)
 { 
 	Frame *act = Frame::activeFrame();
 	int acttype = act->window_type();
@@ -24,7 +24,7 @@ static void MinimizeWindow()
 }
 
 // Maximize presently active window
-static void MaximizeWindow()
+static void MaximizeWindow(char*)
 { 
 	Frame *act = Frame::activeFrame();
 	int acttype = act->window_type();
@@ -38,7 +38,7 @@ static void MaximizeWindow()
 }
 
 // Close presently active window
-static void CloseWindow()
+static void CloseWindow(char *name)
 { 
 	Frame *act = Frame::activeFrame();
 	int acttype = act->window_type();
@@ -48,87 +48,71 @@ static void CloseWindow()
 }
 
 // Alt+Tab
-static void NextWindow()
+static void NextWindow(char *name)
 { 
 	show_tabmenu(1);
 }
 
 // Alt+Shift+Tab
-static void PreviousWindow() {
+static void PreviousWindow(char *name) {
 	show_tabmenu(-1);
 }
 
 // Ctrl+Alt+Right
-static void NextDesk()
+static void NextDesk(char *name)
 {
 	Desktop::next();
 }
 
 // Ctrl+Alt+Left
-static void PreviousDesk()
+static void PreviousDesk(char *name)
 {
 	Desktop::prev();
 }
 
 // warning: this assummes it is bound to Fn key:
-static void FKey_DeskNumber()
+static void FKey_DeskNumber(char *name)
 {
-	Desktop::current(Desktop::desktop(Fl::event_key()-0xffbd));
+	int desktop = 1; //Fl::event_key()-0xffbd; // default (bad) way of finding the desktop number
+					      // kept for backwards compatibility only
+
+	// new (good) way of finding out the desktop number.
+	// "name" is something like "Desktop1" and we
+	// want to find the "1" on the end
+	if (name) {
+	   int val;
+	   if (sscanf(name,"Desktop%d",&val) == 1) desktop = val;
+	   }
+
+	Desktop::current(Desktop::desktop(desktop));
 }
 
-static void FastRun()
+static void FastRun(char *name)
 {
 	fl_start_child_process("elauncher",false);
 }
 
-static void FindUtil()
+static void FindUtil(char *name)
 {
 	fl_start_child_process("efinder",false);
 }
 
+static void LaunchApp(char *name)
+{
+        Fl_Config conf(fl_find_config_file("wmanager.conf", false));
+        Fl_String app;
+        conf.get("Applications", name, app, NULL);
+        if(! app.empty())
+           fl_start_child_process(app, false);
+}
 
 ////////////////////////////////////////////////////////////////
 // I have to take some time to check it out
 static struct {
+	char *name;
 	int key;
-	void (*func)();
+	void (*func)(char *arg);
 } keybindings[100]; // hopefully this is enough ;)
-
-/*
-} keybindings[] = {
-
-	{FL_ALT+FL_Tab,			  NextWindow},
-	{FL_ALT+FL_SHIFT+FL_Tab,  PreviousWindow},
-
-
-	//{FL_CTRL+FL_F(1),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(2),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(3),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(4),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(5),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(6),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(7),	FKey_DeskNumber},
-	//{FL_CTRL+FL_F(8),	FKey_DeskNumber},
-
-	// seem to be common to Linux window managers
-	{FL_ALT+FL_F(1),	FKey_DeskNumber},
-	{FL_ALT+FL_F(2),	FKey_DeskNumber},
-	{FL_ALT+FL_F(3),	FKey_DeskNumber},
-	{FL_ALT+FL_F(4),	FKey_DeskNumber},
-	{FL_ALT+FL_F(5),	FKey_DeskNumber},
-	{FL_ALT+FL_F(6),	FKey_DeskNumber},
-	{FL_ALT+FL_F(7),	FKey_DeskNumber},
-	{FL_ALT+FL_F(8),	FKey_DeskNumber},
-
-	{FL_ALT+FL_CTRL+FL_Left,  PreviousDesk},
-	{FL_ALT+FL_CTRL+FL_Right, NextDesk},
-
-	{FL_ALT+FL_F(3),	FindUtil},
-	{FL_ALT+FL_F(12),	FastRun},
-	{0}
-};
-*/
-
 
 // This function will parse the hotkeys string used in config file,
 // and construct an integer used by Fl::test_shortcut(int)
@@ -189,12 +173,14 @@ int parse_hotkey(char *hotkey)
 		}
 
 		if (!found) {
-		// use first letter as shortcut key
+		// use first letter or number as shortcut key
 			strcpy(f, elements.item(i));
 			if ((f[0] >= 'a') && (f[0] <= 'z')) {
 				parsed += f[0];
 			} else if ((f[0] >= 'A') && (f[0] <= 'Z')) {
 				parsed += (f[0] - 'A' + 'a');
+			} else if ((f[0] >= '0') && (f[0] <= '9')) {
+				parsed += f[0];
 			}
 		}
 	}
@@ -208,7 +194,7 @@ void read_hotkeys_configuration()
 	// All configurable hotkeys below - edit to add new keys
 	static struct {
 		char *name;	// as used in wmanager.conf file
-		void (*func)();	// callback function for this key
+		void (*func)(char *name);	// callback function for this key
 		char *def_key;	// default hotkey
 	} configurables[] = {
 		{"PreviousWindow",	PreviousWindow,	"Alt+Tab"},
@@ -228,7 +214,23 @@ void read_hotkeys_configuration()
 		{"CloseWindow",	CloseWindow,	"Ctrl+F4"},
 		{"MinimizeWindow",	MinimizeWindow,	"Ctrl+F7"},
 		{"MaximizeWindow",	MaximizeWindow,	"Ctrl+F8"},
-		{""}
+ 
+		// Slots for user-defined applications and hotkeys
+		// 12 ought to be enough :-)
+		{"App1",LaunchApp,""},
+		{"App2",LaunchApp,""},
+		{"App3",LaunchApp,""},
+		{"App4",LaunchApp,""},
+		{"App5",LaunchApp,""},
+		{"App6",LaunchApp,""},
+		{"App7",LaunchApp,""},
+		{"App8",LaunchApp,""},
+		{"App9",LaunchApp,""},
+		{"App10",LaunchApp,""},
+		{"App11",LaunchApp,""},
+		{"App12",LaunchApp,""},
+		
+		{"",NULL,""}
 	};
 
 	char buf[256];
@@ -239,8 +241,11 @@ void read_hotkeys_configuration()
 	
 	for (int i=0; configurables[i].name[0]; i++) {
 		wmconf.read(configurables[i].name, buf, configurables[i].def_key, sizeof(buf));
-		keybindings[j].key=parse_hotkey(buf);
-		keybindings[j++].func=configurables[i].func;
+		if (buf && buf[0]) {
+		   keybindings[j].key=parse_hotkey(buf);
+		   keybindings[j].name = strdup(configurables[i].name);
+		   keybindings[j++].func=configurables[i].func;
+		   }
 	}
 	keybindings[j].key = 0;
 }
@@ -251,7 +256,7 @@ int Handle_Hotkey() {
 			(keybindings[i].key & 0xFFFF) == FL_Delete
 			&& Fl::event_key() == FL_BackSpace// fltk bug?
 		   ) {
-			keybindings[i].func();
+			keybindings[i].func(keybindings[i].name);
 			return 1;
 		}
 	}
