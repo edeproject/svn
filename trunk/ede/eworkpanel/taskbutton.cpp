@@ -12,6 +12,10 @@
 #include <efltk/Fl_Divider.h>
 #include "../edewm/Windowmanager.h"
 
+// Forward declaration
+static int GetState(Window w);
+static bool IsWindowManageable(Window w);
+
 Fl_Menu_ *TaskButton::menu = 0;
 TaskButton *TaskButton::pushed = 0;
 
@@ -33,41 +37,51 @@ int calculate_height(Fl_Menu_ *m)
 void task_button_cb(TaskButton *b, Window w)
 {
 	if(Fl::event_button()==FL_RIGHT_MOUSE) {
+		// Window will lose focus so lets reflect this on taskbar
+		TaskBar::active = 0;
+
+		// 'pushed' lets the menu_cb() know which button was pressed
 		TaskButton::pushed = b;
 
+		// Create menu
 		TaskButton::menu->color(b->color());
 		TaskButton::menu->popup(Fl::event_x(), Fl::event_y()-calculate_height(TaskButton::menu));
 
 	} else {
 		if(TaskBar::active==w) {
+			// Click on active window will minimize it
 			XIconifyWindow(fl_display, w, fl_screen);
 			XSync(fl_display, True);
 			TaskBar::active = 0;
+			b->m_minimized=true;
 		} else {
+			// Else give focus to window
 			Fl_WM::set_active_window(w);
+			TaskBar::active = w;
+			b->m_minimized=false;
 		}
 	}
 }
 
-#define CLOSE 1
-#define KILL  2
-#define MIN   3
-//#define MAX	4
-#define SET_SIZE 5
-#define RESTORE 6
+#define CLOSE	1
+#define KILL	2
+#define MIN	3
+#define MAX	4
+//#define SET_SIZE 5
+#define RESTORE	6
 
 void menu_cb(Fl_Menu_ *menu, void *)
 {
 	// try to read information how much window can be maximized
+	int title_height;
 	Fl_Config wm_config(fl_find_config_file("wmanager.conf", true));
+	wm_config.get("TitleBar", "Height",title_height,20);
 
-//pGlobalConfig.get("Panel", "RunHistory", historyString,"");
+	int frame_width=3; // pixels
+
 	Window win = TaskButton::pushed->argument();
 	int ID = menu->item()->argument();
-//	int x, y, width, height;
-	int title_height;
-
-	wm_config.get("TitleBar", "Height",title_height);
+	int x, y, width, height;
 
 	switch(ID) {
 
@@ -84,18 +98,32 @@ void menu_cb(Fl_Menu_ *menu, void *)
 		XIconifyWindow(fl_display, win, fl_screen);
 		XSync(fl_display, True);
 		TaskBar::active = 0;
+		TaskButton::pushed->m_minimized=true;
 		break;
 
-	/*case MAX:
-	   // This will come in next version
-	   Fl_WM::get_workarea(x, y, width, height);
+	case MAX:
+		// TODO: only window manager knows wheter a window is
+		// maximized or not, and also its original size.
+		// So this should be implemented as NETWM message
+		// (but edewm doesn't support it yet)
+		Fl_WM::get_workarea(x, y, width, height);
 
-	   // y koord. poveca za title_height
-	   y = y + title_height;
+		// leave room for widgets
+		y += title_height+frame_width;
+		x += frame_width;
+		height -= title_height+frame_width*2;
+		width -= frame_width*2;
 
-	   XMoveResizeWindow(fl_display, win, x, y, width, height);
-	   XSync(fl_display, True);
-		break;*/
+		// resize window
+		XMoveResizeWindow(fl_display, win, x, y, width, height);
+		XSync(fl_display, True);
+
+		// window lost focus so lets be nice and give it back
+		Fl_WM::set_active_window(win);
+		TaskBar::active = win;
+		TaskButton::pushed->m_minimized=false;
+
+		break;
 /*
 	case SET_SIZE:
 	   {
@@ -168,8 +196,7 @@ TaskButton::TaskButton(Window win) : Fl_Button(0,0,0,0)
 		menu->add(_(" Kill"), 0, 0, (void*)KILL, FL_MENU_DIVIDER);
 		new Fl_Divider(10, 15);
 
-	   //Comes in next version
-		//menu->add(" Maximize", 0, 0, (void*)MAX);
+		menu->add(_(" Maximize"), 0, 0, (void*)MAX);
 		menu->add(_(" Minimize"), 0, 0, (void*)MIN);
 		menu->add(_(" Restore"), 0, 0, (void*)RESTORE);
 	   //menu->add(" Set size", 0, 0, (void*)SET_SIZE, FL_MENU_DIVIDER);
@@ -179,6 +206,38 @@ TaskButton::TaskButton(Window win) : Fl_Button(0,0,0,0)
 	}
 }
 
+void TaskButton::draw()
+{
+	// Draw method contains most of the logic of taskbar button
+	// appearance
+
+	// TODO: There seems to be no X event when window get minimized
+	// so taskbar might not reflect it until next update() call
+
+	// TODO: See how we can make minimized icons gray...
+
+	Fl_Color color = Fl_Button::default_style->color;
+	Fl_Color lcolor = Fl_Button::default_style->label_color;
+
+	Window win = this->argument();
+	this->color(color);
+	this->highlight_color(fl_lighter(color));
+	this->label_color(lcolor);
+	this->highlight_label_color(lcolor);
+	this->box(FL_UP_BOX);
+
+	if (win == TaskBar::active) {
+		this->box(FL_DOWN_BOX);
+		this->color(fl_lighter(color));
+		this->highlight_color(fl_lighter(fl_lighter(color)));
+	}
+	else if (m_minimized) {
+		this->label_color(fl_lighter(fl_lighter(lcolor)));
+		this->highlight_label_color(fl_lighter(fl_lighter(lcolor)));
+	}
+	Fl_Button::draw();
+}
+
 /////////////////////////
 // Task bar /////////////
 /////////////////////////
@@ -186,12 +245,10 @@ TaskButton::TaskButton(Window win) : Fl_Button(0,0,0,0)
 #include "icons/tux.xpm"
 static Fl_Image default_icon(tux_xpm);
 
-// Forward declaration
-static int GetState(Window w);
 
 Window TaskBar::active = 0;
 bool   TaskBar::variable_width = true;
-bool   TaskBar::dejan = false;
+bool   TaskBar::all_desktops = false;
 
 TaskBar::TaskBar()
 : Fl_Group(0,0,0,0)
@@ -203,11 +260,14 @@ TaskBar::TaskBar()
 	
 	Fl_Config pConfig(fl_find_config_file("ede.conf", true));
 	pConfig.get("Panel", "VariableWidthTaskbar",variable_width,true);
-	pConfig.get("Panel", "AllDesktops",dejan,false);
+	pConfig.get("Panel", "AllDesktops",all_desktops,false);
 
 	update();
 	end();
 }
+
+
+// Logic for button sizes
 
 void TaskBar::layout()
 {
@@ -251,6 +311,10 @@ void TaskBar::layout()
 	Fl_Widget::layout();
 }
 
+
+// Recreate all buttons in taskbar
+// Called... occasionally ;)
+
 void TaskBar::update()
 {
 	Fl_WM::clear_handled();
@@ -261,7 +325,7 @@ void TaskBar::update()
 	for(n=0; n<children(); n++)
 	{
 		Fl_Image *i = child(n)->image();
-		if(i!=&default_icon)
+		if(i && i!=&default_icon)
 			delete i;
 	}
 	clear();
@@ -272,11 +336,15 @@ void TaskBar::update()
 	if(num_windows<=0)
 		return;
 
+	// Cleared window list
 	Fl_Int_List winlist;
 	int current_workspace = Fl_WM::get_current_workspace();
 	for(n=0; n<num_windows; n++) {
-		if((dejan || current_workspace == Fl_WM::get_window_desktop(wins[n])) && GetState(wins[n])>0)
-			winlist.append(wins[n]);
+		if ((all_desktops 
+			|| current_workspace == Fl_WM::get_window_desktop(wins[n]))
+			&& IsWindowManageable(wins[n])) {
+				winlist.append(wins[n]);
+		}
 	}
 
 	if(winlist.size()>0) {
@@ -286,39 +354,30 @@ void TaskBar::update()
 	}
 	delete []wins;
 
+	// Probably redundant
 	relayout();
 	redraw();
 	parent()->redraw();
 }
 
+
+// Called when another window becomes active
+
 void TaskBar::update_active(Window active)
 {
-	for(int n=0; n<children(); n++)
-	{
-		Fl_Widget *w = child(n);
-		Window win = w->argument();
-
-		if(GetState(win) == IconicState)
-			w->label_color(fl_inactive(FL_BLACK));
-		else
-			w->label_color(Fl_Button::default_style->label_color);
-
-		if(active==win) {
-			TaskBar::active = win;
-			w->set_value();
-			w->color(fl_lighter(Fl_Button::default_style->color));
-			w->highlight_color(fl_lighter(Fl_Button::default_style->color));
-		} else {
-			w->clear_value();
-			w->color(Fl_Button::default_style->color);
-			w->highlight_color(Fl_Button::default_style->highlight_color);
-		}
-	}
+	if (active)
+		if (IsWindowManageable(active)) TaskBar::active=active;
 	redraw();
 }
 
+
+// A somewhat lighter version of update() when window
+// just changes name
+// Some apps like to do it a lot
+
 void TaskBar::update_name(Window win)
 {
+//printf ("+update_name\n");
 	for(int n=0; n<children(); n++)
 	{
 		Fl_Widget *w = child(n);
@@ -354,6 +413,9 @@ void TaskBar::update_name(Window win)
 	redraw();
 }
 
+
+// Callback for show desktop button
+
 void TaskBar::minimize_all()
 {
 	Window *wins=0;
@@ -361,23 +423,26 @@ void TaskBar::minimize_all()
 
 	int current_workspace = Fl_WM::get_current_workspace();
 	for(int n=0; n<num_windows; n++) {
-		if(current_workspace == Fl_WM::get_window_desktop(wins[n]) && GetState(wins[n])>0)
+		if(current_workspace == Fl_WM::get_window_desktop(wins[n]))
 			XIconifyWindow(fl_display, wins[n], fl_screen);
 	}
 	XSync(fl_display, True);
 	active = 0;
 }
 
+
+// Called by update() to add a single button
+
 void TaskBar::add_new_task(Window w)
 {
+	if (!w) return;
+
 	// Add to Fl_WM module handled windows.
 	Fl_WM::handle_window(w);
 
 	TaskButton *b;
 	char *name = 0;
 	Fl_Image *icon = 0;
-
-	if (!w) return;
 
 	begin();
 
@@ -405,17 +470,24 @@ void TaskBar::add_new_task(Window w)
 	b->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
 
 	if(Fl_WM::get_active_window()==w) {
-		b->value(1);
-		active = w;
+		TaskBar::active = w;
 	}
 
 	if(GetState(w) == IconicState)
-		b->label_color(fl_inactive(FL_BLACK));
+		b->m_minimized=true;
+	else
+		b->m_minimized=false;
 
 	end();
 }
 
 //////////////////////////
+
+// Below are window management functions that aren't present in Fl_WM
+// We can't add them to Fl_WM because we change api, and efltk will be
+// dropped in EDE 2.0.... So this functions are just duct tape...
+// ugly, non-generic, non-optimized...
+
 
 static void* getProperty(Window w, Atom a, Atom type, unsigned long *np, int *ret)
 {
@@ -445,7 +517,9 @@ static int getIntProperty(Window w, Atom a, Atom type, int deflt, int *ret)
 }
 
 // 0 ERROR
-// Otherwise state
+// 3 - IconicState
+// 1 - NormalState
+// 2 - WithdrawnState
 static int GetState(Window w)
 {
 	static Atom _XA_WM_STATE = 0;
@@ -455,4 +529,42 @@ static int GetState(Window w)
 	int state = getIntProperty(w, _XA_WM_STATE, _XA_WM_STATE, 0, &ret);
 	if(ret!=Success) return 0;
 	return state;
+}
+
+
+// Returns false if window w is of type DESKTOP or DOCK
+// Not generic enough!!
+
+static bool IsWindowManageable(Window w)
+{
+
+	static Atom _XA_NET_WM_WINDOW_TYPE = 0;
+	if(!_XA_NET_WM_WINDOW_TYPE) _XA_NET_WM_WINDOW_TYPE = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE", False);
+	static Atom _XA_NET_WM_WINDOW_TYPE_DESKTOP = 0;
+	if(!_XA_NET_WM_WINDOW_TYPE_DESKTOP) _XA_NET_WM_WINDOW_TYPE_DESKTOP = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE_DESKTOP", False);
+	static Atom _XA_NET_WM_WINDOW_TYPE_DOCK = 0;
+	if(!_XA_NET_WM_WINDOW_TYPE_DOCK) _XA_NET_WM_WINDOW_TYPE_DOCK = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE_DOCK", False);
+	static Atom _XA_NET_WM_WINDOW_TYPE_SPLASH = 0;
+	if(!_XA_NET_WM_WINDOW_TYPE_SPLASH) _XA_NET_WM_WINDOW_TYPE_SPLASH = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE_SPLASH", False);
+
+	Atom window_type = None;
+	Atom actual_type;
+	int actual_format;
+	unsigned long nitems, bytes_after;
+	unsigned char *prop_return = NULL;
+	
+	if(Success == XGetWindowProperty(fl_display, w, _XA_NET_WM_WINDOW_TYPE, 0L, sizeof(Atom),
+					False, XA_ATOM, &actual_type,
+					&actual_format, &nitems, &bytes_after,
+					&prop_return) && prop_return)
+	{
+		window_type = *(Atom *)prop_return;
+		XFree(prop_return);
+	}
+
+	if(window_type == _XA_NET_WM_WINDOW_TYPE_DESKTOP
+		|| window_type == _XA_NET_WM_WINDOW_TYPE_DOCK
+		|| window_type == _XA_NET_WM_WINDOW_TYPE_SPLASH)
+	return false;
+	else return true;
 }
