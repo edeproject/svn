@@ -17,6 +17,11 @@ public:
     // Menu stuff
     static Fl_Menu_ *menu;
     static TaskButton *pushed;
+
+    void draw();
+
+    // Speed up drawing by keeping the minimized state
+    bool m_minimized;
 };
 
 /////////////////////////////////////
@@ -33,7 +38,7 @@ public:
     static bool variable_width;
 
     // Windows from all desktops
-    static bool dejan;
+    static bool all_desktops;
 
     void layout();
 
