@@ -15,7 +15,6 @@
 #include "icons/poweron.xpm"
 #include "icons/battery.xpm"
 
-
 #define UPDATE_INTERVAL .5f
 
 void bat_timeout_cb(void *d) {
@@ -23,7 +22,7 @@ void bat_timeout_cb(void *d) {
 	Fl::repeat_timeout(UPDATE_INTERVAL, bat_timeout_cb, d);
 }
 
-BatteryMonitor::BatteryMonitor()
+BatteryMonitor::BatteryMonitor(Dock*dock)
 : Fl_Widget(0,0,16,0)
 {
 	box(FL_FLAT_BOX);
@@ -37,6 +36,8 @@ BatteryMonitor::BatteryMonitor()
 	m_undefined = false;
  	m_bat_percentage = m_bat_time = 0;
 	m_blink = false;
+
+	m_dock = dock;
 	
 	m_colors[2] = FL_BLUE;
 	m_colors[1] = fl_darker(FL_YELLOW);
@@ -65,9 +66,11 @@ void BatteryMonitor::clear()
 
 void BatteryMonitor::draw()
 {
-	if (m_undefined)
+	if (m_undefined) {
 		// We don't draw anything for undefined state
+		m_dock->remove_from_tray(this);
 		return;
+	}
 
 	if (m_line_on) {
 		if (m_show_line_on) {

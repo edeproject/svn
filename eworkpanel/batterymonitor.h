@@ -8,10 +8,13 @@
 #include <efltk/Fl_Image.h>
 #include <efltk/fl_draw.h>
 #include <efltk/Fl.h>
+#include <efltk/Fl_Window.h>
+
+#include "dock.h"
 
 class BatteryMonitor : public Fl_Widget {
 public:
-	BatteryMonitor();
+	BatteryMonitor(Dock*dock);
 	virtual ~BatteryMonitor();
 
 	void clear();
@@ -28,6 +31,7 @@ private:
 	bool m_line_on, m_undefined;
 	bool m_show_line_on;
 	bool m_blink;
+	Dock*m_dock;
 	Fl_Color m_colors[4];
 };
 

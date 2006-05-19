@@ -46,6 +46,10 @@ Fl_Button	 *mClockBox;
 Fl_Group	 *mModemLeds;
 Fl_Box		 *mLedIn, *mLedOut;
 
+Fl_Button *mSoundMixer;
+CPUMonitor *cpumon;
+BatteryMonitor *batmon;
+
 Fl_Input_Browser *runBrowser;
 
 PanelMenu	 *mProgramsMenu;
@@ -108,9 +112,15 @@ int Fl_Update_Window::handle(int event)
 		}
 		throw_focus();
 		return 1;
+
+	case FL_FOCUS:
+		throw_focus(); // never give focus to taskbar
+		return 1;
 	}
+
 	return Fl_Window::handle(event);
 }
+
 
 void setWorkspace(Fl_Button *, void *w)
 {
@@ -353,13 +363,15 @@ void updateWorkspaces(Fl_Widget*,void*)
 
 void FL_WM_handler(Fl_Widget *w, void *d)
 {
-	if(Fl_WM::action()==Fl_WM::WINDOW_NAME || Fl_WM::action()==Fl_WM::WINDOW_ICONNAME) {
+	int e = Fl_WM::action();
+//	printf (" --- eworkpanel handling %d\n",e);
+	if(e==Fl_WM::WINDOW_NAME || e==Fl_WM::WINDOW_ICONNAME) {
 		tasks->update_name(Fl_WM::window());
 	}
-	if(Fl_WM::action()==Fl_WM::WINDOW_ACTIVE) {
+	else if(e==Fl_WM::WINDOW_ACTIVE) {
 		tasks->update_active(Fl_WM::get_active_window());
 	}
-	else if(Fl_WM::action() >= Fl_WM::WINDOW_LIST && Fl_WM::action() <= Fl_WM::WINDOW_DESKTOP) {
+	else if(e >= Fl_WM::WINDOW_LIST && e <= Fl_WM::WINDOW_DESKTOP) {
 		tasks->update();
 	}
 	else if(Fl_WM::action()>0 && Fl_WM::action()<Fl_WM::DESKTOP_WORKAREA) {
@@ -547,24 +559,14 @@ int main(int argc, char **argv)
 
 	mPopupPanelProp->end();
 
-	// Subgroup to properly align everything
-/*	  Fl_Group *subgroup;
-	{
-		subgroup = new Fl_Group(0, 0, W-substract, 18);
-		subgroup->box(FL_FLAT_BOX);
-		subgroup->layout_align(FL_ALIGN_RIGHT);
-		subgroup->show();
-		subgroup->begin(); */
-	
-		// Taskbar...
-		tasks = new TaskBar();
-		dock = new Dock();
+	// Taskbar...
+	tasks = new TaskBar();
 
-		v = new Fl_VertDivider(0, 0, 5, 18, "");
-		v->layout_align(FL_ALIGN_RIGHT);
-	
-/*		  subgroup->end();
-	}*/
+	// Dock and various entries...
+	dock = new Dock();
+
+	v = new Fl_VertDivider(0, 0, 5, 18, "");
+	v->layout_align(FL_ALIGN_RIGHT);
 
 	{
 		// MODEM
@@ -598,14 +600,9 @@ int main(int argc, char **argv)
 		mClockBox->box(FL_FLAT_BOX);
 		mClockBox->callback( (Fl_Callback*)startUtility, (void*)"Time and date");
 	}
- 
-	dock->add_to_tray(new Fl_Box(0, 0, 5, 20));
-	dock->add_to_tray(mClockBox);
-	dock->add_to_tray(mKbdSelect);
-	
+
 	// SOUND applet
 	if (doSoundMixer) {
-		Fl_Button *mSoundMixer;
 		mSoundMixer = new Fl_Button(0, 0, 20, 18);
 		mSoundMixer->hide();
 		mSoundMixer->box(FL_NO_BOX);
@@ -614,24 +611,29 @@ int main(int argc, char **argv)
 		mSoundMixer->tooltip(_("Volume control"));
 		mSoundMixer->align(FL_ALIGN_INSIDE);
 		mSoundMixer->callback( (Fl_Callback*)startUtility, (void*)"Volume Control" );
-		dock->add_to_tray(mSoundMixer);
 	}
 
 	// CPU monitor
 	if (doCpuMonitor) {
-		CPUMonitor *cpumon;
 		cpumon = new CPUMonitor();
 		cpumon->hide();
-		dock->add_to_tray(cpumon);
 	}
 
 	// Battery monitor
 	if (doBatteryMonitor) {
-		BatteryMonitor *batmon;
-		batmon = new BatteryMonitor();
+		batmon = new BatteryMonitor(dock);
 		batmon->hide();
-		dock->add_to_tray(batmon);
 	}
+
+
+	dock->add_to_tray(new Fl_Box(0, 0, 5, 20));
+	dock->add_to_tray(mClockBox);
+	dock->add_to_tray(mKbdSelect);
+	dock->add_to_tray(mSoundMixer);
+	dock->add_to_tray(cpumon);
+	dock->add_to_tray(batmon);
+
+	// end Dock
 
 
 	Fl::focus(mSystemMenu);
@@ -649,6 +651,7 @@ int main(int argc, char **argv)
 							   Fl_WM::WINDOW_ICONNAME);
 
 	updateWorkspaces(0,0);
+	tasks->update();
 
 	Fl::add_timeout(0, clockRefresh);
 	Fl::add_timeout(0, updateStats);
