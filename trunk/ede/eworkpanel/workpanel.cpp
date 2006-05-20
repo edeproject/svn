@@ -28,20 +28,6 @@ static Fl_Image sound_pix((const char **)sound_xpm);
 static Fl_Image run_pix((const char **)run_xpm);
 static Fl_Image showdesktop_pix((const char **)showdesktop_xpm);
 
-class Fl_Update_Window : public Fl_Window
-{
-public:
-	Fl_Update_Window(int, int, int, int, char*);
-	void setAutoHide(int a) { autoHide = a; }
-
-	int handle(int event);
-
-	int autoHide;
-	int initX, initY, initW, initH;
-};
-
-Fl_Update_Window *mPanelWindow;
-
 Fl_Button	 *mClockBox;
 Fl_Group	 *mModemLeds;
 Fl_Box		 *mLedIn, *mLedOut;
@@ -66,6 +52,24 @@ void		 updateStats(void *);
 
 
 /////////////////////////////////////////////////////////////////////////////
+// Fl_Update_Window is the name of Workpanel class
+
+
+class Fl_Update_Window : public Fl_Window
+{
+public:
+	Fl_Update_Window(int, int, int, int, char*);
+	void setAutoHide(int a) { autoHide = a; }
+
+	int handle(int event);
+
+	int autoHide;
+	int initX, initY, initW, initH;
+};
+
+
+// This global variable is here for stupidity
+Fl_Update_Window *mPanelWindow;
 
 
 Fl_Update_Window::Fl_Update_Window(int X, int Y, int W, int H, char *label=0)
@@ -120,6 +124,10 @@ int Fl_Update_Window::handle(int event)
 
 	return Fl_Window::handle(event);
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 
 void setWorkspace(Fl_Button *, void *w)
@@ -424,6 +432,163 @@ void cb_showdesktop(Fl_Button *) {
 	tasks->minimize_all();
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Quick Lunch Bar stuff - integrating code from dzooli
+// TODO: remove this in EDE 2.0
+
+
+#define QLB_CONFNAME "/.ede/qlb.conf"
+
+
+static Fl_Image 	**qlb_images;
+static Fl_Button 	**qlb_buttons;
+static char 		**qlb_commands;
+static char 		**qlb_tooltips;
+static char 		**qlb_icons;
+static int 		qlb_count;
+static int 		qlb_numbuttons;
+
+
+
+/**
+ * cb_button - Button callback
+ * @button: The button
+ * @data: button data (command for exec)
+ *
+ * This function is the button callback function and executes the
+ * specified command with the 'system()' call.
+ */
+static void cb_qlb_taskbutton(Fl_Button *button, void *data)
+{
+	fl_start_child_process((char *)data, false);
+}
+
+/**
+ * get_buttonnum - Count the buttons in the config file
+ * @configname: configuration file name
+ *
+ * The function opens the configuration file for the toolbar and
+ * counts the all of the lines. Returns an unsigned integer or zero
+ * if no configuration file found.
+ */
+unsigned int qlb_get_buttonnum(const char *configname)
+{
+	FILE *ifile;
+	unsigned int c = 0;
+	char *s=(char *)calloc(256, sizeof(char));	
+	
+	if (!configname)
+		return 0;
+	ifile=fopen(configname, "r+");
+	if (!ifile)
+		return 0;
+	while (!feof(ifile)) {
+		fgets(s, 256, ifile);
+		c++;
+	}
+	fclose(ifile);
+	free(s);
+	return c;
+}
+
+/**
+ * load_config - read the configuration file
+ * @confname: configuration file name
+ *
+ * The function reads the given configuration file and scans for
+ * commands, icon names and tooltips. No checks done in the configuration
+ * file lines and memory is dinamically allocated as needed.
+ */
+int qlb_load_config(const char *confname)
+{
+	int c;
+	int i;
+	int j, ln;
+	FILE *ifile;
+	char *s = (char *)calloc(512, sizeof(char));
+
+	if (!confname) {
+		free(s);
+		fprintf(stderr, "Cannot open configfile\n");
+		return -1;
+	}
+	ifile = fopen(confname, "r+");
+	if (!ifile) {
+		free(s);
+		return -2;
+	}
+	c = 0;
+	//while (!feof(ifile)) {
+	qlb_numbuttons--;
+	for (ln=0; ln<qlb_numbuttons; ln++) {
+		fgets(s, 512, ifile);
+		qlb_icons[c]=(char *)calloc(256, sizeof(char));
+		qlb_tooltips[c]=(char *)calloc(256, sizeof(char));
+		qlb_commands[c]=(char *)calloc(512, sizeof(char));
+		i = 0;
+		j = 0;
+		while (s[i]!=':' && s[i])
+			qlb_icons[c][j++]=s[i++];
+		i++;
+		j=0;
+		while (s[i]!=':' && s[i])
+			qlb_tooltips[c][j++]=s[i++];
+		i++;
+		j=0;
+		while (s[i])
+			qlb_commands[c][j++]=s[i++];
+		qlb_commands[c][j-1]='&';
+		c++;
+	}
+	return 0;
+}
+
+bool qlb_create_toolbuttons(const char *confname)
+{
+  char * home;
+  char * configfile=(char *)calloc(256, sizeof(char));
+
+  /* Memory allocation for the toolbar buttons */  
+  if (confname) {
+	qlb_numbuttons = qlb_get_buttonnum(confname);
+	qlb_icons = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_tooltips = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_commands = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_load_config(confname);
+  }    
+  else {
+	home = getenv("HOME");
+	strcpy(configfile, home);
+	strcat(configfile, QLB_CONFNAME);  	
+	qlb_numbuttons = qlb_get_buttonnum(configfile);
+	qlb_icons = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_tooltips = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_commands = (char **)calloc(qlb_numbuttons, sizeof(char*));
+	qlb_load_config(configfile);
+	free(configfile);
+  }
+  
+  /* Error message if no configuration */
+  if (!qlb_numbuttons) {
+//  	fl_alert("No toolbar configuration!"); 
+  	fprintf(stderr,"No toolbar configuration!\n"); 
+  	return false;
+  }
+  
+  /* Allocate image and buttons */
+  qlb_count = 0;
+  qlb_images = (Fl_Image**)calloc(qlb_numbuttons, sizeof(Fl_Image*));
+  qlb_buttons = (Fl_Button**)calloc(qlb_numbuttons, sizeof(Fl_Button*));
+  return true;
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+
 int main(int argc, char **argv)
 {
 	signal(SIGCHLD, SIG_IGN);
@@ -451,6 +616,8 @@ int main(int argc, char **argv)
 	pGlobalConfig.get("Panel", "ShowDesktop", doShowDesktop, false);
 	bool doWorkspaces;
 	pGlobalConfig.get("Panel", "Workspaces", doWorkspaces, true);
+	bool doQLB;
+	pGlobalConfig.get("Panel", "QuickLaunchBar", doQLB, true);
 	bool doRunBrowser;
 	pGlobalConfig.get("Panel", "RunBrowser", doRunBrowser, true);	 
 	bool doSoundMixer;
@@ -473,10 +640,15 @@ int main(int argc, char **argv)
 	v->layout_align(FL_ALIGN_LEFT);
 	substract = 5;
 
-	if ((doShowDesktop) || (doWorkspaces)) {
-	//this is ugly:
-	int size;
+	//this kind of if-else block is ugly
+	// - but users demand such features so...
+	if ((doShowDesktop) || (doWorkspaces) || (doQLB)) {
+
+	int size=0;
 	if ((doShowDesktop) && (doWorkspaces)) { size=48; } else { size=24; }
+	// Add size for QLB:
+	if (doQLB && qlb_create_toolbuttons(0)) size += (qlb_numbuttons * 24);
+
 	Fl_Group *g2 = new Fl_Group(0,0,size,22);
 	g2->box(FL_FLAT_BOX);
 	g2->layout_spacing(0);
@@ -509,7 +681,28 @@ int main(int argc, char **argv)
 		
 		substract += 26;
 	}
+
+	// "Quick Lunch" buttons
+	for (int count=0; count<qlb_numbuttons; count++) {
+		qlb_buttons[count] = new PanelButton(0, 0, 24, 22, FL_NO_BOX, FL_DOWN_BOX, qlb_tooltips[count]);
+		qlb_buttons[count]->layout_align(FL_ALIGN_LEFT);
+		qlb_buttons[count]->label_type(FL_NO_LABEL);
+		qlb_buttons[count]->align(FL_ALIGN_INSIDE|FL_ALIGN_CENTER);
+		qlb_images[count] = NULL;
+		qlb_images[count] = Fl_Image::read(qlb_icons[count]);
+		if (!qlb_images[count])
+			fprintf(stderr, "skipping icon: %s\n", qlb_icons[count]);
+		else
+			qlb_buttons[count]->image(qlb_images[count]);
+		qlb_buttons[count]->tooltip(qlb_tooltips[count]);
+		qlb_buttons[count]->callback((Fl_Callback*)cb_qlb_taskbutton, (void *)qlb_commands[count]);
+		qlb_buttons[count]->show();
+
+		substract += 26;
+  	}
 	
+
+
 	g2->end();
 	g2->show();
 	g2->resizable();
