@@ -87,5 +87,10 @@ rtcut-setting mode:\n   Click the mouse on this again, or on some other field.")
 	shortcut->svalue = getshortcutfor("Next window");
 	shortcut->redraw();
 	w->show(argc, argv);
+
+	// Grab all keyboard events from window manager
+	XGrabKey(fl_display, AnyKey, AnyModifier, fl_xid(w), true, GrabModeAsync, GrabModeAsync);
+
+
 	return  Fl::run();
 }
