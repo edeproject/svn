@@ -151,11 +151,26 @@ bool showseconds = true;
 
 void clockRefresh(void *)
 {
-	mClockBox->label(Fl_Date_Time::Now().time_string().sub_str(0, 5));
+	// Handle user's format preference
+	Fl_String timestr = Fl_Date_Time::Now().time_string();
+	Fl_String timestrsec;
+	Fl_String format;
+	pGlobalConfig.get("Clock", "TimeFormat", format, "");
+	Fl_String seconds = timestr.sub_str(6, 2);
+	Fl_String minutes = timestr.sub_str(3, 2);
+	int hours = atoi(timestr.sub_str(0, 2));
+	if(format == "12") {
+		if(hours > 12) {
+			hours -= 12;
+		}
+	}
+	timestr = Fl_String(hours) + ":" + minutes;
+	timestrsec = timestr + ":" + seconds;
+	mClockBox->label(timestr);
 
 	strncpy(Fl_Date_Time::datePartsOrder, _("MDY"), 3);
 	Fl_String pClockTooltip = Fl_Date_Time::Now().day_name() + ", ";
-	pClockTooltip += Fl_Date_Time::Now().date_string() + ", " + Fl_Date_Time::Now().time_string();
+	pClockTooltip += Fl_Date_Time::Now().date_string() + ", " + timestrsec;
 	mClockBox->tooltip(pClockTooltip);
 
 	mClockBox->redraw();

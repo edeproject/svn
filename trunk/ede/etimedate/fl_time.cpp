@@ -29,6 +29,7 @@
 #include <efltk/fl_ask.h>
 #include <efltk/Fl_Util.h>
 #include <efltk/Fl_Locale.h>
+#include <efltk/Fl_Config.h>
 #include <efltk/filename.h>
 
 #include "etimedate.h"
@@ -392,6 +393,41 @@ Fl_Color Fl_Time::labelcolor()
 Fl_Color Fl_Time::textcolor()
 {
     return input_time->text_color();
+}
+
+
+// format functions
+
+int get_format() 
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        Fl_String timeformatstr;
+        pGlobalConfig.get("Clock", "TimeFormat", timeformatstr, "");
+	if (timeformatstr == "24") {
+            return 1;
+        }
+    }
+    //Default to 12 hour is there's a problem
+    return 0;
+}
+
+void set_format12(Fl_Widget *widget, void *data) 
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        pGlobalConfig.set("Clock", "TimeFormat", "12");
+	pGlobalConfig.flush();
+    }
+}
+
+void set_format24(Fl_Widget *widget, void *data)
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        pGlobalConfig.set("Clock", "TimeFormat", "24");
+	pGlobalConfig.flush();
+    }
 }
 
 
