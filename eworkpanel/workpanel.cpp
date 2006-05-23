@@ -116,10 +116,6 @@ int Fl_Update_Window::handle(int event)
 		}
 		throw_focus();
 		return 1;
-
-	case FL_FOCUS:
-		throw_focus(); // never give focus to taskbar
-		return 1;
 	}
 
 	return Fl_Window::handle(event);
