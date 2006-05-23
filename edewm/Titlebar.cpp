@@ -638,8 +638,8 @@ int Titlebar::handle(int event)
 		return 1;
 	}
 
-	default:
-		return 1;
+//	default:
+//		return 1;
 	}
 
 	return 0;
