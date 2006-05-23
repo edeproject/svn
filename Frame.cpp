@@ -458,10 +458,15 @@ void Frame::settings_changed()
 }
 
 // modify the passed X & W to a legal horizontal window position
+
+// Note (by V.): Previous code preserved the window dimensions so that the
+// window middle was centered on screen
+// I believe that window top left corner should remain visible, so that
+// user can resize window
 int Frame::force_x_onscreen(int X, int W)
 {
 	if(X<root->x()) X=root->x();
-	if(X+W > root->x()+root->w()) X=root->x()+root->w()-W;
+//	if(X+W > root->x()+root->w()) X=root->x()+root->w()-W;
 
 	return X;
 }
@@ -470,7 +475,7 @@ int Frame::force_x_onscreen(int X, int W)
 int Frame::force_y_onscreen(int Y, int H)
 {
 	if(Y<root->y()) Y=root->y();
-	if(Y+H > root->y()+root->h()) Y=root->y()+root->h()-H;
+//	if(Y+H > root->y()+root->h()) Y=root->y()+root->h()-H;
 
 	return Y;
 }
