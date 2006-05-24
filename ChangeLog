@@ -1,3 +1,19 @@
+1.1
+* eworkpanel
+- Notification Area a.k.a System Tray support - patch by Elleo + fixes 
+for proper unloading and some KDE support
+- Battery Status Monitor with support for ACPI and APM
+- Quick Launch Bar (area with programmable icons) - "patch" by dzooli
+- Time Format (12h vs. 24h) patch by Elleo
+- Numerous layout and redraw issues with panel fixed
+* edewm
+- Support for Focus Follows Mouse policy (by AW)
+- Improved and fixes for keyboard shortcut handling (thanks to AW)
+- Several new shortcuts (thanks to AW)
+* ekeyconf
+- Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making
+it impossible to use already defined shortcuts for something else)
+
 1.0.4
 (NOTE: I would like to thank Google Summer of Code for funding my work on (among else)
 EDE 1.0.4. Thanks guys! You rock :) Vedran <vljubovic at smartnet dot ba>)
@@ -21,7 +37,7 @@ EDE 1.0.4. Thanks guys! You rock :) Vedran <vljubovic at smartnet dot ba>)
 - show windows from all virtual desktops - to enable, edit ede.conf
 and in section [Panel] add "AllDesktops=true"
 - fix compilation on non-Linux systems
-- CPU monitor: add support for FreeBSD (currently supports Linux and Solaris)
+- CPU monitor: add support for FreeBSD (previously worked only on Linux and Solaris)
 - layout fixes
 
 
