@@ -106,9 +106,24 @@ bool Frame::clientmsg_event(const XClientMessageEvent *e)
         return true;
 
     } else if(a==_XA_NET_WM_STATE) {
+		/* int action = e->data.l[0]; */
+		Atom atom1 = e->data.l[1];
+		Atom atom2 = e->data.l[2];
 
-        DBG("NET state");
+		// We accepts only HORZ - VERT combination (sent by taskbar).
+		// Horizontal or vertical maximization only, is not supported for now.
+		if((atom1 == _XA_NET_WM_STATE_MAXIMIZED_HORZ || atom1 == _XA_NET_WM_STATE_MAXIMIZED_VERT) &&
+			atom2 == _XA_NET_WM_STATE_MAXIMIZED_HORZ || atom2 == _XA_NET_WM_STATE_MAXIMIZED_VERT) {
+				maximize();
+				return true;
+		}
 
+		if(atom1 == _XA_NET_EDE_RESTORE_SIZE) {
+			restore();
+			return true;
+		}
+
+     DBG("NET state");
     } else if(e->message_type==_XA_NET_ACTIVE_WINDOW) {
 
         DBG("Net active window: %ld", e->window);
@@ -139,7 +154,7 @@ bool Frame::clientmsg_event(const XClientMessageEvent *e)
 
     } else {
 
-    }
+	}
 
     //        Fl::warning("flwm: unexpected XClientMessageEvent, type 0x%lx, "
     //                    "window 0x%lx\n", e->message_type, e->window);
