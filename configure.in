@@ -10,9 +10,12 @@ dnl Should we add AC_HELP_STRING ???
 dnl It seems that RH 7.2 have old autoconf without this macro
 
 AC_PREREQ(2.16)
-AC_INIT(EDE, 1.0.4, [karijes@users.sourceforge.net])
-AC_DEFINE(VERSION, 104, [Short version number])
+AC_INIT(EDE, 1.1, [karijes@users.sourceforge.net])
+AC_DEFINE(VERSION, 11, [Short version number])
 AC_CONFIG_HEADER(edeconf.h:edeconf.h.in)
+
+dnl $PACKAGE_VERSION is filled from AC_INIT
+EDE_VERSION=$PACKAGE_VERSION
 
 AC_PROG_CXX
 AC_PROG_CPP
@@ -118,43 +121,6 @@ case "$EFLTK_VERSION" in ["2.0."[45]])
 	AC_MSG_ERROR([It seems that you have older efltk version. Required is >= 2.0.4])
 esac
 
-
-
-dnl From old configure.in
-dnl Just checks are we going to use libsupc++ or libstdc++
-
-dnl if test "$CXX" = "gcc";
-dnl then
-dnl     # Starting with GCC 3.0, you must link C++ programs against either
-dnl     # libstdc++ (shared by default), or libsupc++ (always static).  If
-dnl     # you care about binary portability between Linux distributions,
-dnl     # you need to either 1) build your own GCC with static C++ libraries
-dnl     # or 2) link using gcc and libsupc++.  We choose the latter since
-dnl     # CUPS doesn't (currently) use any of the stdc++ library.
-dnl     #
-dnl     # Also, GCC 3.0.x still has problems compiling some code.  You may
-dnl     # or may not have success with it.  USE 3.0.x WITH EXTREME CAUTION!
-dnl     #
-dnl     # Previous versions of GCC do not have the reliance on the stdc++
-dnl     # or g++ libraries, so the extra supc++ library is not needed.
-dnl 
-dnl     AC_MSG_CHECKING(if libsupc++ is required)
-dnl 
-dnl     SUPC="`$CXX -print-file-name=libsupc++.a 2>/dev/null`"
-dnl     case "$SUPC" in
-dnl     	libsupc++.a*)
-dnl 	    # Library not found, so this is and older GCC...
-dnl 	    AC_MSG_RESULT(no)
-dnl 	    ;;
-dnl 	*)
-dnl             # This is gcc 3.x, and it knows of libsupc++, so we need it
-dnl             LIBS="$LIBS -lsupc++"
-dnl             AC_MSG_RESULT(yes)
-dnl 	    ;;
-dnl  	esac
-dnl fi
-
-
 if test $ac_cv_header_linux_soundcard_h = yes; then
 	EVOLUME=evolume/
 else
@@ -174,5 +140,12 @@ AC_SUBST(LIBS)
 AC_SUBST(SILENT)
 AC_SUBST(HOME_DIR)
 AC_SUBST(EVOLUME)
+AC_SUBST(EDE_VERSION)
 
-AC_OUTPUT(makeinclude datas/startede)
+AC_OUTPUT([
+ makeinclude
+ datas/startede
+ README
+ docs/ede/index.html
+ ede.spec
+ ])

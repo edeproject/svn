@@ -1,4 +1,6 @@
 1.1
+* general
+- Version number is now uniformly handled throught the docs, via configure
 * eworkpanel
 - Notification Area a.k.a System Tray support - patch by Elleo + fixes 
 for proper unloading and some KDE support
@@ -6,10 +8,12 @@ for proper unloading and some KDE support
 - Quick Launch Bar (area with programmable icons) - "patch" by dzooli
 - Time Format (12h vs. 24h) patch by Elleo
 - Numerous layout and redraw issues with panel fixed
+- Implemented maximize and restore
 * edewm
 - Support for Focus Follows Mouse policy (by AW)
 - Improved and fixes for keyboard shortcut handling (thanks to AW)
 - Several new shortcuts (thanks to AW)
+- Added support for maximize via NETWM (althought not horizontal-vertical specific)
 * ekeyconf
 - Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making
 it impossible to use already defined shortcuts for something else)

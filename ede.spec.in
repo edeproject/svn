@@ -2,7 +2,7 @@
 # rpm -bb ede.spec ; /usr/src/RPM/SPECS
 # $Id$
 %define name		ede
-%define ver      	1.0.3
+%define ver      	@EDE_VERSION@
 %define rel		1
 %define localstatedir   /var/lib
 %define pakdir		%{name}-%{ver}
