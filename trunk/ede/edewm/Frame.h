@@ -266,8 +266,9 @@ public:
     // Lowers and put window back of stack
     void lower();
 
-    // Iconize Window
     void iconize();
+	void maximize();
+	void restore();
 
     void throw_focus(int destructor = 0);
 

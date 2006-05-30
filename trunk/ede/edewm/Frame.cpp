@@ -69,6 +69,45 @@ void draw_overlay(int x, int y, int w, int h) {
 	draw_current_rect();
 }
 
+static void animate(int fx, int fy, int fw, int fh, int tx, int ty, int tw, int th)
+{
+# undef max
+# define max(a,b) (a) > (b) ? (a) : (b)
+	double max_steps = max( (tw-fw), (th-fh) );
+	double min_steps = max( (fw-tw), (fh-th) );
+	double steps = max(max_steps, min_steps);
+	steps/=Frame::animate_speed;
+
+	double sx = max( ((double)(fx-tx)/steps), ((double)(tx-fx)/steps) );
+	double sy = max( ((double)(fy-ty)/steps), ((double)(ty-fy)/steps) );
+	double sw = max( ((double)(fw-tw)/steps), ((double)(tw-fw)/steps) );
+	double sh = max( ((double)(fh-th)/steps), ((double)(th-fh)/steps) );
+
+	int xinc = fx < tx ? 1 : -1;
+	int yinc = fy < ty ? 1 : -1;
+	int winc = fw < tw ? 1 : -1;
+	int hinc = fh < th ? 1 : -1;
+	double rx=fx,ry=fy,rw=fw,rh=fh;
+
+	XGrabServer(fl_display);
+
+	while(steps-- > 0) {
+
+		rx+=(sx*xinc);
+		ry+=(sy*yinc);
+		rw+=(sw*winc);
+		rh+=(sh*hinc);
+
+		draw_overlay((int)rx, (int)ry, (int)rw, (int)rh);
+
+		Fl::sleep(10);
+		XFlush(fl_display);
+	}
+
+	clear_overlay();
+
+	XUngrabServer(fl_display);
+}
 
 // The constructor is by far the most complex part, as it collects
 // all the scattered pieces of information about the window that
@@ -974,6 +1013,52 @@ void Frame::iconize()
 		state(ICONIC);
 		throw_focus(1);
 	}
+}
+
+// maximize window
+void Frame::maximize()
+{
+	if(maximized)
+		return;
+
+	bool m = true;
+
+	int W=root->w(); 
+	int H=root->h();
+	W-=offset_w;
+	H-=offset_h;
+
+	if(ICCCM::get_size(this, W, H)) 
+		m=false;
+
+	restore_x = x();
+	restore_y = y();
+	restore_w = w();
+	restore_h = h();
+	
+	W+=offset_w;
+	H+=offset_h;
+
+	if(Frame::animate) 
+		::animate(x(), y(), w(), h(), root->x(), root->y(), root->w(), root->h());
+
+	set_size(root->x(), root->y(), W, H);
+
+	maximized = m;
+	redraw();
+}
+
+// restore window size
+void Frame::restore()
+{
+	if(!maximized)
+		return;
+
+	if(Frame::animate) 
+		::animate(x(), y(), w(), h(), restore_x, restore_y, restore_w, restore_h);
+
+	set_size(restore_x, restore_y, restore_w, restore_h);
+	maximized = false;
 }
 
 void Frame::desktop(Window wid, int desktop)
