@@ -42,6 +42,7 @@ void Frame::cb_button_kill(Fl_Button* b)
 	kill();
 }
 
+/*
 static void animate(int fx, int fy, int fw, int fh,
 					int tx, int ty, int tw, int th)
 {
@@ -122,6 +123,15 @@ void Frame::cb_button_max(Fl_Button* b)
 		maximized = m;
 		redraw();
 	}
+}
+*/
+
+void Frame::cb_button_max(Fl_Button* b)
+{
+	if(maximized)
+		restore();
+	else
+		maximize();
 }
 
 void Frame::cb_button_min(Fl_Button* b) 

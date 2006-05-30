@@ -73,24 +73,33 @@ void task_button_cb(TaskButton *b, Window w)
 void menu_cb(Fl_Menu_ *menu, void *)
 {
 	// try to read information how much window can be maximized
-	int title_height;
-	Fl_Config wm_config(fl_find_config_file("wmanager.conf", true));
-	wm_config.get("TitleBar", "Height",title_height,20);
+	//int title_height;
+	//Fl_Config wm_config(fl_find_config_file("wmanager.conf", true));
+	//wm_config.get("TitleBar", "Height",title_height,20);
 
-	int frame_width=3; // pixels
+	//int frame_width=3; // pixels
 
 	Window win = TaskButton::pushed->argument();
 	int ID = menu->item()->argument();
-	int x, y, width, height;
+	//int x, y, width, height;
+
+	Atom _XA_NET_WM_STATE = XInternAtom(fl_display, "_NET_WM_STATE", False);
+
+	// use _NET_WM_STATE_MAXIMIZED_HORZ or _NET_WM_ACTION_MAXIMIZE_HORZ ???
+	Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ = XInternAtom(fl_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+	Atom _XA_NET_WM_STATE_MAXIMIZED_VERT = XInternAtom(fl_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+	Atom _XA_NET_EDE_RESTORE_SIZE = XInternAtom(fl_display, "_NET_EDE_RESTORE_SIZE", False);
+	XClientMessageEvent evt;
 
 	switch(ID) {
 
 	case CLOSE:
+		// TODO: closing should be handled by edewm
 		if(Fl_WM::close_window(win))
 			break;
-		// Fallback to kill..
 
 	case KILL:
+		// TODO: killing should be handled by edewm
 		XKillClient(fl_display, win);
 		break;
 
@@ -102,10 +111,21 @@ void menu_cb(Fl_Menu_ *menu, void *)
 		break;
 
 	case MAX:
-		// TODO: only window manager knows wheter a window is
-		// maximized or not, and also its original size.
-		// So this should be implemented as NETWM message
-		// (but edewm doesn't support it yet)
+		memset(&evt, 0, sizeof(evt));
+		evt.type = ClientMessage;
+		evt.window = win;
+		evt.message_type = _XA_NET_WM_STATE;
+		evt.format = 32;
+		evt.data.l[0] = 0;
+		evt.data.l[1] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
+		evt.data.l[2] = _XA_NET_WM_STATE_MAXIMIZED_VERT;
+		XSendEvent(fl_display, RootWindow(fl_display, DefaultScreen(fl_display)), False, SubstructureNotifyMask,
+				(XEvent*)& evt);
+
+		TaskButton::pushed->m_minimized=false;
+		TaskBar::active = win;
+
+		/*
 		Fl_WM::get_workarea(x, y, width, height);
 
 		// leave room for widgets
@@ -122,6 +142,7 @@ void menu_cb(Fl_Menu_ *menu, void *)
 		Fl_WM::set_active_window(win);
 		TaskBar::active = win;
 		TaskButton::pushed->m_minimized=false;
+		*/
 
 		break;
 /*
@@ -170,7 +191,18 @@ void menu_cb(Fl_Menu_ *menu, void *)
 
 
 	case RESTORE:
-		Fl_WM::set_active_window(win);
+		//Fl_WM::set_active_window(win);
+		memset(&evt, 0, sizeof(evt));
+		evt.type = ClientMessage;
+		evt.window = win;
+		evt.message_type = _XA_NET_WM_STATE;
+		evt.format = 32;
+		evt.data.l[0] = 0;
+		evt.data.l[1] = _XA_NET_EDE_RESTORE_SIZE;
+		XSendEvent(fl_display, RootWindow(fl_display, DefaultScreen(fl_display)), False, SubstructureNotifyMask,
+				(XEvent*)& evt);
+		TaskBar::active = win;
+		TaskButton::pushed->m_minimized=false;
 		break;
 	}
 
@@ -196,7 +228,7 @@ TaskButton::TaskButton(Window win) : Fl_Button(0,0,0,0)
 		menu->add(_(" Kill"), 0, 0, (void*)KILL, FL_MENU_DIVIDER);
 		new Fl_Divider(10, 15);
 
-		menu->add(_(" Maximize"), 0, 0, (void*)MAX);
+		menu->add(_(" Maximize        "), 0, 0, (void*)MAX);
 		menu->add(_(" Minimize"), 0, 0, (void*)MIN);
 		menu->add(_(" Restore"), 0, 0, (void*)RESTORE);
 	   //menu->add(" Set size", 0, 0, (void*)SET_SIZE, FL_MENU_DIVIDER);

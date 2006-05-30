@@ -92,6 +92,9 @@ Atom _XA_NET_WM_STATE_STAYS_ON_TOP;
 //KDE1
 Atom _XA_KWM_WIN_ICON;
 
+//EDE
+Atom _XA_NET_EDE_RESTORE_SIZE;
+
 #define CNT(x) (sizeof(x)/sizeof(x[0]))
 
 static bool atoms_inited = false;
@@ -191,9 +194,10 @@ void init_atoms()
         { &_XA_NET_WM_SYNC_REQUEST, "_NET_WM_SYNC_REQUEST" },
         /* the next one is not in the spec but KDE use it */
         { &_XA_NET_WM_STATE_STAYS_ON_TOP, "_NET_WM_STATE_STAYS_ON_TOP" },
-
         /* KDE 1 */
-        { &_XA_KWM_WIN_ICON,       "_NET_KWM_WIN_ICON" }
+        { &_XA_KWM_WIN_ICON,       "_NET_KWM_WIN_ICON" },
+        /* EDE specific message for restoring sizes (not in specs) */
+		{ &_XA_NET_EDE_RESTORE_SIZE, "_NET_EDE_RESTORE_SIZE" }
 
         /*
         { &_XA_CLIPBOARD,           "CLIPBOARD" },
