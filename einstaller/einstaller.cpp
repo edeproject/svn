@@ -515,8 +515,8 @@ static void cb_Browse(Fl_Button*, void*) {
       	  
       if (f) { 
   	package_name_input->value(f);
-      }
   next_button->activate();
+      }
 ;}
 
 Fl_Check_Button* nodeps_button;
