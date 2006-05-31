@@ -1,59 +1,55 @@
-#ifndef _TITLEBAR_H_
-#define _TITLEBAR_H_
+#ifndef __TITLEBAR_H__
+#define __TITLEBAR_H__
 
-class Frame;
 #include <efltk/Fl_Button.h>
 #include <efltk/Fl_Window.h>
-#include <efltk/Fl_Multi_Image.h>
-#include <efltk/Fl_Double_Window.h>
 #include <efltk/Fl_Group.h>
+#include <efltk/Fl_Image.h>
+#include <efltk/Fl_Menu_.h>
 #include <efltk/x.h>
 
-#include <efltk/Fl_Image.h>
+class Frame;
 
-class Titlebar_Button : public Fl_Button
+class TitlebarButton : public Fl_Button
 {
-    int m_type;
-public:
-    Titlebar_Button(int type);
-    void draw();
+	private:
+		int m_type;
+	public:
+		TitlebarButton(int type);
+		~TitlebarButton();
+		void draw();
 };
 
-class Titlebar : public Fl_Window {
-    friend class Frame;
-public:
-    Titlebar(int x,int y,int w,int h,const char *l=0);
-    virtual ~Titlebar();
+class Titlebar : public Fl_Window
+{
+	private:
+		TitlebarButton minb, maxb, closeb;
+		Frame* curr_frame;
+		Fl_Image* title_icon;
+		int text_w;
+		Fl_Menu_* title_menu;
 
-    void setting_changed();
+	public:
+		Titlebar(int x, int y, int w, int h, const char* l = 0);
+		~Titlebar();
+		void setting_changed();
+		void show();
+		void hide();
+		void popup_menu(Frame*);
+		int handle(int event);
+		void layout();
+		void draw();
+		void handle_double_click();
 
-    void show();
-    void hide();
+		// called from Frame::maximize()
+		void handle_maximize(bool is_max);
 
-    virtual void draw();
-    virtual int handle(int event);
-    virtual void layout();
-
-    void draw_opaque(int, int, int, int);
-
-    Fl_Button *close() { return &_close; }
-    Fl_Button *min()   { return &_min; }
-    Fl_Button *max()   { return &_max; }
-
-    static void popup_menu(Frame *frame);
-    static void cb_change_desktop(Fl_Widget *w, void *data);
-
-    static int box_type;
-    static int label_align;
-    static int default_height;
-
-    Frame *f;
-protected:
-    Fl_Image *title_icon;
-
-    Titlebar_Button _close, _max, _min;
-    int text_w;
+		// These three options are set from Windowmanager.cpp, but defaults are
+		// in Titlebar.cpp
+		static int default_height;
+		static int label_align;
+		// type of box for titlebar (excluding buttons) when theme is not used
+		static int box_type;
 };
-
 
 #endif
