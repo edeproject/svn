@@ -31,9 +31,7 @@ static void MaximizeWindow(char*)
 	
 	if ((acttype != TYPE_DESKTOP) && (acttype != TYPE_DOCK) && (acttype != TYPE_SPLASH)) {
 //		act->iconize();
-		// FIXME: a function for maximize operation like Frame::iconize()
-		Fl_Button *tmp; // this will never be used
-		act->cb_button_max(tmp);
+		act->maximize();
 	}
 }
 
