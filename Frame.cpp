@@ -1045,6 +1045,7 @@ void Frame::maximize()
 	set_size(root->x(), root->y(), W, H);
 
 	maximized = m;
+	title->handle_maximize(true);
 	redraw();
 }
 
@@ -1059,6 +1060,7 @@ void Frame::restore()
 
 	set_size(restore_x, restore_y, restore_w, restore_h);
 	maximized = false;
+	title->handle_maximize(false);
 }
 
 void Frame::desktop(Window wid, int desktop)
