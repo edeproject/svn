@@ -1,14 +1,33 @@
 #ifndef __TITLEBAR_H__
 #define __TITLEBAR_H__
 
+#include "WMWindow.h"
 #include <efltk/Fl_Button.h>
 #include <efltk/Fl_Window.h>
 #include <efltk/Fl_Group.h>
 #include <efltk/Fl_Image.h>
 #include <efltk/Fl_Menu_.h>
+#include <efltk/Fl_Value_Input.h>
 #include <efltk/x.h>
 
 class Frame;
+
+// small window for setting size of target window
+class SetSizeWindow : public WMWindow
+{
+	private:
+		Frame* curr_frame;
+		Fl_Value_Input* w_width;
+		Fl_Value_Input* w_height;
+
+	public:
+		SetSizeWindow(Frame* f);
+		~SetSizeWindow();
+		Frame* frame() { return curr_frame; }
+		double frame_w() { return w_width->value(); }
+		double frame_h() { return w_height->value(); }
+		void run();
+};
 
 class TitlebarButton : public Fl_Button
 {
@@ -35,11 +54,13 @@ class Titlebar : public Fl_Window
 		void setting_changed();
 		void show();
 		void hide();
-		void popup_menu(Frame*);
+		void popup_menu(Frame* curr_frame);
 		int handle(int event);
 		void layout();
 		void draw();
 		void handle_double_click();
+		void update_desktops(Fl_Group* g);
+		Frame* frame() { return curr_frame; }
 
 		// called from Frame::maximize()
 		void handle_maximize(bool is_max);
@@ -50,6 +71,9 @@ class Titlebar : public Fl_Window
 		static int label_align;
 		// type of box for titlebar (excluding buttons) when theme is not used
 		static int box_type;
+
+		// here is to access Frame's private data, since is it's friend
+		static void cb_change_desktop(Fl_Widget* w, void* data);
 };
 
 #endif
