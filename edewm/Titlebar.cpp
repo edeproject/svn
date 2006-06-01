@@ -3,8 +3,15 @@
 #include "Theme.h"
 #include "Frame.h"
 #include "Icon.h"
+#include "Desktop.h"
 #include "debug.h"
+
 #include <efltk/fl_draw.h>
+#include <efltk/Fl_Box.h>
+#include <efltk/Fl_Divider.h>
+#include <efltk/Fl_String.h>
+#include <efltk/Fl_Item.h>
+
 
 int Titlebar::box_type = 0;
 int Titlebar::default_height = 20;
@@ -50,7 +57,7 @@ void draw_max(Fl_Color col)
 	fl_stroke();
 }
 
-// shorthand for draw_maximized routine
+// shorthand for draw_maximized routines
 void rect(float x, float y, float w, float h, bool clear_bg)
 {
 	if(clear_bg)
@@ -137,7 +144,81 @@ void button_cb_min(Fl_Widget*, void* f)
 
 void set_size_cb(Fl_Widget*, void* f)
 {
+	Frame* fr = (Frame*)f;
+	if(!fr)
+		return;
+
+	SetSizeWindow w(fr);
+	w.run();
 }
+
+// SetSizeWindow
+void real_set_size_cb(Fl_Widget*, void* w)
+{
+	SetSizeWindow* win = (SetSizeWindow*)w;
+	int W = (int)win->frame_w();
+	int H = (int)win->frame_h();
+	Frame* f = win->frame();
+	ICCCM::get_size(f, W, H);
+
+	f->set_size(f->x(), f->y(), W, H);
+	f->redraw();
+	win->destroy();
+}
+
+void close_set_size_cb(Fl_Widget*, void* w)
+{
+	SetSizeWindow* win = (SetSizeWindow*)w;
+	win->destroy();
+}
+
+SetSizeWindow::SetSizeWindow(Frame* f) : WMWindow(300, 110, _("Set size")), curr_frame(f)
+{
+	Fl_Box *b = new Fl_Box(5, 5, 295, 15, _("Set size to window:"));
+	b->label_font(b->label_font()->bold());
+
+	Fl_String tmplabel = curr_frame->label();
+	if (tmplabel.length() > 50)
+		tmplabel = tmplabel.sub_str(0,20) + " ... " + tmplabel.sub_str(tmplabel.length()-20,20);
+
+	b = new Fl_Box(0, 20, 296, 15, tmplabel);
+
+	w_width = new Fl_Value_Input(45, 45, 90, 20, _("width:"));
+	w_width->step(1);
+	w_height = new Fl_Value_Input(195, 45, 90, 20, _("height:"));
+	w_height->step(1);
+	new Fl_Divider(5, 70, 290, 10);
+
+	Fl_Button *but = new Fl_Button(60,80,85,25, _("&OK"));
+	but->callback(real_set_size_cb, this);
+
+	but = new Fl_Button(155, 80, 85, 25, _("&Cancel"));
+	but->callback(close_set_size_cb, this);
+
+	end();
+
+	w_width->value(curr_frame->w());
+	w_height->value(curr_frame->h());
+
+	// callback when window is closed
+	callback(close_set_size_cb, this);
+}
+
+SetSizeWindow::~SetSizeWindow()
+{
+}
+
+void SetSizeWindow::run()
+{
+	if(!shown())
+	{
+		show();
+		while(shown())
+			Fl::run();
+	}
+}
+
+// SetSizeWindow ends
 
 TitlebarButton::TitlebarButton(int type) : Fl_Button(0,0,0,0), m_type(type)
 {
@@ -194,12 +275,11 @@ Fl_Window(x, y, w, h, l), minb(TITLEBAR_MIN_UP), maxb(TITLEBAR_MAX_UP), closeb(T
 	menu_max = title_menu->add(_("Maximize"), 0, button_cb_max, curr_frame);
 	menu_min = title_menu->add(_("Minimize"), 0, button_cb_min, curr_frame);
 	menu_set_size = title_menu->add(_("Set size"), 0, set_size_cb, curr_frame, FL_MENU_DIVIDER);
-	menu_desktop = title_menu->add(_("To desktop"), 0, 0, 0, FL_SUBMENU|FL_MENU_DIVIDER);
+	menu_desktop = title_menu->add(_("To Desktop"), 0, 0, 0, FL_SUBMENU|FL_MENU_DIVIDER);
 	title_menu->add(_("Kill"), 0, button_cb_kill, curr_frame);
 	title_menu->add(_("Close"), 0, button_cb_close, curr_frame);
-	title_menu->end();
-
 	end();
+
 }
 
 Titlebar::~Titlebar()
@@ -275,11 +355,9 @@ void Titlebar::layout()
 	else
 		maxb.activate();
 
-	// TODO: stinky
 	if(!curr_frame->decor_flag(MINIMIZE) || curr_frame->frame_flag(KEEP_ASPECT))
 		minb.hide();
 
-	// TODO: stinky
 	if(!curr_frame->decor_flag(MAXIMIZE) || curr_frame->frame_flag(KEEP_ASPECT))
 		maxb.hide();
 
@@ -408,6 +486,7 @@ void Titlebar::popup_menu(Frame* frm)
 		menu_min->deactivate();
 	}
 
+	update_desktops((Fl_Group*)menu_desktop);
 	title_menu->Fl_Group::focus(-1);
 	title_menu->popup(Fl::event_x_root(), Fl::event_y_root());
 
@@ -418,6 +497,58 @@ void Titlebar::popup_menu(Frame* frm)
 void Titlebar::handle_double_click()
 {
 	button_cb_max(0, curr_frame);
+}
+
+void Titlebar::cb_change_desktop(Fl_Widget*, void* data)
+{
+	Desktop *d = (Desktop*)data;
+	menu_frame->desktop_ = d;
+
+	if(d && d!=Desktop::current()) 
+	{
+		Desktop::current(d);
+		menu_frame->raise();
+	}
+
+	menu_frame->send_desktop();
+	menu_frame=0;
+}
+
+void Titlebar::update_desktops(Fl_Group* g)
+{
+	g->clear();
+	g->begin();
+
+	Fl_Item *i;
+
+	i = new Fl_Item(_("Sticky"));
+	i->type(Fl_Item::TOGGLE);
+	i->callback(Titlebar::cb_change_desktop);
+	if(curr_frame->desktop()) 
+	{
+		i->clear_value();
+		i->user_data(0);
+	}
+	else 
+	{
+		i->set_value();
+		i->user_data(Desktop::current());
+	}
+
+	new Fl_Divider();
+
+	for(uint n=0; n<desktops.size(); n++) 
+	{
+		Desktop *d = desktops[n];
+		i = new Fl_Item(d->name());
+		i->type(Fl_Item::RADIO);
+
+		if(curr_frame->desktop()==d) i->set_value();
+		else i->clear_value();
+
+		i->callback(Titlebar::cb_change_desktop, d);
+	}
+	g->end();
 }
 
 // do what should be done when window is 
