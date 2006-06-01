@@ -50,18 +50,49 @@ void draw_max(Fl_Color col)
 	fl_stroke();
 }
 
-// TODO: finish this
+// shorthand for draw_maximized routine
+void rect(float x, float y, float w, float h, bool clear_bg)
+{
+	if(clear_bg)
+	{
+		fl_vertex(x, y);
+		fl_vertex(x+w, y);
+		fl_vertex(x+w,y+h);
+		fl_vertex(x, y+h);
+		fl_vertex(x, y);
+		fl_fill_stroke(FL_GRAY);
+	}
+	else
+	{
+		// upper bold rectangle
+		fl_vertex(x, y+0.1);
+		fl_vertex(x+w, y-0.1);
+		fl_vertex(x+w,y+0.2); // 0.2 is height of upper
+		fl_vertex(x, y+0.2);  // bold line
+		fl_fill();
+
+		// real rectangle
+		fl_vertex(x, y);
+		fl_vertex(x+w, y);
+		fl_vertex(x+w,y+h);
+		fl_vertex(x, y+h);
+		fl_vertex(x, y);
+		fl_stroke();
+		fl_closepath();
+	}
+}
+
 void draw_maximized(Fl_Color col)
 {
-	fl_color(FL_RED);
+    fl_color(col);
 
-	vv(-MAX_OF, -MAX_OF); vv(MAX_OF, -MAX_OF);
-	vv(MAX_OF,-MAX_OF+0.4); vv(-MAX_OF,-MAX_OF+0.4);
-	fl_fill();
+    rect(-MAX_OF+0.3f, -MAX_OF, 1.0, 0.9, false);
 
-	vv(MAX_OF,-MAX_OF); vv(MAX_OF,MAX_OF);
-	vv(-MAX_OF,MAX_OF); vv(-MAX_OF,-MAX_OF);
-	fl_stroke();
+    fl_color(FL_GRAY);
+    rect(-MAX_OF, -MAX_OF+0.4f, 1.0, 0.9, true);
+
+    fl_color(col);
+    rect(-MAX_OF, -MAX_OF+0.4f, 1.0, 0.9, false);
 }
 
 void draw_min(Fl_Color col)
