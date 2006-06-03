@@ -14,13 +14,16 @@
 #include <efltk/x.h>
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
+#include <efltk/Fl_Input_Browser.h>
 
 int getshortcutfor(Fl_String);
 void setshortcutfor(Fl_String, int);
 void readKeysConfiguration();
 void writeKeysConfiguration();
 void sendUpdateInfo();
-void populatelist(Fl_Menu_ *);
+void populatelist(Fl_Input_Browser *);
+void addShortcut(const char*,const char*);
+void removeShortcut(Fl_String);
 
 #endif
 

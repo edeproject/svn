@@ -23,7 +23,8 @@ decl {\#include <efltk/Fl_Locale.h>} {}
 
 decl {\#include <edeconf.h>} {} 
 
-decl {\#include "Shortcut_Button.h"} {} 
+decl {\#include "Shortcut_Button.h"} {public
+} 
 
 decl {\#include "ekeys.h"} {} 
 
@@ -58,7 +59,7 @@ sendUpdateInfo();}
     } {
       Fl_Group {} {
         label Shortcuts open
-        xywh {1 24 263 204} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+        xywh {1 28 263 200} align FL_ALIGN_TOP|FL_ALIGN_LEFT
       } {
         Fl_Button shortcut {
           label {Keyboard shortcut:}
@@ -75,14 +76,57 @@ To get out of shortcut-setting mode:
         Fl_Input_Browser action {
           label {Action:}
           callback {shortcut->svalue = getshortcutfor(action->value());
-shortcut->redraw();} open selected
+shortcut->redraw();} open
           xywh {21 35 165 21} align FL_ALIGN_TOP|FL_ALIGN_LEFT button_box {}
           extra_code {action->value("Next window");}
         } {}
+        Fl_Button {} {
+          label {&New shortcut...}
+          callback {newShortcutWindow->show();}
+          xywh {21 132 110 25}
+        }
+        Fl_Button {} {
+          label {&Remove shortcut}
+          callback {removeShortcut(action->value());
+populatelist(action);
+action->value(action->child(0)->label());
+action->do_callback();} selected
+          xywh {141 132 110 25}
+        }
       }
+    }
+  }
+  Fl_Window newShortcutWindow {
+    label {Define new shortcut} open
+    xywh {601 395 285 114} hide resizable modal
+  } {
+    Fl_Input shortcutName {
+      label {&Shortcut name:}
+      xywh {104 15 170 24}
+    }
+    Fl_Input shortcutCommand {
+      label {C&ommand}
+      xywh {104 49 170 24}
+    }
+    Fl_Button {} {
+      label {&Ok}
+      callback {addShortcut(shortcutName->value(),shortcutCommand->value());
+populatelist(action);
+action->value(shortcutName->value());
+action->do_callback();
+newShortcutWindow->hide();}
+      xywh {49 83 88 24}
+    }
+    Fl_Button {} {
+      label {&Cancel}
+      callback {newShortcutWindow->hide();}
+      xywh {158 83 88 24}
     }
   }
   code {populatelist(action);
 shortcut->svalue = getshortcutfor("Next window");
-shortcut->redraw();} {}
+shortcut->redraw();
+
+// Grab all keyboard events from window manager
+XGrabKey(fl_display, AnyKey, AnyModifier, fl_xid(w), true, GrabModeAsync, GrabModeAsync);} {}
 } 
