@@ -9,7 +9,6 @@
 //
 #include <efltk/Fl_Locale.h>
 #include <edeconf.h>
-#include "Shortcut_Button.h"
 #include "ekeys.h"
 Fl_Window* iconsConfWindow;
 
@@ -39,6 +38,32 @@ static void cb_action(Fl_Input_Browser*, void*) {
 	shortcut->redraw();
 }
 
+static void cb_New(Fl_Button*, void*) {
+	newShortcutWindow->show();
+}
+
+static void cb_Remove(Fl_Button*, void*) {
+	removeShortcut(action->value());
+	populatelist(action);
+	action->value(action->child(0)->label());
+	action->do_callback();
+}
+Fl_Window* newShortcutWindow;
+Fl_Input* shortcutName;
+Fl_Input* shortcutCommand;
+
+static void cb_Ok(Fl_Button*, void*) {
+	addShortcut(shortcutName->value(),shortcutCommand->value());
+	populatelist(action);
+	action->value(shortcutName->value());
+	action->do_callback();
+	newShortcutWindow->hide();
+}
+
+static void cb_Cancel1(Fl_Button*, void*) {
+	newShortcutWindow->hide();
+}
+
 int main (int argc, char **argv) {
 
 	Fl_Window* w;
@@ -58,7 +83,7 @@ int main (int argc, char **argv) {
 		}
 		 {Fl_Tabs* o = new Fl_Tabs(3, 5, 265, 229);
 			o->color((Fl_Color)0xfffffffe);
-			 {Fl_Group* o = new Fl_Group(1, 24, 263, 204, _("Shortcuts"));
+			 {Fl_Group* o = new Fl_Group(1, 28, 263, 200, _("Shortcuts"));
 				o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
 				 {Shortcut_Button* o = shortcut = new Shortcut_Button(21, 86, 140, 20, _("Keyboard shortcut:"));
 					o->box(FL_DOWN_BOX);
@@ -76,6 +101,12 @@ rtcut-setting mode:\n   Click the mouse on this again, or on some other field.")
 					action->value("Next window");
 					o->end();
 				}
+				 {Fl_Button* o = new Fl_Button(21, 132, 110, 25, _("&New shortcut..."));
+					o->callback((Fl_Callback*)cb_New);
+				}
+				 {Fl_Button* o = new Fl_Button(141, 132, 110, 25, _("&Remove shortcut"));
+					o->callback((Fl_Callback*)cb_Remove);
+				}
 				o->end();
 			}
 			o->end();
@@ -83,14 +114,26 @@ rtcut-setting mode:\n   Click the mouse on this again, or on some other field.")
 		o->end();
 		o->resizable(o);
 	}
+	 {Fl_Window* o = newShortcutWindow = new Fl_Window(285, 114, _("Define new shortcut"));
+		o->shortcut(0xff1b);
+		shortcutName = new Fl_Input(104, 15, 170, 24, _("&Shortcut name:"));
+		shortcutCommand = new Fl_Input(104, 49, 170, 24, _("C&ommand"));
+		 {Fl_Button* o = new Fl_Button(49, 83, 88, 24, _("&Ok"));
+			o->callback((Fl_Callback*)cb_Ok);
+		}
+		 {Fl_Button* o = new Fl_Button(158, 83, 88, 24, _("&Cancel"));
+			o->callback((Fl_Callback*)cb_Cancel1);
+		}
+		o->set_modal();
+		o->end();
+		o->resizable(o);
+	}
 	populatelist(action);
 	shortcut->svalue = getshortcutfor("Next window");
 	shortcut->redraw();
 	w->show(argc, argv);
-
+	
 	// Grab all keyboard events from window manager
 	XGrabKey(fl_display, AnyKey, AnyModifier, fl_xid(w), true, GrabModeAsync, GrabModeAsync);
-
-
 	return  Fl::run();
 }

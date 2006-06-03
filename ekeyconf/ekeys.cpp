@@ -7,32 +7,50 @@
 #include "ekeys.h"
 
 
-#define	NR_HOTKEYS	15
+#define	NR_HOTKEYS	30
+
 
 static struct {
-	char *systemname;
-	char *uiname;
+	char systemname[20];
+	char uiname[50];
+	char command[50];
 } hotkeys[] = {
-	{"NextWindow",		"Next window"},
-	{"PreviousWindow",	"Previous window"},
-	{"NextDesktop",		"Next workspace"},
-	{"PreviousDesktop",	"Previous workspace"},
-	{"FastRun",		"Run program"},
-	{"FindFile",		"Find file"},
-	{"CloseWindow",		"Close window"},
-	{"MinimizeWindow",		"Minimize window"},
-	{"MaximizeWindow",		"Maximize window"},
-	{"Desktop1",		"Workspace 1"},
-	{"Desktop2",		"Workspace 2"},
-	{"Desktop3",		"Workspace 3"},
-	{"Desktop4",		"Workspace 4"},
-	{"Desktop5",		"Workspace 5"},
-	{"Desktop6",		"Workspace 6"},
-	{"Desktop7",		"Workspace 7"},
-	{"Desktop8",		"Workspace 8"},
+	{"NextWindow",		"Next window", ""},
+	{"PreviousWindow",	"Previous window", ""},
+	{"NextDesktop",		"Next workspace", ""},
+	{"PreviousDesktop",	"Previous workspace", ""},
+	{"FastRun",		"Run program", ""},
+	{"FindUtil",		"Find file", ""},
+	{"CloseWindow",		"Close window", ""},
+	{"MinimizeWindow",	"Minimize window", ""},
+	{"MaximizeWindow",	"Maximize window", ""},
+	{"Desktop1",		"Workspace 1", ""},
+	{"Desktop2",		"Workspace 2", ""},
+	{"Desktop3",		"Workspace 3", ""},
+	{"Desktop4",		"Workspace 4", ""},
+	{"Desktop5",		"Workspace 5", ""},
+	{"Desktop6",		"Workspace 6", ""},
+	{"Desktop7",		"Workspace 7", ""},
+	{"Desktop8",		"Workspace 8", ""},
+	{"App1",		"", ""},
+	{"App2",		"", ""},
+	{"App3",		"", ""},
+	{"App4",		"", ""},
+	{"App5",		"", ""},
+	{"App6",		"", ""},
+	{"App7",		"", ""},
+	{"App8",		"", ""},
+	{"App9",		"", ""},
+	{"App10",		"", ""},
+	{"App11",		"", ""},
+	{"App12",		"", ""},
+
 };
 
+
+
 int keycodes[NR_HOTKEYS];
+
 
 
 
@@ -156,27 +174,96 @@ int name_to_svalue(char *hotkey)
 
 void readKeysConfiguration()
 {
-    Fl_Config globalConfig(fl_find_config_file("wmanager.conf", 0), true, false);
-    globalConfig.set_section("Hotkeys");
+	Fl_Config globalConfig(fl_find_config_file("wmanager.conf", 0), true, false);
+	globalConfig.set_section("Hotkeys");
+	
+	for (int i=0; i<NR_HOTKEYS; i++) {
+		Fl_String tmp;
+		globalConfig.read(hotkeys[i].systemname, tmp, "");
+		keycodes[i] = name_to_svalue(tmp);
+	}
 
-    for (int i=0; i<NR_HOTKEYS; i++) {
-        Fl_String tmp;
-        globalConfig.read(hotkeys[i].systemname, tmp, "");
-        keycodes[i] = name_to_svalue(tmp);
-    }
+	globalConfig.set_section("Applications");
+	for (int i=0; i<NR_HOTKEYS; i++) {
+		Fl_String tmp;
+		if ((strncmp(hotkeys[i].systemname,"App",3) == 0) && (keycodes[i] != 0)) {
+			globalConfig.read(hotkeys[i].systemname, tmp, "");
+			if (tmp != "") strncpy(hotkeys[i].command, tmp, 50);
+			if (keycodes[i]>0 && tmp != "") strncpy(hotkeys[i].uiname, hotkeys[i].systemname, 20);
+		}
+	}
+
+	globalConfig.set_section("ApplicationNames");
+	for (int i=0; i<NR_HOTKEYS; i++) {
+		Fl_String tmp;
+		if ((strncmp(hotkeys[i].systemname,"App",3) == 0) && (keycodes[i] != 0)) {
+			globalConfig.read(hotkeys[i].systemname, tmp, "");
+			if (tmp != "") strncpy(hotkeys[i].uiname, tmp, 50);
+		}
+	}
+
+
+
+
 }
 
 void writeKeysConfiguration()
 {
-    Fl_Config globalConfig(fl_find_config_file("wmanager.conf", 1));
-    globalConfig.set_section("Hotkeys");
+	Fl_Config globalConfig(fl_find_config_file("wmanager.conf", 1));
+	globalConfig.set_section("Hotkeys");
+	
+	for (int i=0; i<NR_HOTKEYS; i++)
+		globalConfig.write(hotkeys[i].systemname, Fl::key_name(keycodes[i]));
+	
+	globalConfig.set_section("Applications");
+	for (int i=0; i<NR_HOTKEYS; i++)
+		if ((strncmp(hotkeys[i].systemname,"App",3) == 0) 
+			&& (strcmp(hotkeys[i].uiname,"") != 0)  
+			&& (strcmp(hotkeys[i].command,"") != 0))
+				globalConfig.write(hotkeys[i].systemname, hotkeys[i].command);
 
-    for (int i=0; i<NR_HOTKEYS; i++)
-        globalConfig.write(hotkeys[i].systemname, Fl::key_name(keycodes[i]));
+	globalConfig.set_section("ApplicationNames");
+	for (int i=0; i<NR_HOTKEYS; i++)
+		if ((strncmp(hotkeys[i].systemname,"App",3) == 0) 
+			&& (strcmp(hotkeys[i].uiname,"") != 0)  
+			&& (strcmp(hotkeys[i].command,"") != 0))
+				globalConfig.write(hotkeys[i].systemname, hotkeys[i].uiname);
 }
 
-void populatelist(Fl_Menu_ *action) 
+void populatelist(Fl_Input_Browser *action) 
 {
-    for (int i=0; i<NR_HOTKEYS; i++)
-        action->add ( hotkeys[i].uiname);
+	action->clear();
+	for (int i=0; i<NR_HOTKEYS; i++)
+		if (strcmp(hotkeys[i].uiname,"") != 0) action->add ( hotkeys[i].uiname);
+}
+
+void addShortcut(const char *name, const char *cmd)
+{
+	if ((strcmp(name,"") !=0) && (strcmp(cmd,"") != 0)) {
+		for (int i=0; i<NR_HOTKEYS; i++) {
+			if ((strncmp(hotkeys[i].systemname,"App",3) == 0) && (strcmp(hotkeys[i].uiname,name) == 0)) {
+				fl_alert(_("Shortcut already defined! Please use a different name"));
+				return;
+			}
+		}
+		for (int i=0; i<NR_HOTKEYS; i++) {
+			if ((strncmp(hotkeys[i].systemname,"App",3) == 0) && (strcmp(hotkeys[i].uiname,"") == 0)) {
+				strncpy(hotkeys[i].uiname, name, 50);
+				strncpy(hotkeys[i].command, cmd, 50);
+				return;
+			}
+		}
+	}
+	fl_alert(_("Maximum number of user shortcuts exceeded"));
+}
+
+
+void removeShortcut(Fl_String action)
+{
+	for (int i=0; i<NR_HOTKEYS; i++)
+		if (action == Fl_String(hotkeys[i].uiname)) {
+			keycodes[i]=0;
+			if (strncmp(hotkeys[i].systemname,"App",3) == 0)
+				strcpy(hotkeys[i].uiname,"");
+		}
 }
