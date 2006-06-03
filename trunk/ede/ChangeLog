@@ -8,15 +8,19 @@ for proper unloading and some KDE support
 - Quick Launch Bar (area with programmable icons) - "patch" by dzooli
 - Time Format (12h vs. 24h) patch by Elleo
 - Numerous layout and redraw issues with panel fixed
-- Implemented maximize and restore
+- Implemented maximize and restore in taskbar context menu
 * edewm
 - Support for Focus Follows Mouse policy (by AW)
 - Improved and fixes for keyboard shortcut handling (thanks to AW)
 - Several new shortcuts (thanks to AW)
-- Added support for maximize via NETWM (althought not horizontal-vertical specific)
+- Added support for maximize via NETWM (although not horizontal-vertical specific) 
 * ekeyconf
-- Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making
-it impossible to use already defined shortcuts for something else)
+- Add support for custom shortcuts - now you can define any command you 
+want and assign a keyboard shortcut (patch to edewm by AW)
+- Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making it 
+impossible to use already defined shortcuts for something else)
+- Some improvements to UI
+
 
 1.0.4
 (NOTE: I would like to thank Google Summer of Code for funding my work on (among else)
