@@ -1,0 +1,9 @@
+[Theme]
+  Frame color=RGB(187,215,234)
+  Title image=title.xpm
+  Close image up=close_unpressed.xpm
+  Close image down=close_pressed.xpm
+  Maximize image up=max_unpressed.xpm
+  Maximize image down=max_pressed.xpm
+  Minimize image up=min_unpressed.xpm
+  Minimize image down=min_pressed.xpm
