@@ -40,19 +40,32 @@ public:
 
 class WindowManager : public Fl_Window
 {
-    void init_wm(int argc, char *argv[]);
     Fl_Rect wm_area;
     Fl_Cursor cursor;
     Exset *xset;
+	Window root_win;
+	static WindowManager* pinstance;
+	bool is_init;
+
+	WindowManager();
+	~WindowManager();
+	WindowManager(const WindowManager&);
+	WindowManager& operator=(WindowManager&);
+    void init_internals(int argc, char *argv[]);
+
 
 public:
-    WindowManager(int argc, char *argv[]);
-    ~WindowManager() { }
+	static void init(int argc, char* argv[]);
+	static WindowManager* instance();
+	static void shutdown();
 
+	bool initialized() { return is_init; }
     void set_default_cursor();
     void set_cursor(Fl_Cursor c, Fl_Color fg, Fl_Color bg);
     void read_dispconf();
     Fl_Cursor get_cursor() { return cursor; }
+
+	Window root_window() { return root_win; }
 
     void idle();
     int handle(int e);
@@ -63,6 +76,7 @@ public:
     void draw();
 
     void update_workarea(bool send=true);
+	void read_configuration();
 
     Frame *find_by_wid(Window wid);
     void restack_windows();
@@ -77,13 +91,7 @@ public:
     int h() { return wm_area.h(); }
 
     int XShapeEventBase, XShapeErrorBase;
-
-
-
 };
-
-extern WindowManager *root;
-extern Window root_win;
 
 extern Frame_List stack_order;
 extern Frame_List map_order;

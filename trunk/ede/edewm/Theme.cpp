@@ -1,117 +1,129 @@
 #include "Theme.h"
+#include "debug.h"
 #include <efltk/Fl.h>
 
-namespace Theme {
+Theme* Theme::pinstance = NULL;
 
-Fl_Image *images[IMAGES_LAST];
-Fl_Color _frame_color;
-Fl_Image_List loaded;
-bool use;
+Theme::Theme() : use_theme(false), tbheight(20), framecol(FL_NO_COLOR),
+				 framecol_unfocus(FL_NO_COLOR)
+{
+	DBG("Initializing theme support");
+}
 
-bool use_theme() { return use; }
-void use_theme(bool val) { use = val; }
+Theme::~Theme()
+{
+	unload();
+	DBG("Shutdown theme support");
+}
 
-static Fl_Image *load_image(const char *name, const Fl_String &path, Fl_Config &cfg)
+Theme* Theme::instance()
+{
+	if(Theme::pinstance == NULL)
+		Theme::pinstance = new Theme();
+	return Theme::pinstance;
+}
+
+void Theme::shutdown()
+{
+	if(Theme::pinstance != NULL)
+	{
+		delete Theme::pinstance;
+		Theme::pinstance = NULL;
+	}
+}
+
+void Theme::load_image(const char *name, int type, const Fl_String &path, Fl_Config &cfg)
 {
     Fl_String filename;
     cfg.read(name, filename, 0);
     Fl_String img_path(path + filename);
-    return Fl_Image::read(img_path);
+
+    Fl_Image* img = Fl_Image::read(img_path);
+	DBG("Theme, loading image: %s (type: %i, name: %s)", img_path.c_str(), type, name);
+	if(img)
+	{
+		img->state_effect(false);
+		images[type] = img;
+		imglist.append(img);
+		DBG("Ok \n");
+	}
+	else
+	{
+		DBG("Failed, deleting...\n");
+		delete img;
+	}
 }
 
-bool load_theme(const Fl_String &file)
+Fl_Color fc;
+bool Theme::load(const Fl_String &file)
 {
-    if(!fl_file_exists(file))
-        return false;
+	if(!fl_file_exists(file))
+		return false;
 
-    int pos = file.rpos('/');
+	int pos = file.rpos('/');
     if(pos==-1) return false;
 
-    unload_theme();
+	// unload current theme
+	// TODO: add checking if some theme is loaded
+    unload();
 
-    Fl_String path(file.sub_str(0, pos+1));
+	Fl_String path(file.sub_str(0, pos+1));
     Fl_String filename;
 
     Fl_Config themeconf(file);
     themeconf.set_section("Theme");
 
-    themeconf.read("Frame color", _frame_color, FL_NO_COLOR);
+	printf("%i\n", framecol);
+    //themeconf.read("Frame color", framecol, FL_NO_COLOR);
+    themeconf.read("Frame color", fc, FL_NO_COLOR);
+    themeconf.read("Frame color unfocused", framecol_unfocus, FL_NO_COLOR);
 
-    images[TITLEBAR_BG] = load_image("Title image", path, themeconf);
-    if(images[TITLEBAR_BG])
-        loaded.append(images[TITLEBAR_BG]);
+	// default is -1, which means no "Title height" information in
+	// theme file
+	themeconf.read("Title height", tbheight, -1);
 
-    Fl_Image *up   = load_image("Close image up", path, themeconf);
-    Fl_Image *down = load_image("Close image down", path, themeconf);
-    if(up && down) {
-        images[TITLEBAR_CLOSE_UP] = up;
-        images[TITLEBAR_CLOSE_DOWN] = down;
-        up->state_effect(false);
-        down->state_effect(false);
-        loaded.append(up);
-        loaded.append(down);
-    } else {
-        if(up)   delete up;
-        if(down) delete down;
-    }
+	load_image("Title image", TITLEBAR_BG, path, themeconf);
+	load_image("Title image unfocused", TITLEBAR_BG_UNFOCUSED, path, themeconf);
+	load_image("Close image up", TITLEBAR_CLOSE_UP, path, themeconf);
+	load_image("Close image down", TITLEBAR_CLOSE_DOWN, path, themeconf);
+	load_image("Close image unfocused", TITLEBAR_CLOSE_UNFOCUSED, path, themeconf);
+    load_image("Maximize image up", TITLEBAR_MAX_UP, path, themeconf);
+    load_image("Maximize image down", TITLEBAR_MAX_DOWN, path, themeconf);
+    load_image("Maximize image unfocused", TITLEBAR_MAX_UNFOCUSED, path, themeconf);
+    load_image("Restore image up", TITLEBAR_RESTORE_UP, path, themeconf);
+    load_image("Restore image down", TITLEBAR_RESTORE_DOWN, path, themeconf);
+    load_image("Restore image unfocused", TITLEBAR_RESTORE_UNFOCUSED, path, themeconf);
+	load_image("Minimize image up", TITLEBAR_MIN_UP, path, themeconf);
+	load_image("Minimize image down", TITLEBAR_MIN_DOWN, path, themeconf);
+	load_image("Minimize image unfocused", TITLEBAR_MIN_UNFOCUSED, path, themeconf);
 
-    up   = load_image("Maximize image up", path, themeconf);
-    down = load_image("Maximize image down", path, themeconf);
-    if(up && down) {
-        images[TITLEBAR_MAX_UP] = up;
-        images[TITLEBAR_MAX_DOWN] = down;
-        up->state_effect(false);
-        down->state_effect(false);
-        loaded.append(up);
-        loaded.append(down);
-    } else {
-        if(up)   delete up;
-        if(down) delete down;
-    }
-
-    up   = load_image("Minimize image up", path, themeconf);
-    down = load_image("Minimize image down", path, themeconf);
-    if(up && down) {
-        images[TITLEBAR_MIN_UP] = up;
-        images[TITLEBAR_MIN_DOWN] = down;
-        up->state_effect(false);
-        down->state_effect(false);
-        loaded.append(up);
-        loaded.append(down);
-    } else {
-        if(up)   delete up;
-        if(down) delete down;
-    }
-
-    return true;
+	return true;
 }
 
-void unload_theme()
+void Theme::unload()
 {
-    for(unsigned n=0; n<loaded.size(); n++) {
-        delete loaded[n];
-    }
-    loaded.clear();
+    framecol = FL_NO_COLOR;
+    framecol_unfocus = FL_NO_COLOR;
 
-    for(int n=0; n<IMAGES_LAST; n++)
-        images[n] = 0;
+    for(int i=0; i < IMAGES_LAST; i++)
+        images[i] = 0;
 
-    _frame_color = FL_NO_COLOR;
+	if(imglist.size() <= 0)
+		return;
+
+    for(uint i=0; i < imglist.size(); i++)
+        delete imglist[i];
+
+    imglist.clear();
 }
 
-Fl_Image *image(int which)
+Fl_Image* Theme::image(int which)
 {
+	DBG("Theme, getting type %i\n", which);
     if(which<0 || which>=IMAGES_LAST) {
         Fl::warning("Invalid theme image index: %d", which);
         return 0;
     }
+
     return images[which];
 }
-
-Fl_Color frame_color()
-{
-    return _frame_color;
-}
-
-}; /* namespace Theme */
-

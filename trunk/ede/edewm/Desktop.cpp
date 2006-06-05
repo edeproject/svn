@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// TODO: fl_xid(WindowManager::instance()) try to replace
+// with WindowManager::instance()->root_window()
+// TODO #2: this Desktop is static mess; reduce that mess !!!
+
 Desktop_List desktops;
 
 int Desktop::desktop_count_ = 0;
@@ -122,7 +126,7 @@ void Desktop::current(Desktop *cur)
     }
 
     if(cur!=0) {
-        setProperty(fl_xid(root), _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, cur->number()-1);
+        setProperty(fl_xid(WindowManager::instance()), _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, cur->number()-1);
         if(top) {
             top->activate();
             top->raise();
@@ -146,14 +150,14 @@ Desktop* Desktop::add(const char *name)
 void Desktop::update_desktop_viewport()
 {
     CARD32 val[2] = { 0, 0 };
-    XChangeProperty(fl_display, root_win, _XA_NET_DESKTOP_VIEWPORT, XA_CARDINAL,
+    XChangeProperty(fl_display, WindowManager::instance()->root_window(), _XA_NET_DESKTOP_VIEWPORT, XA_CARDINAL,
                     32, PropModeReplace, (unsigned char *)&val, 2);
 }
 
 void Desktop::update_desktop_geometry()
 {
     CARD32 val[2] = { Fl::w(), Fl::h() };
-    XChangeProperty(fl_display, root_win, _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
+    XChangeProperty(fl_display, WindowManager::instance()->root_window(), _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
                     PropModeReplace, (unsigned char *)&val, 2);
 
 }
@@ -161,12 +165,13 @@ void Desktop::update_desktop_geometry()
 void Desktop::update_desktop_workarea()
 {
     CARD32 val[4];
-    val[0] = root->x();
-    val[1] = root->y();
-    val[2] = root->w();
-    val[3] = root->h();
+	WindowManager* wm = WindowManager::instance();
+    val[0] = wm->x();
+    val[1] = wm->y();
+    val[2] = wm->w();
+    val[3] = wm->h();
 
-    XChangeProperty(fl_display, root_win, _XA_NET_WORKAREA, XA_CARDINAL, 32,
+    XChangeProperty(fl_display, wm->root_window(), _XA_NET_WORKAREA, XA_CARDINAL, 32,
                     PropModeReplace, (unsigned char *)&val, 4);
 }
 
@@ -188,7 +193,7 @@ void Desktop::update_desktop_names(bool send)
     if(send) {
         XTextProperty names;
         if(XStringListToTextProperty((char **)workspaces, cnt, &names)) {
-            XSetTextProperty(fl_display, fl_xid(root), &names, _XA_NET_DESKTOP_NAMES);
+            XSetTextProperty(fl_display, fl_xid(WindowManager::instance()), &names, _XA_NET_DESKTOP_NAMES);
             XFree(names.value);
         }
     }
@@ -202,7 +207,7 @@ void Desktop::update_desktop_count(uint cnt, bool send)
 
     Desktop::desktop_count_ = cnt;
     if(send) {
-        setProperty(fl_xid(root), _XA_NET_NUM_DESKTOPS, XA_CARDINAL, Desktop::desktop_count_);
+        setProperty(fl_xid(WindowManager::instance()), _XA_NET_NUM_DESKTOPS, XA_CARDINAL, Desktop::desktop_count_);
 
         update_desktop_viewport();
         update_desktop_workarea();
@@ -263,11 +268,11 @@ void Desktop::set_names()
 
 // called at startup, read the list of desktops from the root
 // window properties, or on failure make some default desktops.
-void init_desktops()
+void init_desktops(WindowManager* wm)
 {
     int current_num=0, p=0;
 
-    p = getIntProperty(fl_xid(root), _XA_NET_NUM_DESKTOPS, XA_CARDINAL, -1);
+    p = getIntProperty(fl_xid(wm), _XA_NET_NUM_DESKTOPS, XA_CARDINAL, -1);
     if(p<0) {
         // No desktop count in XServer already, read from ede config file
         Fl_Config cfg(fl_find_config_file("ede.conf", 0));
@@ -281,7 +286,7 @@ void init_desktops()
     Desktop::update_desktop_names(true);
 
     // Try to get current NET desktop
-    p = getIntProperty(fl_xid(root), _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, -1);
+    p = getIntProperty(fl_xid(wm), _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, -1);
     // If not valid number, try GNOME
     if(p >= 0 && p < Desktop::desktop_count()+1)
         current_num = p+1; // Got valid

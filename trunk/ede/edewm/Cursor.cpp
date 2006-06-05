@@ -114,6 +114,7 @@ void grab_cursor(bool grab)
     // Both X and Win32 have the annoying requirement that a visible window
     // be used as a target for the events, and it cannot disappear while the
     // grab is running. I just grab efltk's first window:
+	
     if(grab && Frame::activeFrame()) {
         Window window = fl_xid(Frame::activeFrame());
         if(window &&

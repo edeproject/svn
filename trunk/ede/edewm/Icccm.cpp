@@ -2,6 +2,7 @@
 #include "Frame.h"
 #include "Winhints.h"
 #include "Windowmanager.h"
+#include "debug.h"
 
 #include <edeconf.h>
 
@@ -88,7 +89,7 @@ void ICCCM::configure(Frame *f)
     XSendEvent(fl_display, f->window(), False, StructureNotifyMask, (XEvent*)&ce);
 }
 
-void ICCCM::set_iconsizes()
+void ICCCM::set_iconsizes(WindowManager* wm)
 {
     XIconSize *is = XAllocIconSize();
 
@@ -98,7 +99,8 @@ void ICCCM::set_iconsizes()
     is->max_height = 48;
     is->width_inc = 1;
     is->height_inc = 1;
-    XSetIconSizes(fl_display, root_win, is, 1);
+	DBG("ICCM: %p\n", wm);
+    XSetIconSizes(fl_display, wm->root_window(), is, 1);
 
     XFree(is);
 }

@@ -228,7 +228,7 @@ TitlebarButton::TitlebarButton(int type) : Fl_Button(0,0,0,0), m_type(type)
 	switch(m_type) 
 	{
 		case TITLEBAR_MAX_UP: label("@mx"); break;
-		case TITLEBAR_MAXIMIZED_UP: label("@mz"); break;
+		case TITLEBAR_RESTORE_UP: label("@mz"); break;
 		case TITLEBAR_MIN_UP: label("@ii"); break;
 		case TITLEBAR_CLOSE_UP: label("@xx"); break;
 	};
@@ -243,14 +243,29 @@ void TitlebarButton::draw()
 	int idx = m_type;
 	if(flags() & FL_VALUE) idx++;
 
-	Fl_Image *i = Theme::image(idx);
-	if(i) 
+	// Fl_Image *i = Theme::image(idx);
+	Fl_Image *i = Theme::instance()->image(idx);
+
+	// backward compatibility
+	if(!i && (idx == TITLEBAR_RESTORE_UP || idx == TITLEBAR_RESTORE_DOWN))
+	{
+		if(idx == TITLEBAR_RESTORE_UP)
+			idx = TITLEBAR_MAX_UP;
+		if(idx == TITLEBAR_RESTORE_DOWN)
+			idx = TITLEBAR_MAX_DOWN;
+
+		// try again
+		//i = Theme::image(idx);
+		i = Theme::instance()->image(idx);
+	}
+
+	if(i)
 	{
 		Fl_Flags scale = 0;
 		if(i->height()!=h()) scale = FL_ALIGN_SCALE;
 		i->draw(0,0,w(),h(), scale);
-	} 
-	else 
+	}
+	else
 		Fl_Button::draw();
 }
 
@@ -258,6 +273,11 @@ Titlebar::Titlebar(int x, int y, int w, int h, const char* l) :
 Fl_Window(x, y, w, h, l), minb(TITLEBAR_MIN_UP), maxb(TITLEBAR_MAX_UP), closeb(TITLEBAR_CLOSE_UP), text_w(0)
 {
 	curr_frame = (Frame*)parent();
+
+	// send frame info to buttons (used for theme info extraction)
+	minb.frame(curr_frame);
+	maxb.frame(curr_frame);
+	closeb.frame(curr_frame);
 
 	// TODO: make this more flexible
 	static bool init = false;
@@ -318,9 +338,15 @@ void Titlebar::hide()
 
 #define set_box(b) if(box() != b) box(b)
 
+#include <assert.h>
+#include <stdio.h>
 void Titlebar::layout()
 {
-	if(Theme::use_theme())
+	//if(Theme::use_theme())
+	//assert(curr_frame != 0);
+	//assert(curr_frame->theme() != 0);
+	//printf("theme: %p\n", curr_frame->theme());
+	if(Theme::instance()->use())
 	{
 		if(box() != FL_FLAT_BOX) 
 			box(FL_FLAT_BOX);
@@ -378,7 +404,8 @@ void Titlebar::layout()
 	int mid = 0;
 
 	// for themes, buttons are little bit bigger
-	if(!Theme::use_theme())
+	//if(!Theme::use_theme())
+	if(!Theme::instance()->use())
 	{
 		s -= 4;
 		mid = 2;
@@ -422,8 +449,31 @@ void Titlebar::layout()
 void Titlebar::draw()
 {
 	DBG("Titlebar::draw(): %s", label().c_str());
-	if(Theme::use_theme() && Theme::image(TITLEBAR_BG))
-		Theme::image(TITLEBAR_BG)->draw(0, 0, w(), h(), FL_ALIGN_SCALE);
+	Theme* t = Theme::instance();
+	//DBG("YYYYYYYYYYYYYYYYYYYYYYYYYYYYY %i YYYYYYYYYYYYYYYYYYYYYYYYYYYYY", t->use());
+	//if(Theme::use_theme())
+	if(t->use())
+	{
+		//if(curr_frame->active() && Theme::image(TITLEBAR_BG))
+		//if(curr_frame->active() && t->image(TITLEBAR_BG))
+		if(t->image(TITLEBAR_BG))
+			t->image(TITLEBAR_BG)->draw(0, 0, w(), h(), FL_ALIGN_SCALE);
+			//Theme::image(TITLEBAR_BG)->draw(0, 0, w(), h(), FL_ALIGN_SCALE);
+		
+		//if(!curr_frame->active() && Theme::image(TITLEBAR_BG_UNFOCUSED))
+		/*if(!curr_frame->active())
+		{
+			// back compatibility
+			Fl_Image* img = 0;
+			if(curr_frame->theme()->image(TITLEBAR_BG_UNFOCUSED))
+				img = t->image(TITLEBAR_BG_UNFOCUSED);
+			else
+				img = t->image(TITLEBAR_BG);
+
+			img->draw(0, 0, w(), h(), FL_ALIGN_SCALE);
+			//Theme::image(TITLEBAR_BG_UNFOCUSED)->draw(0, 0, w(), h(), FL_ALIGN_SCALE);
+		}*/
+	}
 	else
 		draw_box();
 
@@ -454,11 +504,15 @@ void Titlebar::draw()
 	draw_child(minb);
 }
 
-void Titlebar::popup_menu(Frame* frm)
+void Titlebar::popup_menu()
 {
+	// FIXME: possible crashes !!!
+	//
 	// must use it here, since it will
 	// be initialized for other files where is
 	// used
+	/*
+	
 	menu_frame = curr_frame;
 
 	if(curr_frame->maximized)
@@ -486,11 +540,12 @@ void Titlebar::popup_menu(Frame* frm)
 		menu_min->deactivate();
 	}
 
-	update_desktops((Fl_Group*)menu_desktop);
+	update_desktops((Fl_Group*)menu_desktop); // <-- trace here
 	title_menu->Fl_Group::focus(-1);
 	title_menu->popup(Fl::event_x_root(), Fl::event_y_root());
 
 	menu_frame = 0;
+	*/
 }
 
 // handle double click on titlebar area
@@ -502,6 +557,11 @@ void Titlebar::handle_double_click()
 void Titlebar::cb_change_desktop(Fl_Widget*, void* data)
 {
 	Desktop *d = (Desktop*)data;
+
+	// or we will crash...
+	if(!menu_frame)
+		return;
+
 	menu_frame->desktop_ = d;
 
 	if(d && d!=Desktop::current()) 
@@ -555,10 +615,17 @@ void Titlebar::update_desktops(Fl_Group* g)
 // maximized or restored
 void Titlebar::handle_maximize(bool is_max)
 {
-	if(is_max)
-		maxb.label("@mz");
+	//if(!Theme::use_theme())
+	if(!Theme::instance()->use())
+	{
+		if(is_max) maxb.label("@mz");
+		else maxb.label("@mx");
+	}
 	else
-		maxb.label("@mx");
+	{
+		if(is_max) maxb.type(TITLEBAR_RESTORE_UP);
+		else maxb.type(TITLEBAR_MAX_UP);
+	}
 }
 
 int Titlebar::handle(int event)
@@ -569,6 +636,8 @@ int Titlebar::handle(int event)
 
 	// Uh, oh... details are in Frame.cpp
 	extern bool handle_title;
+
+	WindowManager* root = WindowManager::instance();
 
 	switch(event)
 	{
@@ -609,7 +678,7 @@ int Titlebar::handle(int event)
 			}
 			else if(Fl::event_button() == 3)
 			{
-				popup_menu(curr_frame);
+				popup_menu();
 				return 1;
 			}
 			

@@ -100,7 +100,7 @@ bool NETWM::get_window_type(Frame *f)
 void NETWM::set_active_window(Window win)
 {
     //Set NET-WM active window
-    XChangeProperty(fl_display, root_win, _XA_NET_ACTIVE_WINDOW, XA_WINDOW, 32,
+    XChangeProperty(fl_display, WindowManager::instance()->root_window(), _XA_NET_ACTIVE_WINDOW, XA_WINDOW, 32,
                     PropModeReplace, (unsigned char *)&win, 1);
 }
 

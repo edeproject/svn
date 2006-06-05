@@ -1,6 +1,6 @@
+#include "Windowmanager.h"
 #include "Frame.h"
 #include "Desktop.h"
-#include "Windowmanager.h"
 
 #include <efltk/filename.h>
 #include <efltk/fl_draw.h>
@@ -32,14 +32,12 @@ int main(int argc, char ** argv)
 
     fl_init_locale_support("edewm", PREFIX"/share/locale");
 
-    WindowManager wm(argc, argv);
-    root = &wm;
-
+	WindowManager::init(argc, argv);
     Fl_Style::load_theme();
 
     while(!wm_shutdown) {
         Fl::wait();
-        wm.idle();
+		WindowManager::instance()->idle();
     }
 
     Frame_List l(map_order);
@@ -48,6 +46,7 @@ int main(int argc, char ** argv)
         delete f;
     }
 
+	WindowManager::shutdown();
     return 0;
 }
 
@@ -55,7 +54,7 @@ int main(int argc, char ** argv)
 void DBG(const char *str, ...)
 {
 #ifdef _DEBUG
-    fprintf(stderr, "EDEWM DEBUG: ");
+    fprintf(stderr, "edewm debug: ");
 
     va_list args;
     va_start(args, str);
