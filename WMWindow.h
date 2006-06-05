@@ -15,7 +15,8 @@
 
 class Frame;
 
-class WMWindow : public Fl_Window {
+class WMWindow : public Fl_Window
+{
     Frame* frame;
     static void cb(Fl_Widget *w, void *) { ((Fl_Window*)w)->destroy(); }
 public:

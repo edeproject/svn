@@ -33,10 +33,15 @@ class TitlebarButton : public Fl_Button
 {
 	private:
 		int m_type;
+		Frame* curr_frame;
 	public:
 		TitlebarButton(int type);
 		~TitlebarButton();
 		void draw();
+		void frame(Frame* f) { curr_frame = f; }
+		// used to see what is button in maximize or restore state
+		void type(int t) { m_type = t; }
+		int type() { return m_type; }
 };
 
 class Titlebar : public Fl_Window
@@ -54,12 +59,13 @@ class Titlebar : public Fl_Window
 		void setting_changed();
 		void show();
 		void hide();
-		void popup_menu(Frame* curr_frame);
+		void popup_menu();
 		int handle(int event);
 		void layout();
 		void draw();
 		void handle_double_click();
 		void update_desktops(Fl_Group* g);
+		void frame(Frame* f) { curr_frame = f; }
 		Frame* frame() { return curr_frame; }
 
 		// called from Frame::maximize()

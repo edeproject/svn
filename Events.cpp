@@ -8,6 +8,7 @@
 #include "debug.h"
 
 #include "Winhints.h"
+#include <efltk/fl_ask.h>
 
 bool Frame::configure_event(const XConfigureRequestEvent *e)
 {
@@ -85,7 +86,7 @@ bool Frame::reparent_event(const XReparentEvent *e)
     DBG("reparent_event 0x%lx", e->window);
 
     if(e->parent==fl_xid(this)) return true; // echo
-    if(e->parent==fl_xid(root)) return true; // app is trying to tear-off again?
+    if(e->parent==fl_xid(WindowManager::instance())) return true; // app is trying to tear-off again?
 
     DBG("Destroy in reparent_event");
     destroy_frame(); // guess they are trying to paste tear-off thing back?
@@ -120,6 +121,12 @@ bool Frame::clientmsg_event(const XClientMessageEvent *e)
 
 		if(atom1 == _XA_NET_EDE_RESTORE_SIZE) {
 			restore();
+			return true;
+		}
+		if(atom1 == _XA_NET_EDE_LOGOUT)
+		{
+			fl_alert("Logout not implemented yet !");
+			DBG("Got atom type: %i but LOGOUT is %s", atom1, _XA_NET_EDE_LOGOUT);
 			return true;
 		}
 
@@ -271,7 +278,7 @@ bool Frame::property_event(const XPropertyEvent *e)
 
             DBG("New NET WM STRUT");
             NETWM::get_strut(this);
-            root->update_workarea(true);
+			WindowManager::instance()->update_workarea(true);
 
         } else if(a== _XA_NET_WM_NAME) {
 

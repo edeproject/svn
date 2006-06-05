@@ -94,6 +94,7 @@ Atom _XA_KWM_WIN_ICON;
 
 //EDE
 Atom _XA_NET_EDE_RESTORE_SIZE;
+Atom _XA_NET_EDE_LOGOUT;
 
 #define CNT(x) (sizeof(x)/sizeof(x[0]))
 
@@ -197,7 +198,8 @@ void init_atoms()
         /* KDE 1 */
         { &_XA_KWM_WIN_ICON,       "_NET_KWM_WIN_ICON" },
         /* EDE specific message for restoring sizes (not in specs) */
-		{ &_XA_NET_EDE_RESTORE_SIZE, "_NET_EDE_RESTORE_SIZE" }
+		{ &_XA_NET_EDE_RESTORE_SIZE, "_NET_EDE_RESTORE_SIZE" },
+		{ &_XA_NET_EDE_LOGOUT, "_NET_EDE_LOGOUT" }
 
         /*
         { &_XA_CLIPBOARD,           "CLIPBOARD" },

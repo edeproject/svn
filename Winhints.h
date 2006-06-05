@@ -155,6 +155,7 @@ extern Atom _XA_KWM_WIN_ICON;
 
 // EDE specific message for restoring sizes (not in specs)
 extern Atom _XA_NET_EDE_RESTORE_SIZE;
+extern Atom _XA_NET_EDE_LOGOUT;
 
 extern void init_atoms();
 extern void register_protocols(Window root);

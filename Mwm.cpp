@@ -180,12 +180,11 @@ bool MWM::update_hints(Frame *f)
     return ((f->frame_flags() ^ old_frame_flags) || (f->decor_flags() ^ old_decor_flags) || (f->func_flags() ^ old_func_flags));
 }
 
-void MWM::set_motif_info()
+void MWM::set_motif_info(WindowManager* wm)
 {
     MotifWmInfo mwminfo;
     mwminfo.flags = MWM_INFO_STARTUP_CUSTOM;
-    mwminfo.wm_window = root_win;
-    XChangeProperty(fl_display, root_win, _XATOM_MOTIF_WM_INFO, _XATOM_MOTIF_WM_INFO,
-                    32, PropModeReplace,
-                    (unsigned char *)&mwminfo, 2);
+    mwminfo.wm_window = wm->root_window();
+    XChangeProperty(fl_display, wm->root_window(), 
+			_XATOM_MOTIF_WM_INFO, _XATOM_MOTIF_WM_INFO, 32, PropModeReplace, (unsigned char *)&mwminfo, 2);
 }
