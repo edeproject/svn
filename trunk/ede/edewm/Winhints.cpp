@@ -93,8 +93,13 @@ Atom _XA_NET_WM_STATE_STAYS_ON_TOP;
 Atom _XA_KWM_WIN_ICON;
 
 //EDE
-Atom _XA_NET_EDE_RESTORE_SIZE;
-Atom _XA_NET_EDE_LOGOUT;
+//Atom _XA_NET_EDE_RESTORE_SIZE;
+//Atom _XA_NET_EDE_LOGOUT;
+Atom _XA_EDE_WM_ACTION;
+Atom _XA_EDE_WM_RESTORE_SIZE;
+Atom _XA_EDE_WM_LOGOUT;
+
+
 
 #define CNT(x) (sizeof(x)/sizeof(x[0]))
 
@@ -197,9 +202,10 @@ void init_atoms()
         { &_XA_NET_WM_STATE_STAYS_ON_TOP, "_NET_WM_STATE_STAYS_ON_TOP" },
         /* KDE 1 */
         { &_XA_KWM_WIN_ICON,       "_NET_KWM_WIN_ICON" },
-        /* EDE specific message for restoring sizes (not in specs) */
-		{ &_XA_NET_EDE_RESTORE_SIZE, "_NET_EDE_RESTORE_SIZE" },
-		{ &_XA_NET_EDE_LOGOUT, "_NET_EDE_LOGOUT" }
+        /* EDE specific messages */
+		{ &_XA_EDE_WM_ACTION, "_EDE_WM_ACTION" },
+		{ &_XA_EDE_WM_RESTORE_SIZE, "_EDE_WM_RESTORE_SIZE" },
+		{ &_XA_EDE_WM_LOGOUT, "_EDE_WM_LOGOUT" }
 
         /*
         { &_XA_CLIPBOARD,           "CLIPBOARD" },
