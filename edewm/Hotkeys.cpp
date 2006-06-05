@@ -261,9 +261,9 @@ int Handle_Hotkey() {
 	return 0;
 }
 
-void Grab_Hotkeys()
+void Grab_Hotkeys(WindowManager* wm)
 {
-	Window root_w = fl_xid(root);
+	Window root_w = fl_xid(wm);
 	for (int i = 0; keybindings[i].key; i++) {
 		int k = keybindings[i].key;
 		int keycode = XKeysymToKeycode(fl_display, k & 0xFFFF);

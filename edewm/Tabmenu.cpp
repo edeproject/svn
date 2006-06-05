@@ -179,7 +179,7 @@ void show_tabmenu(int direction)
 
         int mask = CWBorderPixel|CWColormap|CWEventMask|CWBitGravity|CWOverrideRedirect|CWSaveUnder;
         Window xid = XCreateWindow(fl_display,
-                                   fl_xid(root),
+                                   fl_xid(WindowManager::instance()),
                                    win->x(), win->y(), win->w(), win->h(),
                                    0, // borderwidth
                                    fl_visual->depth,

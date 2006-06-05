@@ -2,6 +2,7 @@
 #define _ICCCM_H_
 
 class Frame;
+class WindowManager;
 
 class ICCCM
 {
@@ -11,7 +12,7 @@ public:
     static void state_withdrawn(Frame *f);
 
     static void configure(Frame *f);
-    static void set_iconsizes();
+    static void set_iconsizes(WindowManager* wm);
 
     static bool get_size(Frame *f, int &w, int &h);
     static char *get_title(Frame *f);

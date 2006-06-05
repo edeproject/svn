@@ -69,6 +69,7 @@ typedef struct {
 ////////////////////////////////////
 
 class Frame;
+class WindowManager;
 
 class MWM
 {
@@ -76,7 +77,7 @@ public:
     static void get_hints(Frame *f);
     static bool update_hints(Frame *f);
 
-    static void set_motif_info();
+    static void set_motif_info(WindowManager* wm);
 };
 
 #endif

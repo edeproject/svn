@@ -1,7 +1,3 @@
-// Frame.cpp
-
-//#define TITLE_H 20
-#define TITLE_H title->h()
 
 #include "config.h"
 #include "Frame.h"
@@ -11,14 +7,14 @@
 #include "Netwm.h"
 #include "Icon.h"
 #include "Theme.h"
-
 #include "debug.h"
 
 #include <string.h>
 #include <stdio.h>
-
 #include <efltk/fl_draw.h>
 #include <efltk/Fl_Tooltip.h>
+
+#define TITLE_H title->h()
 
 static const int XEventMask =
 	ExposureMask
@@ -147,6 +143,9 @@ colormapWinCount(0)
 	title->label_color((Fl_Color)title_normal_color_text);
 	title->color((Fl_Color)title_normal_color);
 	title->label_font(label_font()->bold());
+	// FIXME: possible duplication
+	// see Titlebar.cpp
+	title->frame(this);
 
 	end();
 
@@ -259,6 +258,7 @@ colormapWinCount(0)
 
 	if (autoplace && !existing && !(transient_for() && (x() || y()))) {
 		// autoplacement (stupid version for now)
+		WindowManager* root = WindowManager::instance();
 		x(root->x()+(root->w()-w())/2);
 		y(root->y()+(root->h()-h())/2);
 		// move it until it does not hide any existing windows:
@@ -345,7 +345,7 @@ colormapWinCount(0)
 	stack_order.append(this);
 
 	WindowManager::update_client_list();
-	if(strut()) root->update_workarea(true);
+	if(strut()) WindowManager::instance()->update_workarea(true);
 }
 
 extern bool wm_shutdown;
@@ -355,7 +355,6 @@ extern bool wm_shutdown;
 // to the contained window, which is already been destroyed.
 Frame::~Frame()
 {
-
 }
 
 
@@ -411,7 +410,7 @@ void Frame::destroy_frame()
 	{
 		delete strut_;
 		strut_=0;
-		root->update_workarea(true);
+		WindowManager::instance()->update_workarea(true);
 	}
 	if(grab()) grab_cursor(false);
 
@@ -504,7 +503,8 @@ void Frame::settings_changed()
 // user can resize window
 int Frame::force_x_onscreen(int X, int W)
 {
-	if(X<root->x()) X=root->x();
+	if(X < WindowManager::instance()->x()) 
+		X = WindowManager::instance()->x();
 //	if(X+W > root->x()+root->w()) X=root->x()+root->w()-W;
 
 	return X;
@@ -513,7 +513,8 @@ int Frame::force_x_onscreen(int X, int W)
 // modify the passed Y & H to a legal vertical window position:
 int Frame::force_y_onscreen(int Y, int H)
 {
-	if(Y<root->y()) Y=root->y();
+	if(Y < WindowManager::instance()->y()) 
+		Y = WindowManager::instance()->y();
 //	if(Y+H > root->y()+root->h()) Y=root->y()+root->h()-H;
 
 	return Y;
@@ -638,7 +639,7 @@ void Frame::fix_transient_for()
 	Frame* p = 0;
 	if(transient_for_xid)
 	{
-		p = root->find_by_wid(transient_for_xid);
+		p = WindowManager::instance()->find_by_wid(transient_for_xid);
 
 		for(Frame* q = p; q; q = q->transient_for_) {
 			if(q == this) {
@@ -985,7 +986,7 @@ void Frame::raise()
 		newtop->activate_if_transient();
 
 	DBG("Calling restack_windows()");
-	root->restack_windows();
+	WindowManager::instance()->restack_windows();
 	DBG("Calling update_task_list()");
 }
 
@@ -1001,7 +1002,7 @@ void Frame::lower()
 	stack_order.remove(this);
 	stack_order.prepend(this);
 
-	root->restack_windows();
+	WindowManager::instance()->restack_windows();
 }
 
 
@@ -1023,10 +1024,10 @@ void Frame::maximize()
 
 	bool m = true;
 
-	int W=root->w(); 
-	int H=root->h();
-	W-=offset_w;
-	H-=offset_h;
+	int W = WindowManager::instance()->w(); 
+	int H = WindowManager::instance()->h();
+	W -= offset_w;
+	H -= offset_h;
 
 	if(ICCCM::get_size(this, W, H)) 
 		m=false;
@@ -1039,6 +1040,7 @@ void Frame::maximize()
 	W+=offset_w;
 	H+=offset_h;
 
+	WindowManager* root = WindowManager::instance();
 	if(Frame::animate) 
 		::animate(x(), y(), w(), h(), root->x(), root->y(), root->w(), root->h());
 
@@ -1111,6 +1113,8 @@ void Frame::desktop(Desktop* d)
 
 void Frame::handle_move(int &nx, int &ny)
 {
+	WindowManager* root = WindowManager::instance();
+
 	int X = root->x();
 	if(nx < X && nx > X-SCREEN_SNAP) {
 		int t = X;
@@ -1281,7 +1285,7 @@ void Frame::draw()
 
 	DBG("Frame::draw(%x)", damage());
 
-	if(!Theme::use_theme() || Theme::frame_color()==FL_NO_COLOR)
+	/*if(!Theme::use_theme() || Theme::frame_color()==FL_NO_COLOR)
 	{
 		if(!decor_flag(BORDER) || !decor_flag(THIN_BORDER))
 			draw_frame();
@@ -1300,7 +1304,28 @@ void Frame::draw()
 		fl_color(color);
 		fl_rect(1,1,w()-2,h()-2);
 		fl_rect(2,2,w()-4,h()-4);
+	}*/
+	if(!Theme::instance()->use() || Theme::instance()->frame_color()==FL_NO_COLOR)
+	{
+		if(!decor_flag(BORDER) || !decor_flag(THIN_BORDER))
+			draw_frame();
 	}
+	else
+	{
+		Fl_Color color = Theme::instance()->frame_color();
+		fl_color(fl_lighter(color));
+		fl_line(0,0,0,h());
+		fl_line(0,0,w(),0);
+
+		fl_color(fl_darker(color));
+		fl_line(w()-1,0,w()-1,h());
+		fl_line(0,h()-1,w(),h()-1);
+
+		fl_color(color);
+		fl_rect(1,1,w()-2,h()-2);
+		fl_rect(2,2,w()-4,h()-4);
+	}
+
 	
 	if(decor_flag(TITLEBAR))
 	{
@@ -1376,6 +1401,8 @@ void Frame::set_cursor(int r) {
 		c = FL_CURSOR_NESW;
 		break;
 	}
+
+	WindowManager* root = WindowManager::instance();
 	if(this != previous_frame || c != root->get_cursor()) {
 		previous_frame = this;
 		if(r<=0)
@@ -1616,7 +1643,7 @@ int Frame::handle(const XEvent* ei)
 
 		default:
 #ifdef SHAPE
-			if(ei->type == (root->XShapeEventBase + ShapeNotify))
+			if(ei->type == (WindowManager::instance()->XShapeEventBase + ShapeNotify))
 				return shape_event((XShapeEvent *)&ei);
 #endif
 		break;
