@@ -1,7 +1,12 @@
-# Copyright (c) 2000. - 2005. EDE Authors
-# This program is licenced under terms of the
-# GNU General Public Licence version 2 or newer.
-# See COPYING for details.
+dnl
+dnl $Id$
+dnl
+dnl Part of Equinox Desktop Environment (EDE).
+dnl Copyright (c) 2000-2006 EDE Authors.
+dnl 
+dnl This program is licenced under terms of the 
+dnl GNU General Public Licence version 2 or newer.
+dnl See COPYING for details.
 
 dnl If edeconf.h.in missing, parse this file with autoheader
 
