@@ -1,3 +1,15 @@
+/*
+ * $Id$
+ *
+ * Edewm, window manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
 // config.h
 // You can edit these symbols to change the behavior & appearance of flwm.
 // Turning off features will make flwm smaller too!

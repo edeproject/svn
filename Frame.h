@@ -1,3 +1,15 @@
+/*
+ * $Id$
+ *
+ * Edewm, window manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
 // Each X window being managed by fltk has one of these
 
 #ifndef Frame_H
@@ -13,12 +25,6 @@
 #include <efltk/Fl_Button.h>
 #include <efltk/Fl_Bitmap.h>
 #include <efltk/x.h>
-
-// Do not place Theme.h _before_ inclusion
-// of x.h and Fl_Window.h; seems compiler
-// will choke ont that
-//#include "Theme.h"
-#include <assert.h>
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
