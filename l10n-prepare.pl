@@ -1,12 +1,17 @@
 #!/usr/bin/perl
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) Vedran Ljubovic 2005.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
 
 # This Perl script prepares files for translations.
 # Extracts strings from code, copies into l10n/ directory and
 # creates convinient .tar.gz packages for languages.
-# Copyright (c) Vedran Ljubovic 2005.
-# This program is licensed under terms of GNU General Public 
-# License v2 or greater.
-
 
 @directories = ("common", "ecolorconf", "econtrol", "edewm", 
 "edisplayconf", "efinder","eiconman", "eiconsconf", "einstaller", 

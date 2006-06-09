@@ -12,13 +12,11 @@
 
 #include "eicon.h"
 
-int label_background =  46848
-;
+int label_background =  46848;
 int label_foreground = FL_WHITE;
 int label_fontsize = 12;
 int label_maxwidth = 75;
-int label_gridspacing = 16
-;
+int label_gridspacing = 16;
 bool label_trans = true;
 bool label_engage_1click = false;
 bool auto_arr = false;

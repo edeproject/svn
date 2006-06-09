@@ -1,10 +1,16 @@
+/*
+ * $Id$
+ *
+ * EControl applet for keyboard shortcuts
+ * Part of Equinox Desktop Environment (EDE).
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
 // -- copyied over from efluid (Fl_Menu_Type.cpp)
-// This program is licenced under terms of the
-// GNU General Public Licence version 2 or newer.
-// See COPYING for details.
-
 #include "Shortcut_Button.h"
-
 #include <efltk/Fl_Button.h>
 #include <efltk/fl_draw.h>
 #include <efltk/Fl.h>
