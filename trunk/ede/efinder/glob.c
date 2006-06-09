@@ -1,5 +1,6 @@
 
-/* glob.c file filter for grep.*/
+/* $Id$ */
+/* glob.c file filter for grep. */
 /* 
    Copyright 2000 Edscott Wilson Garcia
 
