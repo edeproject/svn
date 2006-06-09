@@ -7,7 +7,6 @@ code_name {.cpp}
 gridx 5 
 gridy 5 
 snap 3
-decl {// Panel config for EDE is (C) Copyright 2001-2002 by Martin Pekar, this program is provided under the terms of GNU GPL v.2, see file COPYING for more information.} {} 
 
 decl {\#include <efltk/Fl_File_Dialog.h>} {} 
 

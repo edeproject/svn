@@ -1,8 +1,9 @@
+// 
+// $Id$
 // Fl_Time.cxx
 // Source file for the time widget class
 //
 // Copyright (C) 2000 Softfield Research Ltd.
-//
 // Changes 02/09/2001 by Martin Pekar
 //
 // This program is free software; you can redistribute it and/or

@@ -30,12 +30,8 @@ extern bool label_trans;
 extern bool label_engage_1click;
 extern bool auto_arr;
 	    
-void
- readIconsConfiguration()
-;
-void
- writeIconsConfiguration()
-;
+void readIconsConfiguration();
+void writeIconsConfiguration();
 void sendUpdateInfo();
 
 #endif
