@@ -152,5 +152,9 @@ AC_OUTPUT([
  datas/startede
  README
  docs/ede/index.html
+ docs/ede/authors.html
+ docs/ede/changelog.html
+ docs/ede/copying.html
+ docs/ede/help.html
  ede.spec
  ])
