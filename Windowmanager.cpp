@@ -5,7 +5,7 @@
  * Part of Equinox Desktop Environment (EDE).
  * Copyright (c) 2000-2006 EDE Authors.
  *
- * This program is licenced under terms of the 
+ * This program is licenced under terms of the
  * GNU General Public Licence version 2 or newer.
  * See COPYING for details.
  */
@@ -68,12 +68,12 @@ static int wm_event_handler(int e)
 
 	// XEvent that fltk did not understand.
 	if(!e)
-   	{
+	{
 		Window window = fl_xevent.xany.window;
 
 		// unfortunately most of the redirect events put the interesting
 		// window id in a different place:
-		switch (fl_xevent.type) 
+		switch (fl_xevent.type)
 		{
 			case CirculateNotify:
 			case CirculateRequest:
@@ -89,7 +89,7 @@ static int wm_event_handler(int e)
 				break;
 		}
 
-		for(uint n=stack_order.size(); n--;) 
+		for(uint n=stack_order.size(); n--;)
 		{
 			Frame *c = stack_order[n];
 			if (c->window() == window || fl_xid(c) == window)
@@ -98,22 +98,22 @@ static int wm_event_handler(int e)
 
 		return WindowManager::instance()->handle(&fl_xevent);
 	}
-   	else
+	else
 		return WindowManager::instance()->handle(e);
 
 	return 0;
 }
 
-int xerror_handler(Display* d, XErrorEvent* e) 
+int xerror_handler(Display* d, XErrorEvent* e)
 {
-	if(WindowManager::instance()->initialized() && 
+	if(WindowManager::instance()->initialized() &&
 		(e->request_code == X_ChangeWindowAttributes) && e->error_code == BadAccess)
 		Fl::fatal(_("Another window manager is running.  You must exit it before running %s."), program_name);
 
-#ifndef DEBUG
+	#ifndef DEBUG
 	if (e->error_code == BadWindow) return 0;
 	if (e->error_code == BadColor) return 0;
-#endif
+	#endif
 
 	char buf1[128], buf2[128];
 	sprintf(buf1, "XRequest.%d", e->request_code);
@@ -124,13 +124,14 @@ int xerror_handler(Display* d, XErrorEvent* e)
 }
 
 // consume a switch from argv.	Returns number of words eaten, 0 on error:
-int arg(int argc, char **argv, int &i) {
+int arg(int argc, char **argv, int &i)
+{
 	const char *s = argv[i];
 	if (s[0] != '-') return 0;
 	s++;
 
 	// do single-word switches:
-	if (!strcmp(s,"x")) 
+	if (!strcmp(s,"x"))
 	{
 		//exit_flag = 1;
 		i++;
@@ -140,7 +141,7 @@ int arg(int argc, char **argv, int &i) {
 	// do switches with a value:
 	const char *v = argv[i+1];
 	if (i >= argc-1 || !v)
-		return 0;	// all the rest need an argument, so if missing it is an error
+		return 0;								  // all the rest need an argument, so if missing it is an error
 
 	if (!strcmp(s, "cfg"))
 		cfg = v;
@@ -155,17 +156,17 @@ int arg(int argc, char **argv, int &i) {
 		fl_visual = XGetVisualInfo(fl_display, VisualIDMask, &templt, &num);
 		if (!fl_visual) Fl::fatal("No visual with id %d",visid);
 		fl_colormap = XCreateColormap(fl_display, RootWindow(fl_display,fl_screen),
-									  fl_visual->visual, AllocNone);
+			fl_visual->visual, AllocNone);
 	} else
-		return 0; // unrecognized
+	return 0;									  // unrecognized
 	// return the fact that we consumed 2 switches:
 	i += 2;
 	return 2;
 }
 
-int real_align(int i) 
+int real_align(int i)
 {
-	switch(i) 
+	switch(i)
 	{
 		default:
 		case 0: break;
@@ -209,10 +210,8 @@ void do_xset_from_conf()
 	xset.set_blank(val1);
 }
 
-
-
 WindowManager::WindowManager()
-: Fl_Window(0, 0, Fl::w(), Fl::h())
+: Fl_Window(0, 0, Fl::w(), Fl::h()), is_init(false), is_running(false)
 {
 	xset = new Exset();
 	box(FL_NO_BOX);
@@ -223,7 +222,6 @@ WindowManager::~WindowManager()
 	Theme::instance()->shutdown();
 	printf("WindowManager destructor\n");
 }
-
 
 void WindowManager::init(int argc, char *argv[])
 {
@@ -246,7 +244,7 @@ void WindowManager::shutdown()
 }
 
 // This function could be placed in WindowManager.h
-// but here is just for assert which should assure 
+// but here is just for assert which should assure
 // this is initialized first, before any existing static
 // objects.
 WindowManager* WindowManager::instance()
@@ -269,15 +267,15 @@ void WindowManager::init_internals(int argc, char* argv[])
 	int i;
 	if(Fl::args(argc, argv, i, arg) < argc)
 		Fl::error("options are:\n"
-				  " -d[isplay] host:#.#\tX display & screen to use\n"
-				  " -v[isual] #\t\tvisual to use\n"
-				  " -g[eometry] WxH+X+Y\tlimits windows to this area\n"
-				  " -x\t\t\tmenu says Exit instead of logout\n"
-				  " -bg color\t\tFrame color\n"
-				  " -fg color\t\tLabel color\n"
-				  " -bg2 color\t\tText field color\n"
-				  " -cfg color\t\tCursor color\n"
-				  " -cbg color\t\tCursor outline color" );
+			" -d[isplay] host:#.#\tX display & screen to use\n"
+			" -v[isual] #\t\tvisual to use\n"
+			" -g[eometry] WxH+X+Y\tlimits windows to this area\n"
+			" -x\t\t\tmenu says Exit instead of logout\n"
+			" -bg color\t\tFrame color\n"
+			" -fg color\t\tLabel color\n"
+			" -bg2 color\t\tText field color\n"
+			" -cfg color\t\tCursor color\n"
+			" -cbg color\t\tCursor outline color" );
 
 	// Init started
 	is_init = false;
@@ -285,12 +283,12 @@ void WindowManager::init_internals(int argc, char* argv[])
 	XSetErrorHandler(xerror_handler);
 	Fl::add_handler(wm_event_handler);
 
-	init_atoms(); // intern atoms
+	init_atoms();								  // intern atoms
 
 	read_configuration();
 	do_xset_from_conf();
 
-	show(); // Set XID now
+	show();										  // Set XID now
 
 	set_default_cursor();
 	ICCCM::set_iconsizes(this);
@@ -313,11 +311,11 @@ void WindowManager::init_internals(int argc, char* argv[])
 	Window w1, w2, *wins;
 	XWindowAttributes attr;
 	XQueryTree(fl_display, fl_xid(this), &w1, &w2, &wins, &n);
-	for (i = 0; i < (int)n; ++i) 
+	for (i = 0; i < (int)n; ++i)
 	{
 		XGetWindowAttributes(fl_display, wins[i], &attr);
 		if(attr.override_redirect) continue;
-		if(!attr.map_state) 
+		if(!attr.map_state)
 		{
 			if(getIntProperty(wins[i], _XA_WM_STATE, _XA_WM_STATE, 0) != IconicState)
 				continue;
@@ -327,10 +325,10 @@ void WindowManager::init_internals(int argc, char* argv[])
 	XFree((void *)wins);
 
 	// Activate last one
-	for(uint n=0; n<map_order.size(); n++) 
+	for(uint n=0; n<map_order.size(); n++)
 	{
 		Frame *f = map_order[n];
-		if(f->desktop()==Desktop::current()) 
+		if(f->desktop()==Desktop::current())
 		{
 			f->activate();
 			f->raise();
@@ -339,12 +337,13 @@ void WindowManager::init_internals(int argc, char* argv[])
 	}
 
 	update_workarea(true);
+	is_running = true;
 }
 
 void WindowManager::read_configuration()
 {
 	Fl_String buf;
-	
+
 	Fl_Config wmconf(fl_find_config_file("wmanager.conf", 0));
 
 	wmconf.set_section("TitleBar");
@@ -364,30 +363,31 @@ void WindowManager::read_configuration()
 	wmconf.read("Opaque resize", Frame::do_opaque, false);
 	wmconf.read("Animate", Frame::animate, true);
 	wmconf.read("Animate Speed", Frame::animate_speed, 15);
-	
+
 	wmconf.set_section("Misc");
 
 	bool theme = false;
 	wmconf.read("Use theme", theme, false);
-	if(theme) 
+	if(theme)
 	{
 		wmconf.read("Theme path", buf, 0);
 		Theme::instance()->load(buf);
 		Theme::instance()->use(true);
-	} 
-	else 
+	}
+	else
 	{
 		Theme::instance()->unload();
 		Theme::instance()->use(false);
 	}
 	Frame::settings_changed_all();
-	
+
 	read_hotkeys_configuration();
 }
 
 void WindowManager::show()
 {
-	if(!shown()) {
+	if(!shown())
+	{
 		create();
 
 		// Destroy FLTK window
@@ -398,11 +398,11 @@ void WindowManager::show()
 
 		// setting attributes on root window makes it the window manager:
 		XSelectInput(fl_display, fl_xid(this),
-					 SubstructureRedirectMask | SubstructureNotifyMask |
-					 ColormapChangeMask | PropertyChangeMask |
-					 ButtonPressMask | ButtonReleaseMask |
-					 EnterWindowMask | LeaveWindowMask |
-					 KeyPressMask | KeyReleaseMask | KeymapStateMask);
+			SubstructureRedirectMask | SubstructureNotifyMask |
+			ColormapChangeMask | PropertyChangeMask |
+			ButtonPressMask | ButtonReleaseMask |
+			EnterWindowMask | LeaveWindowMask |
+			KeyPressMask | KeyReleaseMask | KeymapStateMask);
 
 		DBG("RootWindow ID set to xid");
 		draw();
@@ -430,7 +430,7 @@ void WindowManager::set_cursor(Fl_Cursor c, Fl_Color fg, Fl_Color bg)
 
 Frame *WindowManager::find_by_wid(Window wid)
 {
-	for(uint n=0; n<map_order.size(); n++) 
+	for(uint n=0; n<map_order.size(); n++)
 	{
 		Frame *f = map_order[n];
 		if(f->window()==wid) return f;
@@ -444,7 +444,7 @@ void WindowManager::restack_windows()
 	int total=0;
 
 	DBG("Restack: DOCK, SPLASH");
-	for(uint n=0; n<stack_order.size(); n++) 
+	for(uint n=0; n<stack_order.size(); n++)
 	{
 		Frame *f = stack_order[n];
 		if(f->window_type()==TYPE_DOCK || f->window_type()==TYPE_SPLASH)
@@ -468,9 +468,9 @@ void WindowManager::restack_windows()
 	{
 		Frame *f = stack_order[n];
 		if( (f->window_type()==TYPE_NORMAL ||
-			 f->window_type()==TYPE_UTIL ||
-			 f->window_type()==TYPE_DIALOG) &&
-		   f->state()==NORMAL )
+			f->window_type()==TYPE_UTIL ||
+			f->window_type()==TYPE_DIALOG) &&
+			f->state()==NORMAL )
 		{
 			windows = (Window*)realloc(windows, (total+1)*sizeof(Window));
 			windows[total++] = fl_xid(f);
@@ -542,7 +542,7 @@ void WindowManager::update_client_list()
 	int i=0, client_count=0;
 	Frame *f;
 
-	Window *net_map_order	= 0;
+	Window *net_map_order   = 0;
 	Window *net_stack_order = 0;
 
 	for(uint n=0; n<map_order.size(); n++)
@@ -553,7 +553,7 @@ void WindowManager::update_client_list()
 	}
 	if(!client_count) return;
 
-	net_map_order	= new Window[client_count];
+	net_map_order   = new Window[client_count];
 	net_stack_order = new Window[client_count];
 
 	i=0;
@@ -574,10 +574,10 @@ void WindowManager::update_client_list()
 			net_map_order[i++] = f->window();
 	}
 
-	XChangeProperty(fl_display, fl_xid(WindowManager::instance()), _XA_NET_CLIENT_LIST, 
-			XA_WINDOW, 32, PropModeReplace, (unsigned char*)net_map_order, client_count);
+	XChangeProperty(fl_display, fl_xid(WindowManager::instance()), _XA_NET_CLIENT_LIST,
+		XA_WINDOW, 32, PropModeReplace, (unsigned char*)net_map_order, client_count);
 	XChangeProperty(fl_display, fl_xid(WindowManager::instance()), _XA_NET_CLIENT_LIST_STACKING,
-			XA_WINDOW, 32, PropModeReplace, (unsigned char*)net_stack_order, client_count);
+		XA_WINDOW, 32, PropModeReplace, (unsigned char*)net_stack_order, client_count);
 
 	delete []net_stack_order;
 	delete []net_map_order;
@@ -591,6 +591,18 @@ void WindowManager::idle()
 		delete c;
 	}
 	remove_list.clear();
+}
+
+// Close all windows in reverse order of mapping.
+void WindowManager::exit()
+{
+	for(uint i = map_order.size(); i--;)
+	{
+		Frame* tmp = map_order[i];
+		if(tmp) 
+			tmp->close();
+	}
+	is_running = false;
 }
 
 int WindowManager::handle(int e)
@@ -616,8 +628,8 @@ int WindowManager::handle(int e)
 
 		case FL_SHORTCUT:
 		case FL_KEY:
-		//case FL_KEYUP:
-		return Handle_Hotkey();
+			//case FL_KEYUP:
+			return Handle_Hotkey();
 
 		case FL_MOUSEWHEEL:
 		{
@@ -634,22 +646,21 @@ int WindowManager::handle(XEvent *e)
 	{
 		case ClientMessage:
 		{
-		DBG("WindowManager ClientMessage 0x%lx", e->xclient.window);
+			DBG("WindowManager ClientMessage 0x%lx", e->xclient.window);
 
-		if(handle_desktop_msgs(&(e->xclient))) return 1;
+			if(handle_desktop_msgs(&(e->xclient))) return 1;
 
-		return 0;
+			return 0;
 		}
-		case ConfigureRequest: 
+		case ConfigureRequest:
 		{
 			DBG("WindowManager ConfigureRequest: 0x%lx", e->xconfigurerequest.window);
 			const XConfigureRequestEvent *e = &(fl_xevent.xconfigurerequest);
 			XConfigureWindow(fl_display, e->window,
-							 e->value_mask&~(CWSibling|CWStackMode),
-							 (XWindowChanges*)&(e->x));
+				e->value_mask&~(CWSibling|CWStackMode),
+				(XWindowChanges*)&(e->x));
 			return 1;
 		}
-
 		case MapRequest:
 		{
 			DBG("WindowManager MapRequest: 0x%lx", e->xmaprequest.window);
@@ -670,14 +681,15 @@ bool WindowManager::handle_desktop_msgs(const XClientMessageEvent *e)
 		Desktop::current((int)e->data.l[0]+1);
 		return true;
 	}
-   	else if(e->message_type==_XA_NET_NUM_DESKTOPS)
+	else if(e->message_type==_XA_NET_NUM_DESKTOPS)
 	{
 		DBG("New desk count: %ld", e->data.l[0]);
 		Desktop::update_desktop_count(e->data.l[0]);
 		// Set also new names...
 		Desktop::set_names();
 		return true;
-	} else if(e->message_type==FLTKChangeSettings)
+	} 
+	else if(e->message_type==FLTKChangeSettings)
 	{
 		DBG("FLTK change settings");
 		WindowManager::instance()->read_configuration();
