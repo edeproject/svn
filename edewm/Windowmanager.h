@@ -58,6 +58,7 @@ class WindowManager : public Fl_Window
 	Window root_win;
 	static WindowManager* pinstance;
 	bool is_init;
+	bool is_running;
 
 	WindowManager();
 	~WindowManager();
@@ -72,6 +73,8 @@ public:
 	static void shutdown();
 
 	bool initialized() { return is_init; }
+	void exit();
+	bool running() { return is_running; }
     void set_default_cursor();
     void set_cursor(Fl_Cursor c, Fl_Color fg, Fl_Color bg);
     void read_dispconf();

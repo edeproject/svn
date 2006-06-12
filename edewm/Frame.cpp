@@ -412,7 +412,9 @@ void Frame::destroy_frame()
 	}
 
 	// remove any pointers to this:
-	if(!wm_shutdown) {
+	//if(!wm_shutdown) {
+	if(WindowManager::instance()->running()) 
+	{
 		stack_order.remove(this);
 		map_order.remove(this);
 		WindowManager::update_client_list();

@@ -133,7 +133,8 @@ bool Frame::clientmsg_event(const XClientMessageEvent *e)
 		}
 		if(atom == _XA_EDE_WM_LOGOUT)
 		{
-			fl_alert("Logout not implemented yet !");
+			//fl_alert("Logout not implemented yet !");
+			WindowManager::instance()->exit();
 			return true;
 		}
 
