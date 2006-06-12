@@ -10,7 +10,7 @@ Function {} {} {
     xywh {396 268 370 214} resizable visible
   } {
     Fl_Box {} {
-      xywh {10 15 55 55} image {/home/sanelz/programs/EDE/experimental/ede.xpm}
+      xywh {10 15 55 55} image {icons/ede.xpm}
     }
     Fl_Box {} {
       label {Equinox Desktop Environment}
