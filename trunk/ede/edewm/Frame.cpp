@@ -356,7 +356,7 @@ colormapWinCount(0)
 	map_order.append(this);
 	stack_order.append(this);
 
-	WindowManager::update_client_list();
+	WindowManager::instance()->update_client_list();
 	if(strut()) WindowManager::instance()->update_workarea(true);
 }
 
@@ -417,7 +417,7 @@ void Frame::destroy_frame()
 	{
 		stack_order.remove(this);
 		map_order.remove(this);
-		WindowManager::update_client_list();
+		WindowManager::instance()->update_client_list();
 	}
 
 	if(strut_) 
@@ -484,15 +484,6 @@ void Frame::get_funcs_from_type()
 	};
 
 	
-}
-
-void Frame::settings_changed_all()
-{
-	for(uint n=0; n<map_order.size(); n++) {
-		Frame *f = map_order[n];
-		f->settings_changed();
-	}
-	XFlush(fl_display);
 }
 
 void Frame::settings_changed()

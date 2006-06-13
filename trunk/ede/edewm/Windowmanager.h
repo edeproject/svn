@@ -22,7 +22,6 @@
 #include <efltk/Fl_Ptr_List.h>
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
-#include "../exset/exset.h"
 
 class Frame;
 
@@ -54,7 +53,6 @@ class WindowManager : public Fl_Window
 {
     Fl_Rect wm_area;
     Fl_Cursor cursor;
-    Exset *xset;
 	Window root_win;
 	static WindowManager* pinstance;
 	bool is_init;
@@ -65,7 +63,6 @@ class WindowManager : public Fl_Window
 	WindowManager(const WindowManager&);
 	WindowManager& operator=(WindowManager&);
     void init_internals(int argc, char *argv[]);
-
 
 public:
 	static void init(int argc, char* argv[]);
@@ -92,13 +89,15 @@ public:
 
     void update_workarea(bool send=true);
 	void read_configuration();
+	void read_xset_configuration();
+	void notify_all();
 
     Frame *find_by_wid(Window wid);
     void restack_windows();
 
     //Updates GNOME and NET client list atoms
-    static void update_client_list();
-    static bool handle_desktop_msgs(const XClientMessageEvent *e);
+    void update_client_list();
+    bool handle_desktop_msgs(const XClientMessageEvent *e);
 
     int x() { return wm_area.x(); }
     int y() { return wm_area.y(); }
@@ -110,6 +109,5 @@ public:
 
 extern Frame_List stack_order;
 extern Frame_List map_order;
-
 extern Frame_List remove_list;
 #endif
