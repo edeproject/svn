@@ -106,20 +106,22 @@ static int wm_event_handler(int e)
 
 int xerror_handler(Display* d, XErrorEvent* e)
 {
-	if(WindowManager::instance()->initialized() &&
-		(e->request_code == X_ChangeWindowAttributes) && e->error_code == BadAccess)
-		Fl::fatal(_("Another window manager is running.  You must exit it before running %s."), program_name);
+	if(e->request_code == X_ChangeWindowAttributes && 
+			e->error_code == BadAccess &&
+			e->resourceid == RootWindow(fl_display, DefaultScreen(fl_display)))
+		Fl::fatal(_("Another window manager is running.  You must exit it before running edewm."));
 
-	#ifndef DEBUG
+#ifndef DEBUG
 	if (e->error_code == BadWindow) return 0;
 	if (e->error_code == BadColor) return 0;
-	#endif
+#endif
 
 	char buf1[128], buf2[128];
 	sprintf(buf1, "XRequest.%d", e->request_code);
 	XGetErrorDatabaseText(d,"",buf1,buf1,buf2,128);
 	XGetErrorText(d, e->error_code, buf1, 128);
 	Fl::warning("%s: %s: %s 0x%lx", program_name, buf2, buf1, e->resourceid);
+
 	return 0;
 }
 
@@ -258,7 +260,9 @@ void WindowManager::init_internals(int argc, char* argv[])
 	DBG("starting window manager");
 
 	fl_open_display();
+	XSetErrorHandler(xerror_handler);
 	XShapeQueryExtension(fl_display, &XShapeEventBase, &XShapeErrorBase);
+
 	wm_area.set(0, 0/*22*/, Fl::w(), Fl::h()/*-22*/);
 
 	// TODO: make this part of class
@@ -280,7 +284,6 @@ void WindowManager::init_internals(int argc, char* argv[])
 	// Init started
 	is_init = false;
 
-	XSetErrorHandler(xerror_handler);
 	Fl::add_handler(wm_event_handler);
 
 	init_atoms();								  // intern atoms
