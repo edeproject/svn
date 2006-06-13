@@ -16,16 +16,16 @@
 #include "Desktop.h"
 #include "Winhints.h"
 #include "Theme.h"
+#include "../exset/exset.h"
+#include "config.h"
+#include "debug.h"
 
 #include <X11/Xproto.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "../exset/exset.h"
-#include "config.h"
-#include "debug.h"
+
 
 WindowManager* WindowManager::pinstance = NULL;
 
@@ -37,17 +37,12 @@ Frame_List remove_list;
 Frame_List stack_order;
 Frame_List map_order;
 
-////////////////////////////////////////////////////////////////
-//static int initializing;
-Exset xset;
-
 static const char* program_name;
 
 // in Hotkeys.cpp
 extern int Handle_Hotkey();
 extern void Grab_Hotkeys(WindowManager* wm);
 extern void read_hotkeys_configuration();
-void read_disp_configuration();
 extern void set_frame_cursor(Fl_Cursor c, Fl_Color fg, Fl_Color bg, Window wid);
 
 #if DESKTOPS
@@ -178,44 +173,10 @@ int real_align(int i)
 	return FL_ALIGN_LEFT;
 }
 
-void do_xset_from_conf()
-{
-	Fl_Config config(fl_find_config_file("ede.conf",1));
-
-	int val1, val2, val3;
-
-	config.set_section("Mouse");
-	config.read("Accel", val1, 4);
-	config.read("Thress",val2, 4);
-	xset.set_mouse(val1, val2);
-
-	config.set_section("Bell");
-	config.read("Volume", val1, 50);
-	config.read("Pitch", val2, 440);
-	config.read("Duration", val3, 200);
-	xset.set_bell(val1, val2, val3);
-
-	config.set_section("Keyboard");
-	config.read("Repeat", val1, 1);
-	config.read("ClickVolume", val2, 50);
-	xset.set_keybd(val1, val2);
-
-	config.set_section("Screen");
-	config.read("Delay", val1, 15);
-	config.read("Pattern",val2, 2);
-	xset.set_pattern(val1, val2);
-
-	config.read("CheckBlank", val1, 1);
-	xset.set_check_blank(val1);
-
-	config.read("Pattern", val1, 2);
-	xset.set_blank(val1);
-}
 
 WindowManager::WindowManager()
 : Fl_Window(0, 0, Fl::w(), Fl::h()), is_init(false), is_running(false)
 {
-	xset = new Exset();
 	box(FL_NO_BOX);
 }
 
@@ -285,13 +246,14 @@ void WindowManager::init_internals(int argc, char* argv[])
 	is_init = false;
 
 	Fl::add_handler(wm_event_handler);
-
-	init_atoms();								  // intern atoms
-
+	
+	// intern atoms
+	init_atoms();
 	read_configuration();
-	do_xset_from_conf();
-
-	show();										  // Set XID now
+	read_xset_configuration();
+	
+	// Set XID now
+	show();
 
 	set_default_cursor();
 	ICCCM::set_iconsizes(this);
@@ -304,9 +266,7 @@ void WindowManager::init_internals(int argc, char* argv[])
 	init_desktops(this);
 
 	//Init done
-	//initializing = 0;
 	is_init = true;
-	//wm_inited = true;
 
 	// find all the windows and create a Frame for each:
 	Frame *f=0;
@@ -382,9 +342,56 @@ void WindowManager::read_configuration()
 		Theme::instance()->unload();
 		Theme::instance()->use(false);
 	}
-	Frame::settings_changed_all();
 
+	notify_all();
 	read_hotkeys_configuration();
+}
+
+// FIXME: able to set options while running ?
+void WindowManager::read_xset_configuration()
+{
+	Fl_Config config(fl_find_config_file("ede.conf",1));
+	Exset xset;
+
+	int val1, val2, val3;
+
+	config.set_section("Mouse");
+	config.read("Accel", val1, 4);
+	config.read("Thress",val2, 4);
+	xset.set_mouse(val1, val2);
+
+	config.set_section("Bell");
+	config.read("Volume", val1, 50);
+	config.read("Pitch", val2, 440);
+	config.read("Duration", val3, 200);
+	xset.set_bell(val1, val2, val3);
+
+	config.set_section("Keyboard");
+	config.read("Repeat", val1, 1);
+	config.read("ClickVolume", val2, 50);
+	xset.set_keybd(val1, val2);
+
+	config.set_section("Screen");
+	config.read("Delay", val1, 15);
+	config.read("Pattern",val2, 2);
+	xset.set_pattern(val1, val2);
+
+	config.read("CheckBlank", val1, 1);
+	xset.set_check_blank(val1);
+
+	config.read("Pattern", val1, 2);
+	xset.set_blank(val1);
+}
+
+
+void WindowManager::notify_all()
+{
+	for(uint i=0; i < map_order.size(); i++) 
+	{
+		Frame *f = map_order[i];
+		f->settings_changed();
+	}
+	XFlush(fl_display);
 }
 
 void WindowManager::show()

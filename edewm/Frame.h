@@ -250,7 +250,6 @@ public:
     void destroy_frame();
 
     void settings_changed();
-    static void settings_changed_all();
 
     Fl_Rect *strut() { return strut_; }
     Icon *icon() { return icon_; }
