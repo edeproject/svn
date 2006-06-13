@@ -48,6 +48,7 @@ void exit_signal(int signum)
 	got_signal = true;
 }
 
+
 int main(int argc, char ** argv)
 {
 	signal(SIGTERM, exit_signal);

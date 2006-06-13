@@ -82,7 +82,7 @@ bool Frame::unmap_event(const XUnmapEvent *e)
 	else
 		state(UNMAPPED);
 
-	WindowManager::update_client_list();
+	WindowManager::instance()->update_client_list();
 
 	return true;
 }
