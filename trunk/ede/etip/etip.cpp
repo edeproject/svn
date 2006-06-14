@@ -9,869 +9,161 @@
  * See COPYING for details.
  */
 
-#include "etip.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <efltk/Fl.h>
+#include <efltk/Fl_Window.h>
+#include <efltk/Fl_Group.h>
+#include <efltk/Fl_Box.h>
+#include <efltk/Fl_Button.h>
+#include <efltk/Fl_Check_Button.h>
+#include <efltk/Fl_Image.h>
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
+
+#include <efltk/Fl_Images.h>
+#include "icons/hint.xpm"
 
 #include <edeconf.h>
 
-static char *tips[7];
-static int activeTip = 0;
-static Fl_Config conf("EDE Team", "etip");
+unsigned int curr_tip = 0;
+Fl_Check_Button* show_check = NULL;
+Fl_Config* conf_global = NULL;
 
-#include <efltk/Fl_Image.h>
+#define TIPS_NUM 7
+#define TITLE_TIPS_NUM 9
 
-#include <efltk/Fl_Images.h>
-static const char *datas_hint[] = {
-  "48 48 702 2",
-  "  	c None",
-  ". 	c #B19C51",
-  "+ 	c #E4D89C",
-  "@ 	c #F3EBC2",
-  "# 	c #FAF5DF",
-  "$ 	c #FBF9ED",
-  "% 	c #FCF9F2",
-  "& 	c #FBF9EC",
-  "* 	c #F8F3DC",
-  "= 	c #F3EABB",
-  "- 	c #E1D18B",
-  "; 	c #9B843D",
-  "> 	c #C6B56C",
-  ", 	c #F3EBC3",
-  "' 	c #FCFBF5",
-  ") 	c #FDFBF5",
-  "! 	c #FEFCF4",
-  "~ 	c #FEFDF5",
-  "{ 	c #FEFDF3",
-  "] 	c #FEFCF3",
-  "^ 	c #FEFCF2",
-  "/ 	c #FEFCF1",
-  "( 	c #FDFBEF",
-  "_ 	c #FCF9EF",
-  ": 	c #F3EAB4",
-  "< 	c #B29C4B",
-  "[ 	c #000000",
-  "} 	c #ECE3B1",
-  "| 	c #FDFBF6",
-  "1 	c #FEFDF7",
-  "2 	c #FEFDF8",
-  "3 	c #FEFDF2",
-  "4 	c #FEFDF1",
-  "5 	c #FEFCF0",
-  "6 	c #FEFCEE",
-  "7 	c #FCFBEF",
-  "8 	c #ECDF9B",
-  "9 	c #AC9650",
-  "0 	c #F7F3D9",
-  "a 	c #FDFCF7",
-  "b 	c #FEFDFA",
-  "c 	c #FEFDFB",
-  "d 	c #FEFDF4",
-  "e 	c #FEFDF0",
-  "f 	c #FEFDEF",
-  "g 	c #FEFCEF",
-  "h 	c #FEFBEF",
-  "i 	c #F8F2CC",
-  "j 	c #7A6128",
-  "k 	c #AB994E",
-  "l 	c #FAF6E1",
-  "m 	c #FEFDF9",
-  "n 	c #FEFDFC",
-  "o 	c #FEFDFD",
-  "p 	c #FEFDEE",
-  "q 	c #FEFBEE",
-  "r 	c #FBF6D8",
-  "s 	c #776024",
-  "t 	c #F8F2D7",
-  "u 	c #FEFDFE",
-  "v 	c #CCCBCB",
-  "w 	c #D1D0CF",
-  "x 	c #C7C6BE",
-  "y 	c #D8D7CD",
-  "z 	c #FAF3CB",
-  "A 	c #EDE5B4",
-  "B 	c #FDFCF9",
-  "C 	c #787878",
-  "D 	c #656564",
-  "E 	c #FEFDF6",
-  "F 	c #71716C",
-  "G 	c #6A6A65",
-  "H 	c #FEFBED",
-  "I 	c #F1E79D",
-  "J 	c #D0BD71",
-  "K 	c #5A5A59",
-  "L 	c #4D4D4C",
-  "M 	c #545451",
-  "N 	c #41413E",
-  "O 	c #AE923C",
-  "P 	c #F4EEC6",
-  "Q 	c #515150",
-  "R 	c #FFFEF7",
-  "S 	c #FFFEF6",
-  "T 	c #FFFEF5",
-  "U 	c #4E4E4B",
-  "V 	c #FEFDED",
-  "W 	c #F7EFB4",
-  "X 	c #C1AA59",
-  "Y 	c #FDFCF8",
-  "Z 	c #5B5B5A",
-  "` 	c #4F4F4E",
-  " .	c #FFFFF9",
-  "..	c #FFFFF8",
-  "+.	c #FFFEF8",
-  "@.	c #4F4E4B",
-  "#.	c #FEFDEC",
-  "$.	c #FEFDEB",
-  "%.	c #796020",
-  "&.	c #EADFA3",
-  "*.	c #FFFFFF",
-  "=.	c #545453",
-  "-.	c #FFFFFB",
-  ";.	c #FFFFFA",
-  ">.	c #4D4C4A",
-  ",.	c #FFFEF4",
-  "'.	c #E9D97B",
-  ").	c #F6F0C9",
-  "!.	c #585857",
-  "~.	c #4C4B49",
-  "{.	c #535250",
-  "].	c #F8F1B5",
-  "^.	c #FBF7E1",
-  "/.	c #60605E",
-  "(.	c #585856",
-  "_.	c #4A4947",
-  ":.	c #FFFEF2",
-  "<.	c #FCF9D5",
-  "[.	c #554B42",
-  "}.	c #423F3B",
-  "|.	c #090807",
-  "1.	c #28231E",
-  "2.	c #2A2724",
-  "3.	c #FCFBF3",
-  "4.	c #FFFFFC",
-  "5.	c #DEDEDB",
-  "6.	c #EEEEEA",
-  "7.	c #D9D9D3",
-  "8.	c #FFFEF3",
-  "9.	c #FFFEEF",
-  "0.	c #FEFDEA",
-  "a.	c #FEFAE8",
-  "b.	c #3E3A36",
-  "c.	c #E3DBD3",
-  "d.	c #D3CDC6",
-  "e.	c #3A3430",
-  "f.	c #B0A69A",
-  "g.	c #D2CCC6",
-  "h.	c #6F6962",
-  "i.	c #FFFFFE",
-  "j.	c #9C9B90",
-  "k.	c #989086",
-  "l.	c #ECE6E0",
-  "m.	c #D4C8BC",
-  "n.	c #7B7268",
-  "o.	c #E8E3DE",
-  "p.	c #E8E1DA",
-  "q.	c #8F8275",
-  "r.	c #302A25",
-  "s.	c #FCFBF1",
-  "t.	c #D8D7D3",
-  "u.	c #FFFFFD",
-  "v.	c #FFFEE6",
-  "w.	c #FFFEF0",
-  "x.	c #FEFDE9",
-  "y.	c #6F6F66",
-  "z.	c #2D2623",
-  "A.	c #E6DED4",
-  "B.	c #D8C6B3",
-  "C.	c #9C8979",
-  "D.	c #B4A89B",
-  "E.	c #E7DED3",
-  "F.	c #CBBBA7",
-  "G.	c #94887A",
-  "H.	c #C5BEB6",
-  "I.	c #7D7A76",
-  "J.	c #FAF6DE",
-  "K.	c #848380",
-  "L.	c #D2D1CC",
-  "M.	c #FFFEE8",
-  "N.	c #C7C6B7",
-  "O.	c #7A7A70",
-  "P.	c #FCF8D9",
-  "Q.	c #7D756D",
-  "R.	c #E8DFD4",
-  "S.	c #CBB49F",
-  "T.	c #7C6C5B",
-  "U.	c #E1D8CC",
-  "V.	c #DFCFBD",
-  "W.	c #A69482",
-  "X.	c #C3BBB2",
-  "Y.	c #EDE9E6",
-  "Z.	c #CDC6BE",
-  "`.	c #35322E",
-  " +	c #F4ECC2",
-  ".+	c #D8D7D1",
-  "++	c #686865",
-  "@+	c #FFFEE7",
-  "#+	c #FFFEE4",
-  "$+	c #7E7E74",
-  "%+	c #D8D7C7",
-  "&+	c #F8F2B6",
-  "*+	c #5A4618",
-  "=+	c #675221",
-  "-+	c #201E1C",
-  ";+	c #D2C8BD",
-  ">+	c #DACBBC",
-  ",+	c #AB9884",
-  "'+	c #9E8F81",
-  ")+	c #E7DDD1",
-  "!+	c #D2BFA9",
-  "~+	c #958475",
-  "{+	c #E2DCD5",
-  "]+	c #DED3C6",
-  "^+	c #B4A593",
-  "/+	c #403B35",
-  "(+	c #E3D696",
-  "_+	c #FDFBF4",
-  ":+	c #9D9C97",
-  "<+	c #858481",
-  "[+	c #FEFDCD",
-  "}+	c #FFFEDE",
-  "|+	c #FFFEF1",
-  "1+	c #A09F93",
-  "2+	c #8B8A7F",
-  "3+	c #FEFCEB",
-  "4+	c #E6D579",
-  "5+	c #B29B52",
-  "6+	c #C5B98B",
-  "7+	c #635B43",
-  "8+	c #6A655B",
-  "9+	c #E6DCD0",
-  "0+	c #C3B4A5",
-  "a+	c #917F70",
-  "b+	c #D2C5B8",
-  "c+	c #DECEBD",
-  "d+	c #AB9984",
-  "e+	c #B5A99C",
-  "f+	c #E8E0D8",
-  "g+	c #BEAE9D",
-  "h+	c #B6ADA3",
-  "i+	c #ABA7A2",
-  "j+	c #322E2B",
-  "k+	c #A89147",
-  "l+	c #FCFAF3",
-  "m+	c #7B7B75",
-  "n+	c #B2B1AB",
-  "o+	c #FEFCBF",
-  "p+	c #FFFDD6",
-  "q+	c #FFFEEE",
-  "r+	c #E1E0CE",
-  "s+	c #828177",
-  "t+	c #D1D0BF",
-  "u+	c #8A722C",
-  "v+	c #C8B876",
-  "w+	c #DAD2BA",
-  "x+	c #C2B7A2",
-  "y+	c #25211C",
-  "z+	c #B6AC9F",
-  "A+	c #EAE4DD",
-  "B+	c #EDE8E3",
-  "C+	c #D5CDC5",
-  "D+	c #B2A69A",
-  "E+	c #B4A493",
-  "F+	c #8D7D6E",
-  "G+	c #DCD4CC",
-  "H+	c #DBCEC0",
-  "I+	c #BAAA9B",
-  "J+	c #EAE4E0",
-  "K+	c #E2DCD6",
-  "L+	c #59554F",
-  "M+	c #F1E9BD",
-  "N+	c #FDFBF2",
-  "O+	c #74746E",
-  "P+	c #A09F98",
-  "Q+	c #FEFDE3",
-  "R+	c #FEFBAC",
-  "S+	c #DDDCCA",
-  "T+	c #78786E",
-  "U+	c #BEBDAD",
-  "V+	c #FEFDE8",
-  "W+	c #F7EFB6",
-  "X+	c #463814",
-  "Y+	c #D3C693",
-  "Z+	c #DAD2BB",
-  "`+	c #D9D4C6",
-  " @	c #917E6B",
-  ".@	c #B7A68F",
-  "+@	c #E2D3C2",
-  "@@	c #EDE4D9",
-  "#@	c #F1EEE9",
-  "$@	c #F1EEEB",
-  "%@	c #D7D1CA",
-  "&@	c #A39489",
-  "*@	c #DFD6CD",
-  "=@	c #B4A292",
-  "-@	c #C3B8AD",
-  ";@	c #C3B8AA",
-  ">@	c #403C37",
-  ",@	c #B4A05A",
-  "'@	c #FCF9F1",
-  ")@	c #7B7B73",
-  "!@	c #8E8D86",
-  "~@	c #C3C2B7",
-  "{@	c #FEFDC6",
-  "]@	c #FDFAA0",
-  "^@	c #BFBEAF",
-  "/@	c #727268",
-  "(@	c #CCCBBB",
-  "_@	c #FDFBED",
-  ":@	c #A58939",
-  "<@	c #675325",
-  "[@	c #D1C69E",
-  "}@	c #D9D4C2",
-  "|@	c #DFDBD3",
-  "1@	c #BDAE9B",
-  "2@	c #927F6A",
-  "3@	c #D5C4B1",
-  "4@	c #E9DFD2",
-  "5@	c #EEE7DF",
-  "6@	c #F2EEEB",
-  "7@	c #F1EFED",
-  "8@	c #D9D2CB",
-  "9@	c #C8BAAB",
-  "0@	c #A09183",
-  "a@	c #D5C8B8",
-  "b@	c #81776A",
-  "c@	c #E7DDAB",
-  "d@	c #FCFAF1",
-  "e@	c #B2B1A4",
-  "f@	c #818077",
-  "g@	c #A3A26A",
-  "h@	c #B9B8AB",
-  "i@	c #FEFCBE",
-  "j@	c #C3C297",
-  "k@	c #717167",
-  "l@	c #7F7E74",
-  "m@	c #D8D7C5",
-  "n@	c #F1E69D",
-  "o@	c #67552D",
-  "p@	c #CABD9E",
-  "q@	c #D9D2C4",
-  "r@	c #E4DED6",
-  "s@	c #DBD2C5",
-  "t@	c #897664",
-  "u@	c #A59584",
-  "v@	c #E7DED2",
-  "w@	c #ECE5DE",
-  "x@	c #F0EBE8",
-  "y@	c #F3F1EE",
-  "z@	c #BDB1A8",
-  "A@	c #B9AFA5",
-  "B@	c #E4DBCF",
-  "C@	c #C1B3A1",
-  "D@	c #F5F0D1",
-  "E@	c #FDFAF0",
-  "F@	c #FEFCEA",
-  "G@	c #EDECDB",
-  "H@	c #A7A56B",
-  "I@	c #8E8D82",
-  "J@	c #74746A",
-  "K@	c #747469",
-  "L@	c #747356",
-  "M@	c #807F75",
-  "N@	c #EDECD9",
-  "O@	c #F9F3CD",
-  "P@	c #352B16",
-  "Q@	c #A89D81",
-  "R@	c #DCD2C8",
-  "S@	c #E7DFD4",
-  "T@	c #E7E2DC",
-  "U@	c #C7B5A0",
-  "V@	c #A79481",
-  "W@	c #CEC2B6",
-  "X@	c #EBE5DE",
-  "Y@	c #EFEBE7",
-  "Z@	c #F3F0EE",
-  "`@	c #F0EDEA",
-  " #	c #E3DAD3",
-  ".#	c #D2C1B3",
-  "+#	c #D2C4B2",
-  "@#	c #8F8476",
-  "##	c #100F0D",
-  "$#	c #705E30",
-  "%#	c #F7F2DD",
-  "&#	c #FCFAF0",
-  "*#	c #FEFDBD",
-  "=#	c #D0CD7C",
-  "-#	c #FBF6DB",
-  ";#	c #604D1F",
-  ">#	c #7E725D",
-  ",#	c #DFD0C0",
-  "'#	c #E8DFD1",
-  ")#	c #EBE3DA",
-  "!#	c #DED2C5",
-  "~#	c #CEBDAB",
-  "{#	c #D0C4B8",
-  "]#	c #EBE5DF",
-  "^#	c #F0EEEB",
-  "/#	c #F4F1EF",
-  "(#	c #F1EDEA",
-  "_#	c #EBE4DD",
-  ":#	c #DDCEBF",
-  "<#	c #C0B09D",
-  "[#	c #48413A",
-  "}#	c #66562D",
-  "|#	c #F3EDCC",
-  "1#	c #FCF9ED",
-  "2#	c #FEFCE8",
-  "3#	c #FDFA9D",
-  "4#	c #FEFDCF",
-  "5#	c #FEFDCB",
-  "6#	c #FEFDE7",
-  "7#	c #FDF996",
-  "8#	c #FEFDE2",
-  "9#	c #FEFCE7",
-  "0#	c #FDFBEB",
-  "a#	c #F8F3CE",
-  "b#	c #5E4A1E",
-  "c#	c #3E352E",
-  "d#	c #C6B7A3",
-  "e#	c #E6DACC",
-  "f#	c #E9DED1",
-  "g#	c #E7DCD1",
-  "h#	c #DECFBF",
-  "i#	c #E0D5C8",
-  "j#	c #EFEDE9",
-  "k#	c #EFECE8",
-  "l#	c #E8DBCD",
-  "m#	c #D3C4B2",
-  "n#	c #938576",
-  "o#	c #1C1916",
-  "p#	c #E3D7A0",
-  "q#	c #FBF7ED",
-  "r#	c #FCF8E4",
-  "s#	c #FCF6B6",
-  "t#	c #FCF8B1",
-  "u#	c #FEFAB0",
-  "v#	c #FEFBB3",
-  "w#	c #FEFBB7",
-  "x#	c #FEFCB6",
-  "y#	c #FEFCB8",
-  "z#	c #FEFBB2",
-  "A#	c #FEFAC5",
-  "B#	c #FCFBDA",
-  "C#	c #FCFBEC",
-  "D#	c #ECE2A1",
-  "E#	c #544C44",
-  "F#	c #DDCCB8",
-  "G#	c #E7D9C8",
-  "H#	c #E9DCCC",
-  "I#	c #E7DBCA",
-  "J#	c #E7DCCF",
-  "K#	c #EAE3DC",
-  "L#	c #E8DFD3",
-  "M#	c #E3D7C8",
-  "N#	c #DBCCBA",
-  "O#	c #B9AA96",
-  "P#	c #554E43",
-  "Q#	c #88763E",
-  "R#	c #F5EBA6",
-  "S#	c #F6EDB3",
-  "T#	c #F7F0B2",
-  "U#	c #F9F2B2",
-  "V#	c #FCF6B7",
-  "W#	c #FCF7B7",
-  "X#	c #FDF9B7",
-  "Y#	c #FDFAB8",
-  "Z#	c #FCF8B7",
-  "`#	c #FBF7B6",
-  " $	c #FAF4B5",
-  ".$	c #F4EB92",
-  "+$	c #897B36",
-  "@$	c #2A2621",
-  "#$	c #958878",
-  "$$	c #DDCDB9",
-  "%$	c #E0D2C0",
-  "&$	c #E5D7C7",
-  "*$	c #E7DBCB",
-  "=$	c #E5D9CB",
-  "-$	c #E2D5C7",
-  ";$	c #DCCFBE",
-  ">$	c #D2C3B0",
-  ",$	c #B9A997",
-  "'$	c #918270",
-  ")$	c #F7F1C0",
-  "!$	c #F1E7A4",
-  "~$	c #F3EAA3",
-  "{$	c #F6EEB7",
-  "]$	c #F8F1BF",
-  "^$	c #F8F1BE",
-  "/$	c #F9F3BC",
-  "($	c #F9F3B5",
-  "_$	c #F9F3AE",
-  ":$	c #F8EF9F",
-  "<$	c #F8F0AB",
-  "[$	c #F4EA99",
-  "}$	c #D9C14F",
-  "|$	c #735D1D",
-  "1$	c #160F06",
-  "2$	c #4A433C",
-  "3$	c #938678",
-  "4$	c #C0B09E",
-  "5$	c #CCBCAB",
-  "6$	c #CDBFAE",
-  "7$	c #CFC1B1",
-  "8$	c #CEBFAD",
-  "9$	c #C1B09F",
-  "0$	c #B19F8D",
-  "a$	c #9C8976",
-  "b$	c #655848",
-  "c$	c #F5E79A",
-  "d$	c #F6F0C1",
-  "e$	c #FAF8E6",
-  "f$	c #FBFAEE",
-  "g$	c #FBF9EA",
-  "h$	c #FAF5CE",
-  "i$	c #F9F5CA",
-  "j$	c #FAF6CE",
-  "k$	c #FBF7D0",
-  "l$	c #F6EEB3",
-  "m$	c #F0E59A",
-  "n$	c #DDC862",
-  "o$	c #968336",
-  "p$	c #9B853D",
-  "q$	c #786931",
-  "r$	c #040302",
-  "s$	c #0A0909",
-  "t$	c #2B2823",
-  "u$	c #6D6156",
-  "v$	c #A18F7D",
-  "w$	c #AD9984",
-  "x$	c #9E8C77",
-  "y$	c #A08E79",
-  "z$	c #8E7D69",
-  "A$	c #746250",
-  "B$	c #382E25",
-  "C$	c #F3E3A6",
-  "D$	c #EADB9B",
-  "E$	c #F4E7A8",
-  "F$	c #F7E9A9",
-  "G$	c #F7EAA9",
-  "H$	c #F5E89B",
-  "I$	c #F2E187",
-  "J$	c #EDDB7A",
-  "K$	c #E7D573",
-  "L$	c #DFCB6B",
-  "M$	c #D7C367",
-  "N$	c #BCA85A",
-  "O$	c #9D8B47",
-  "P$	c #6C612F",
-  "Q$	c #928348",
-  "R$	c #A89757",
-  "S$	c #71643A",
-  "T$	c #685D36",
-  "U$	c #3E3720",
-  "V$	c #1F1B17",
-  "W$	c #5F5041",
-  "X$	c #7B6956",
-  "Y$	c #5A4C3E",
-  "Z$	c #2C2620",
-  "`$	c #F8F3DD",
-  " %	c #F8F0D5",
-  ".%	c #E6D69B",
-  "+%	c #DACC96",
-  "@%	c #D4C68E",
-  "#%	c #D6C686",
-  "$%	c #CDBC70",
-  "%%	c #CAB766",
-  "&%	c #C3B064",
-  "*%	c #C6B477",
-  "=%	c #C9BE8F",
-  "-%	c #D3C38A",
-  ";%	c #A28E54",
-  ">%	c #AA9756",
-  ",%	c #D7C173",
-  "'%	c #CDB86E",
-  ")%	c #6F6339",
-  "!%	c #A79559",
-  "~%	c #897B48",
-  "{%	c #F0DC96",
-  "]%	c #F6EBC1",
-  "^%	c #FBF8EA",
-  "/%	c #F9F4DA",
-  "(%	c #F3EAC3",
-  "_%	c #F1E6BD",
-  ":%	c #ECE2BA",
-  "<%	c #EBE2BD",
-  "[%	c #DFD4A9",
-  "}%	c #BDAA64",
-  "|%	c #887C4E",
-  "1%	c #D6C072",
-  "2%	c #E4CD7A",
-  "3%	c #D9C374",
-  "4%	c #DCC576",
-  "5%	c #CAB66C",
-  "6%	c #BEAC66",
-  "7%	c #F3E6B6",
-  "8%	c #E3D296",
-  "9%	c #F1E1A8",
-  "0%	c #F4E7B9",
-  "a%	c #F2E4B1",
-  "b%	c #EFDD9C",
-  "c%	c #E7D288",
-  "d%	c #DFC97A",
-  "e%	c #CCB76D",
-  "f%	c #C4B069",
-  "g%	c #A29565",
-  "h%	c #90855B",
-  "i%	c #998A52",
-  "j%	c #B8A663",
-  "k%	c #C5B169",
-  "l%	c #7A6E42",
-  "m%	c #F7EFD6",
-  "n%	c #F4EAC7",
-  "o%	c #E6D8AA",
-  "p%	c #D4C697",
-  "q%	c #D1C59C",
-  "r%	c #CEC190",
-  "s%	c #C4B275",
-  "t%	c #BDAA67",
-  "u%	c #B6A361",
-  "v%	c #AE9D5D",
-  "w%	c #C8BD9A",
-  "x%	c #D1C599",
-  "y%	c #998B52",
-  "z%	c #EBD792",
-  "A%	c #F1E5BA",
-  "B%	c #F9F5E6",
-  "C%	c #FCFAF4",
-  "D%	c #FBF9EE",
-  "E%	c #F9F6EA",
-  "F%	c #F5EED7",
-  "G%	c #ECE3C0",
-  "H%	c #EADFBC",
-  "I%	c #E8E0C3",
-  "J%	c #D2C492",
-  "K%	c #B8A462",
-  "L%	c #837646",
-  "M%	c #F0E6BE",
-  "N%	c #DFD099",
-  "O%	c #EDE0B1",
-  "P%	c #EEE2B3",
-  "Q%	c #EBDCA7",
-  "R%	c #E6D597",
-  "S%	c #DDC982",
-  "T%	c #D3BF72",
-  "U%	c #CDB86D",
-  "V%	c #C9B46A",
-  "W%	c #BCAA65",
-  "X%	c #9F8F55",
-  "Y%	c #72673C",
-  "Z%	c #F6F1DE",
-  "`%	c #F1E9CB",
-  " &	c #E6DCB9",
-  ".&	c #D4C9A3",
-  "+&	c #CCC19A",
-  "@&	c #C3B480",
-  "#&	c #B9A86C",
-  "$&	c #B2A060",
-  "%&	c #AC9B5C",
-  "&&	c #A59558",
-  "*&	c #BFB38B",
-  "=&	c #CCBF92",
-  "-&	c #92824E",
-  ";&	c #897F58",
-  ">&	c #E4D39B",
-  ",&	c #F1EACE",
-  "'&	c #F8F6EB",
-  ")&	c #F8F5E9",
-  "!&	c #EFE7CC",
-  "~&	c #EBE2C2",
-  "{&	c #E7DEBC",
-  "]&	c #E7DEC1",
-  "^&	c #D9D0A9",
-  "/&	c #C4B57F",
-  "(&	c #A19056",
-  "_&	c #13110A",
-  ":&	c #29271E",
-  "<&	c #D1C185",
-  "[&	c #E0D198",
-  "}&	c #E0D2A0",
-  "|&	c #E0D19D",
-  "1&	c #DAC98F",
-  "2&	c #D0BC7A",
-  "3&	c #C7B46C",
-  "4&	c #C3B068",
-  "5&	c #BEAA66",
-  "6&	c #A79759",
-  "7&	c #3D361F",
-  "8&	c #050402",
-  "9&	c #030303",
-  "0&	c #454237",
-  "a&	c #9E9572",
-  "b&	c #AEA47F",
-  "c&	c #AA9E73",
-  "d&	c #928553",
-  "e&	c #847847",
-  "f&	c #6B6242",
-  "g&	c #35301C",
-  "h&	c #282415",
-  "i&	c #020201",
-  "j&	c #2A2A2A",
-  "k&	c #838383",
-  "l&	c #767676",
-  "m&	c #242424",
-  "n&	c #191919",
-  "o&	c #161616",
-  "p&	c #626262",
-  "q&	c #707070",
-  "r&	c #1F1F1F",
-  "s&	c #050505",
-  "                                                                                                ",
-  "                                                                                                ",
-  "                      . + @ # $ % & * = - ;                                                     ",
-  "                  > , ' ) ! ~ { ] ^ / / ( _ : < [                                               ",
-  "                } | 1 2 2 1 1 ~ { { 3 4 4 5 6 7 8 [                                             ",
-  "            9 0 a 2 b c c b 1 ~ d { { 3 4 e f g h i j                                           ",
-  "          k l 2 m n o o c m 1 ~ ~ d { { 4 e e p f q r s                                         ",
-  "          t m b n o u v w m 1 1 ~ ~ d x y 4 e f p p q z [                                       ",
-  "        A B m c o o o C D m 2 1 E ~ d F G 4 e f p p p H I [                                     ",
-  "      J B m b n o o o K L m m 1 1 ~ ~ M N 3 e e p p p p H O                                     ",
-  "      P m b c n n n n K Q b m 2 R S T U U 3 e e p V V V p W [                                   ",
-  "    X Y m b c n o o o Z ` b  ...+.R S @.@.{ 4 e p #.$.$.p H %.                                  ",
-  "    &.Y m b c n o *.o K =.-.;. ...+.R >.@.,.3 f V #.$.$.V 6 '.[                                 ",
-  "    ).2 m b c n o o o !.Q -.-.;.;. .+.~.{.T ,.e p $.$.$.V p ].[                                 ",
-  "    ^.2 m b c c n n o /.(.-.-.;.;. . ._.{.S T :.f V $.$.$.p <.[             [.}.|.1.2.          ",
-  "    3.1 m m b c c c 4.5.6.-.4.-.-.-.-.7.7.+.S 8.9.V 0.$.#.p a.[           b.c.d.e.f.g.h.        ",
-  "    | 1 2 m m c c c -.-.-.i.i.4.*.-.*. .;.+.R ,.9.p 0.j.$.p 6 [           k.l.m.n.o.p.q.r.      ",
-  "    s.1 E t.m m b b u.u.u.-.u.;.u.;.u.u...v.S ,.w.#.x.y.#.V a.[         z.A.B.C.D.E.F.G.H.I.    ",
-  "    J.~ 1 K.L.m b b M.;.;.i.-.*.-.*. . ...w.S :.9.$.N.O.0.V P.[         Q.R.S.T.U.V.W.X.Y.Z.`.  ",
-  "     +~ ~ .+++2 2 m ~ @+;.;. . . . . .+.#+T 8.9.#.x.$+%+0.V &+*+=+    -+;+>+,+'+)+!+~+{+]+^+/+  ",
-  "    (+_+d d :+<+1 2 2 [+.. ...+.+.R R S }+8.|+V 0.1+2+x.0.3+4+5+6+7+  8+9+0+a+b+c+d+e+f+g+h+i+j+",
-  "    k+l+{ e 3 m+n+d ~ o+E S S S T T T ,.p+q+$.0.r+s+t+0.$.H u+v+w+x+y+z+A+B+C+D+E+F+G+H+I+J+K+L+",
-  "      M+N+f f e O+P+3 Q+{ { 8.8.8.8.|+w.R+$.x.S+T+U+V+x.$.W+X+Y+Z+`+ @.@+@@@#@$@%@&@*@=@-@c.;@>@",
-  "      ,@'@^ p V p )@!@~@{@4 e e w.w.9.V ]@V+^@/@(@x.x.#._@:@<@[@}@|@1@2@3@4@5@6@7@8@9@0@c.a@b@  ",
-  "        c@d@/ $.#.#.e@f@g@h@$.$.x.x.x.i@j@k@l@m@x.V+$.3+n@[ o@p@q@r@s@t@u@v@w@x@y@Y.z@A@B@C@/+  ",
-  "        [ D@E@F@0.0.0.G@H@I@J@k@J@K@K@L@M@N@V+V+V+x.3+O@[ [ P@Q@R@S@T@U@V@W@X@Y@Z@`@ #.#+#@###  ",
-  "          $#%#&#5 0.0.0.*#{@%+t+t+t+t+=#x.x.x.V+#.3+-#;#[     >#,#'#)#!#~#{#]#^#/#(#_#:#<#[#    ",
-  "            }#|#1#q 2#V+Q+3#4#[+5#5#6#7#8#6#6#9#0#a#b#[       c#d#e#f#g#h#i#_#j#k#)#l#m#n#o#    ",
-  "              [ p#q#r#s#t#u#v#w#x#y#y#z#z#A#B#C#D#[ [           E#F#G#H#I#J#K#X@L#M#N#O#P#      ",
-  "                [ Q#R#S#T#U#V#W#X#Y#Y#Z#`# $.$+$[ [             @$#$$$%$&$*$=$-$;$>$,$'$y+      ",
-  "                    )$!$~${$]$^$/$($_$:$<$[$}$|$1$                2$3$4$5$6$7$8$9$0$a$b$        ",
-  "                    c$d$e$f$g$h$i$j$k$l$m$n$o$p$q$r$                s$t$u$v$w$x$y$z$A$B$        ",
-  "                    C$D$E$F$G$H$I$J$K$L$M$N$O$P$Q$R$S$[             [ T$U$V$W$X$Y$Z$            ",
-  "                    `$ %.%+%@%#%$%%%&%*%=%-%;%[ [ >%,%'%)%[ [ [ [ [ !%~%[ [                     ",
-  "                    {%]%^%s.N+/%(%_%:%<%[%}%|%[ [ [ [ 1%2%2%2%3%4%5%6%[ [                       ",
-  "                    7%8%9%0%a%b%c%d%3%e%f%g%h%[       [ [ i%j%k%f%l%[                           ",
-  "                    m%n%o%p%q%r%s%t%u%v%w%x%y%[           [ [ [                                 ",
-  "                    z%A%B%C%D%E%F%G%H%I%J%K%L%[                                                 ",
-  "                    M%N%O%P%Q%R%S%T%U%V%W%X%Y%[                                                 ",
-  "                    Z%`% &.&+&@&#&$&%&&&*&=&-&[                                                 ",
-  "                    ;&>&,&'&)&!&~&{&]&^&/&(&_&[                                                 ",
-  "                    :&<&[&}&|&1&2&3&4&5&6&7&8&                                                  ",
-  "                      9&0&a&b&c&d&e&f&g&h&i&[                                                   ",
-  "                          [ j&k&l&m&n&[ [                                                       ",
-  "                            o&p&q&r&s&[                                                         ",
-  "                              [ [ [ [                                                           ",
-  "                                                                                                ",
-  "                                                                                                "};
+const char* tiplist[TIPS_NUM] = 
+{
+_("To start any application is simple. Press on the button with your user name, go\
+ to the Programs menu, select category and click on the wished program."),
 
-Fl_Check_Button* show_check;
+_("To exit the EDE, press button with your user name and then Logout."),
 
-Fl_Box* tipsBox;
+_("To lock the computer, press button with your user name and then choose Lock."),
 
-static void cb_Previous(Fl_Button*, void*) {
-  if (activeTip>0 && activeTip<=6) {
-  activeTip--;
-  tipsBox->label(tips[activeTip]);
-  tipsBox->window()->redraw();
-  }
+_("To setup things on the computer, press button with your user name, Panel menu and then the Control panel."),
+
+_("To add a program that is not in the Programs menu, click on the button with your user,\
+ Panel menu, and then Menu editor."),
+
+_("Notice that this is still development version, so please send your bug reports or\
+ comments on EDE forum, EDE bug reporting system (on project's page), or check mails of current\
+ maintainers located in AUTHORS file."),
+
+_("You can download latest release on http://sourceforge.net/projects/ede.")
+};
+
+const char* title_tips[TITLE_TIPS_NUM] =
+{
+_("Boring \"Did you know...\""),
+_("How about this..."),
+_("Smart idea..."),
+_("Really smart idea..."),
+_("Really really smart idea..."),
+_("Uf..."),
+_("Something new..."),
+_("Or maybe this..."),
+_("...")
+};
+
+const char* random_txt(const char** lst, unsigned int max)
+{
+	unsigned int val = rand() % max;
+	curr_tip = val;
+	return lst[val];
 }
 
-static void cb_Next(Fl_Button* o, void*) {
-  if (activeTip>=0 && activeTip<6) {
-  activeTip++;
-  tipsBox->label(tips[activeTip]);
-  tipsBox->window()->redraw();
-  }
+void close_cb(Fl_Widget*, void* w)
+{
+	Fl_Window* win = (Fl_Window*)w;
+	conf_global->set_section("Tips");
+	conf_global->write("Show", !show_check->value()); 
+	conf_global->flush(); 
+
+	win->hide();
 }
 
-static void cb_Close(Fl_Button*, void*) {
-  //Fl_Config conf(fl_find_config_file("apps/etip.conf", 1));
-  conf.set_section("Tips");
-  conf.write("Show", !show_check->value()); 
-  conf.flush(); 
-  exit(0);
+void next_cb(Fl_Widget*, void* tb)
+{
+	Fl_Box* tipbox = (Fl_Box*)tb;
+	curr_tip++;
+	if(curr_tip >= TIPS_NUM)
+		curr_tip = 0;
+	tipbox->label(tiplist[curr_tip]);	
+	tipbox->redraw_label();
 }
 
-int main (int argc, char **argv) {
+void prev_cb(Fl_Widget*, void* tb)
+{
+	Fl_Box* tipbox = (Fl_Box*)tb;
+	if(curr_tip == 0)
+		curr_tip = TIPS_NUM - 1;
+	else
+		curr_tip--;
+	tipbox->label(tiplist[curr_tip]);	
+	tipbox->redraw_label();
+}
 
-  Fl_Window* w;
-  fl_init_locale_support("etip", PREFIX"/share/locale");
-  bool show = true;
-  conf.set_section("Tips");
-  conf.read("Show", show, true);
-  if (!show)
-  	return 0;
-  tips[0]=_("To start any application is simple. Press on the button with your user name, go to the Programs menu, select category and click on the wished program.");
-  tips[1]=_("To exit the Equinox Desktop environment, press button with your user name and then logout.");
-  tips[2]=_("To lock the computer, press button with your user name and then lock.");
-  tips[3]=_("To setup things on the computer, press button with your user name, Panel menu and then the Control panel.");
-  tips[4]=_("To add a program that is not in the Programs menu, click on the button with your user, Panel menu, and then Menu editor.");
-  tips[5]=_("Notice that this is still development version, so please send your bug reports or comments on EDE forum, EDE bug reporting system (on project's page), or karijes@users.sourceforge.net.");
-  tips[6]=_("You can download latest release on - http://sourceforge.net/projects/ede.");
+int main(int argc, char** argv)
+{
+	// Check config option, if showing is disabled, exit
+	Fl_Config conf("EDE Team", "etip");
+	if(argc == 2 && (!strcmp(argv[1], "-f") || !strcmp(argv[1], "--force")))
+	{
+		// nothing, to simplify omiting those '!'
+	}
+	else
+	{
+		bool show = true;
+		conf.set_section("Tips");
+		conf.read("Show", show, true);
+		if (!show)
+			return 0;
+	}
+	
+	conf_global = &conf;
+	srand(time(NULL));
+	fl_init_locale_support("etip", PREFIX"/share/locale");
 
-  srand (time(NULL));
-  activeTip = rand()%7;
-  
-   {Fl_Window* o = new Fl_Window(400, 205, _("Startup tips"));
-    w = o;
-     {Fl_Box* o = new Fl_Box(10, 15, 60, 145);
-      o->image(Fl_Image::read_xpm(0, (const char**)datas_hint));
-    }
-     {Fl_Check_Button* o = show_check = new Fl_Check_Button(77, 145, 313, 20, _("Do not show this dialog next time"));
-      o->align(132|FL_ALIGN_INSIDE);
-    }
-     {Fl_Group* o = new Fl_Group(80, 15, 310, 125);
-      o->box(FL_BORDER_FRAME);
-	o->color((Fl_Color)0x8ef400); 
-      o->label_size(18);
-      o->align(193|FL_ALIGN_INSIDE);
-       {Fl_Box* o = tipsBox = new Fl_Box(1, 45, 308, 79);
-        o->box(FL_FLAT_BOX);
-        o->color((Fl_Color)7);
-        o->align(FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
-        o->label(tips[activeTip]);
-        o->window()->redraw();
-      }
-       {Fl_Box* o = new Fl_Box(0, 0, 310, 45, _("Welcome to Equinox Desktop Environment version "PACKAGE_VERSION));
-        o->box(FL_FLAT_BOX);
-        o->color((Fl_Color)0x8ef400); 
-        o->label_color((Fl_Color)32);
-        o->label_size(18);
-        o->align(FL_ALIGN_WRAP|FL_ALIGN_INSIDE);
-      }
-      o->end();
-    }
-     {Fl_Group* o = new Fl_Group(0, 175, 400, 30);
-       {Fl_Button* o = new Fl_Button(125, 2, 90, 23, _("<< &Previous"));
-        o->callback((Fl_Callback*)cb_Previous);
-        o->align(FL_ALIGN_WRAP);
-      }
-       {Fl_Button* o = new Fl_Button(215, 2, 90, 23, _("&Next >>"));
-        o->callback((Fl_Callback*)cb_Next);
-      }
-       new Fl_Box(0, 0, 157, 30);
-      
-       {Fl_Button* o = new Fl_Button(320, 2, 70, 23, _("&Close"));
-        o->callback((Fl_Callback*)cb_Close);
-      }
-      o->end();
-    }
-    o->end();
-  }
-  w->show(argc, argv);
-  return  Fl::run();
+	Fl_Window* win = new Fl_Window(420, 169, _("Tips..."));
+	win->shortcut(0xff1b);
+	win->begin();
+
+	Fl_Group* gr = new Fl_Group(5, 5, 410, 130);
+	gr->box(FL_DOWN_BOX);
+	Fl_Box* img = new Fl_Box(5, 5, 70, 65);
+	Fl_Image pix(hint_xpm);
+	img->image(pix);
+
+	Fl_Box* title = new Fl_Box(80, 10, 320, 25, random_txt(title_tips, TITLE_TIPS_NUM));
+	title->label_font(fl_fonts+1);
+	title->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+	title->box(FL_FLAT_BOX);
+
+	Fl_Box* tiptxt = new Fl_Box(80, 45, 320, 75, random_txt(tiplist, TIPS_NUM));
+	tiptxt->align(FL_ALIGN_LEFT|FL_ALIGN_TOP|FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
+	tiptxt->box(FL_FLAT_BOX);
+	gr->end();
+
+	Fl_Check_Button* ch = new Fl_Check_Button(5, 140, 150, 25, _(" Do not bother me"));
+	show_check = ch;
+
+	Fl_Button* prev = new Fl_Button(160, 140, 80, 25, "<-");
+	prev->label_font(fl_fonts+1);
+	prev->callback(prev_cb, tiptxt);
+
+	Fl_Button* next = new Fl_Button(245, 140, 80, 25, "->");
+	next->label_font(fl_fonts+1);
+	next->callback(next_cb, tiptxt);
+	
+	Fl_Button* close = new Fl_Button(335, 140, 80, 25, _("&Close"));
+	close->callback(close_cb, win);
+
+	win->end();
+
+	win->set_modal();
+	win->show();
+	return Fl::run();
 }
