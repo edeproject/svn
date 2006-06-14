@@ -73,3 +73,34 @@ depend: makeinclude
 		echo "Creating dependencies in $$dir...";\
 		(cd $$dir; $(MAKEDEPEND) -- $(CXXFLAGS) *.cpp) || exit;\
 	done
+
+
+# for maintainers
+define make-archive
+	NAME=`awk '/PACKAGE_TARNAME/ {print $$3}' $1 | sed -e 's/\"//g'`; \
+	VERS=`awk '/PACKAGE_VERSION/ {print $$3}' $1 | sed -e 's/\"//g'`; \
+	ARCH=$$NAME-$$VERS.tar.bz2; \
+	if [ -e $$ARCH ]; then \
+		echo "Removing previous package..."; \
+		rm $$ARCH; \
+	fi; \
+	tar -cjpvf $$ARCH --exclude $$ARCH .
+endef
+
+# cvs made some files executable
+define fix-chmod
+	echo "Fixing permissions..."; \
+	find . -name "*.*" -exec chmod -x {} \;; \
+	chmod +x l10n-prepare.pl; \
+	chmod -x AUTHORS BUGS COPYING ChangeLog INSTALL NEWS
+endef
+
+archive: clean
+	rm -Rf `find . -name "CVS"`
+	autoconf
+	./configure
+	rm -Rf autom4te.cache
+	rm -f config.status
+	rm -f config.log
+	$(call fix-chmod)
+	$(call make-archive, edeconf.h)
