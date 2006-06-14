@@ -98,9 +98,6 @@ endef
 archive: clean
 	rm -Rf `find . -name "CVS"`
 	autoconf
-	./configure
 	rm -Rf autom4te.cache
-	rm -f config.status
-	rm -f config.log
 	$(call fix-chmod)
 	$(call make-archive, edeconf.h)
