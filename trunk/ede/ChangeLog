@@ -20,6 +20,8 @@ want and assign a keyboard shortcut (patch to edewm by AW)
 - Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making it 
 impossible to use already defined shortcuts for something else)
 - Some improvements to UI
+* etip
+- Completely new etip
 
 
 1.0.4
