@@ -151,7 +151,8 @@ bool Frame::clientmsg_event(const XClientMessageEvent *e)
 		if((atom1 == _XA_NET_WM_STATE_MAXIMIZED_HORZ || atom1 == _XA_NET_WM_STATE_MAXIMIZED_VERT) &&
 			atom2 == _XA_NET_WM_STATE_MAXIMIZED_HORZ || atom2 == _XA_NET_WM_STATE_MAXIMIZED_VERT)
 		{
-			maximize();
+			//maximize();
+			shade();
 			return true;
 		}
 		DBG("NET state");

@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
 	WindowManager::init(argc, argv);
 	Fl_Style::load_theme();
 
-	while(WindowManager::instance()->running() && !got_signal)
+	while(!got_signal && WindowManager::instance()->running())
 	{
 		Fl::wait();
 		WindowManager::instance()->idle();
