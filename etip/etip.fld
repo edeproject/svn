@@ -1,102 +1,45 @@
-# data file for the FLTK User Interface Designer (FLUID)
-version 2,0003 
-images_dir ./ 
-i18n 
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2.0003 
 header_name {.h} 
 code_name {.cpp} 
 gridx 5 
 gridy 5 
 snap 3
-decl {// Tips for EDE is (C) Copyright 2001-2002 by Martin Pekar, this program is provided under the terms of GNU GPL v.2, see file COPYING for more information.} {} 
-
-decl {\#include <stdio.h>} {} 
-
-decl {\#include <stdlib.h>} {} 
-
-decl {\#include <efltk/Fl_Config.h>} {} 
-
-decl {\#include <efltk/Fl_Locale.h>} {} 
-
-decl {char *tips[5];} {} 
-
-decl {int activeTip = 0;} {} 
-
-decl {Fl_Config conf("EDE Team", "etip");} {} 
-
-Function {} {open
+Function {} {open selected
 } {
-  code {fl_init_locale_support("etip", PREFIX"/share/locale");
-bool show = true;
-conf.set_section("Tips");
-conf.read("Show", show, true);
-if (!show)
-	return 0;
-tips[0]=_("To start any application is simple. Press on the EDE button, go to the Programs menu, select category and click on the wished program.");
-tips[1]=_("To exit the Equinox Desktop environment, press EDE button and then logout.");
-tips[2]=_("To lock the computer, press EDE button and then lock.");
-tips[3]=_("To setup things on the computer, press EDE button, Panel menu and then the Control panel.");
-tips[4]=_("To add a program that is not in the Programs menu, click on the EDE button, Panel menu, and then Edit panels menu.");} {selected
-  }
-  Fl_Window {} {
-    label {Startup tips} open
-    xywh {36 150 400 205} hide resizable
-    extra_code {o->size_range(o->w(), o->h());}
+  Fl_Window {} {open
+    xywh {357 366 420 169} resizable visible
   } {
-    Fl_Box {} {
-      xywh {10 15 60 145} image {icons/hint.xpm}
-    }
-    Fl_Check_Button show_check {
-      label {Do not show this dialog next time}
-      xywh {77 145 313 20} align 148
-    }
     Fl_Group {} {open
-      xywh {80 15 310 125} align 209 resizable box BORDER_FRAME color 0xf4da1200 label_size 18
+      xywh {5 5 410 130} box DOWN_BOX color 49
     } {
-      Fl_Box tipsBox {
-        xywh {1 45 308 79} align 144 resizable box FLAT_BOX color 7
-        extra_code {o->label(tips[activeTip]);
-o->window()->redraw();}
+      Fl_Box {} {
+        xywh {5 5 70 65} image {icons/hint.xpm} color 29
       }
       Fl_Box {} {
-        label {Welcome to Equinox Desktop Environment}
-        xywh {0 0 310 45} align 144 box FLAT_BOX color 0xf4da1200 label_color 32 label_size 18
-      }
-    }
-    Fl_Group {} {open
-      xywh {0 175 400 30}
-    } {
-      Fl_Button {} {
-        label {<< &Previous}
-        callback {if (activeTip>0 && activeTip<=4) {
-activeTip--;
-tipsBox->label(tips[activeTip]);
-tipsBox->window()->redraw();
-}}
-        xywh {125 2 90 23} align 128
-      }
-      Fl_Button {} {
-        label {&Next >>}
-        callback {if (activeTip>=0 && activeTip<4) {
-activeTip++;
-tipsBox->label(tips[activeTip]);
-tipsBox->window()->redraw();
-}}
-        xywh {215 2 90 23}
+        label {Did you know...}
+        xywh {80 10 320 25} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE label_font 1 color 55
       }
       Fl_Box {} {
-        xywh {0 0 157 30}
-        extra_code {// Fluid sucks in layouting...
-o->parent()->resizable(o);}
+        label {To start any application is simple. Press on the button with your user name, go to the Programs menu, select category and click on the wished program.}
+        xywh {80 45 320 75} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_WRAP color 55
       }
-      Fl_Button {} {
-        label {&Close}
-        callback {//Fl_Config conf(fl_find_config_file("apps/etip.conf", 1));
-conf.set_section("Tips");
-conf.write("Show", !show_check->value()); 
-conf.flush(); 
-exit(0);}
-        xywh {320 2 70 23}
-      }
+    }
+    Fl_Button {} {
+      label {&Close}
+      xywh {335 140 80 25}
+    }
+    Fl_Button {} {
+      label {->}
+      xywh {245 140 80 25} label_font 1
+    }
+    Fl_Button {} {
+      label {<-}
+      xywh {160 140 80 25} label_font 1
+    }
+    Fl_Check_Button {} {
+      label { Do not bother me}
+      xywh {5 140 150 25}
     }
   }
 } 

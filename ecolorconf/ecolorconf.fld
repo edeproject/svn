@@ -1,13 +1,25 @@
-# data file for the FLTK User Interface Designer (FLUID)
+# data file for the eFLTK User Interface Designer (eFLUID)
 version 2,0003 
-images_dir ./icons 
+images_dir ./ 
 i18n 
 header_name {.h} 
 code_name {.cpp} 
 gridx 5 
 gridy 5 
 snap 3
-decl {// Colors and fonts settings dialog for EDE is (C) Copyright 2000-2002 by Martin Pekar, this program is provided under the terms of GNU GPL v.2, see file COPYING for more information.} {} 
+decl {// EControl applet for colors and fonts} {} 
+
+decl {// Copyright (c) 2000. - 2005. EDE Authors} {} 
+
+decl {// This program is licenced under terms of the} {} 
+
+decl {// GNU General Public Licence version 2 or newer.} {} 
+
+decl {// See COPYING for details} {} 
+
+decl {//} {} 
+
+decl {\#include <edeconf.h>} {} 
 
 decl {\#include <efltk/Fl_Color_Chooser.h>} {} 
 
@@ -19,79 +31,74 @@ Function {} {open
   Fl_Window windowColorSettings {
     label {Colors and fonts settings}
     callback {exit(0);} open
-    xywh {313 129 330 360} hide
+    xywh {507 139 330 360} resizable visible
   } {
     Fl_Tabs {} {open
       private xywh {3 5 320 195} color 0xfffffffe
     } {
       Fl_Group {} {
         label {Default colors} open
-        xywh {1 23 318 171} align 5
+        xywh {1 24 318 170} align FL_ALIGN_TOP|FL_ALIGN_LEFT hide
       } {
         Fl_Button colorBox {
-          label Color
+          label Widgets
           callback ChangeBoxColor
-          xywh {12 98 65 20} align 133 box DOWN_BOX
+          xywh {91 31 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button labelColorBox {
-          label {Label color}
+          label Label
           callback ChangeBoxColor
-          xywh {87 98 65 20} align 133 box DOWN_BOX
+          xywh {16 76 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button selectionColorBox {
-          label {Selection color}
+          label {Sel. back.}
           callback ChangeBoxColor
-          xywh {167 65 65 20} align 133 box DOWN_BOX
+          xywh {241 121 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button selectionTextColorBox {
-          label {Selection text color}
+          label Selection
           callback ChangeBoxColor
-          xywh {242 65 65 20} align 133 box DOWN_BOX
-        }
-        Fl_Button offColorBox {
-          label {Off color}
-          callback ChangeBoxColor
-          xywh {12 145 65 20} align 133 box DOWN_BOX
+          xywh {166 121 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button highlightColorBox {
-          label {Highlight color}
+          label Highlight
           callback ChangeBoxColor
-          xywh {167 145 65 20} align 133 box DOWN_BOX
+          xywh {166 31 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button highlightLabelColorBox {
-          label {Highlight label color}
+          label Highlight
           callback ChangeBoxColor
-          xywh {242 145 65 20} align 133 box DOWN_BOX
+          xywh {166 76 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button textColorBox {
-          label {Text color}
+          label Text
           callback ChangeBoxColor
-          xywh {87 145 65 20} align 133 box DOWN_BOX
+          xywh {16 121 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button backgroundBox {
           label Background
-          callback ChangeBoxColor selected
-          xywh {12 45 65 20} align 133 box DOWN_BOX
+          callback ChangeBoxColor
+          xywh {16 31 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button textBackgroundBox {
-          label {Text background}
+          label Background
           callback ChangeBoxColor
-          xywh {87 45 65 20} align 133 box DOWN_BOX
+          xywh {91 121 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
       }
       Fl_Group {} {
         label Tooltips open
-        xywh {1 23 318 171} align 5 hide
+        xywh {1 24 318 170} align FL_ALIGN_TOP|FL_ALIGN_LEFT hide
       } {
         Fl_Button tooltipBox {
           label {Tooltip color}
           callback ChangeBoxColor
-          xywh {157 45 65 20} align 133 box DOWN_BOX
+          xywh {157 45 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Button tooltipTextColorButton {
           label {Tooltip text color}
           callback ChangeBoxColor
-          xywh {237 45 65 20} align 133 box DOWN_BOX
+          xywh {237 45 65 20} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_WRAP box DOWN_BOX
         }
         Fl_Check_Button tooltipsEnableEffects {
           label {Enable effects}
@@ -103,7 +110,7 @@ Function {} {open
         }
         Fl_Choice tooltipsEffectType {
           label {Effect type:}
-          xywh {77 82 115 23} align 132
+          xywh {77 82 115 23} align FL_ALIGN_LEFT|FL_ALIGN_WRAP
         } {
           Fl_Item {} {
             label None
@@ -122,72 +129,39 @@ Function {} {open
       }
       Fl_Group {} {
         label Fonts open
-        xywh {1 23 318 171} align 5 hide
+        xywh {1 24 318 170} align FL_ALIGN_TOP|FL_ALIGN_LEFT
         extra_code {o->label(_(o->label()));}
       } {
-        Fl_Input labelFontInput {
+        Fl_Button setLabelFont {
+          label {...}
+          callback {labelfont_cb();}
+          xywh {276 16 30 25}
+        }
+        Fl_Button setTextFont {
+          label {...}
+          callback {textfont_cb();}
+          xywh {276 51 30 25}
+        }
+        Fl_Box labelFontInput {
+          label label
+          xywh {76 16 190 25} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_WRAP box DOWN_BOX
+        }
+        Fl_Box textFontInput {
+          label label
+          xywh {76 52 190 24} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_WRAP box DOWN_BOX
+        }
+        Fl_Box {} {
           label {Label font:}
-          callback {//updateFontAll();}
-          xywh {75 15 167 23} align 132
-          extra_code {\#include <efltk/Fl_Input_Browser.h>
-\#include <efltk/Fl_Item.h>
-/*Fl_Font* fonts; int numfonts = fl_list_fonts(fonts);
-for (int i = 0; i < numfonts; i++)
-{ 
-o->begin(); o->add (fonts[i]->name()); o->end(); }*/}
-          class Fl_Input
+          xywh {11 16 65 25} align FL_ALIGN_RIGHT|FL_ALIGN_INSIDE
         }
-        Fl_Input textFontInput {
+        Fl_Box {} {
           label {Text font:}
-          callback {//updateFontAll();}
-          xywh {75 45 167 23} align 132
-          extra_code {\#include <efltk/Fl_Input_Browser.h>
-\#include <efltk/Fl_Item.h>
-/*Fl_Font* fonts; int numfonts = fl_list_fonts(fonts);
-for (int i = 0; i < numfonts; i++)
-{ o->begin(); o->add (fonts[i]->name()); o->end(); }*/}
-          class Fl_Input
-        }
-        Fl_Input labelSize {
-          label {Label size:}
-          xywh {77 80 45 20} align 132
-          class Fl_Input_Browser
-        }
-        Fl_Input textSize {
-          label {Text size:}
-          xywh {77 110 45 20} align 132
-          class Fl_Input_Browser
-        }
-        Fl_Input fontEncoding {
-          label {Encoding:}
-          xywh {202 80 102 23}
-          extra_code {\#include <efltk/Fl_Input_Browser.h>}
-          class Fl_Input_Browser
-        }
-        Fl_Button {} {
-          label {...}
-          callback {Fl_String ret = fl_font_dialog();
-if (!ret.empty()){
-	labelFontInput->value(ret);
-
-}}
-          xywh {257 14 35 25}
-          extra_code {extern Fl_String fl_font_dialog();}
-        }
-        Fl_Button {} {
-          label {...}
-          callback {Fl_String ret = fl_font_dialog();
-if (!ret.empty()){
-	textFontInput->value(ret);
-
-}}
-          xywh {257 44 35 25}
-          extra_code {extern Fl_String fl_font_dialog();}
+          xywh {11 51 65 25} align FL_ALIGN_RIGHT|FL_ALIGN_INSIDE
         }
       }
       Fl_Group {} {
         label Menus open
-        xywh {1 23 318 171} hide
+        xywh {1 24 318 170} hide
       } {
         Fl_Check_Button menusEnableEffects {
           label {Enable effects}
@@ -199,7 +173,7 @@ if (!ret.empty()){
         }
         Fl_Choice menusEffectType {
           label {Effect type:} open
-          xywh {77 60 115 23} align 132
+          xywh {77 60 115 23} align FL_ALIGN_LEFT|FL_ALIGN_WRAP
         } {
           Fl_Item {} {
             label None
@@ -222,7 +196,7 @@ if (!ret.empty()){
       }
       Fl_Group {} {
         label Others open
-        xywh {1 23 318 171} hide
+        xywh {1 24 318 170} hide
       } {
         Fl_Check_Button mdiAnimation {
           label {Enable MDI animation}
@@ -248,12 +222,12 @@ if (!ret.empty()){
       }
       Fl_Check_Button allApplyRadioButton {
         label {Ap&ply colors to all programs}
-        xywh {9 60 299 25} align 148 when CHANGED
+        xywh {9 60 299 25} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_WRAP when CHANGED
       }
       Fl_Choice schemeListBox {
         label {Schemes:}
         callback {getSchemeColors();} open
-        xywh {12 22 175 23} align 5 when CHANGED
+        xywh {12 22 175 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT when CHANGED
         extra_code {\#include <efltk/Fl_Input_Browser.h>
 o->type(1);
 fillItems();}
@@ -286,7 +260,7 @@ saveEfltkConfig();}
 loadEfltkConfig();} {}
 } 
 
-Function {ChangeBoxColor(Fl_Button *box, void *)} {return_type void
+Function {ChangeBoxColor(Fl_Button *box, void *)} {open return_type void
 } {
   code {Fl_Button *colorBox = box;
 Fl_Color oldColor = colorBox->color();

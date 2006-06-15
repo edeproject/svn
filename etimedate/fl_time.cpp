@@ -1,8 +1,9 @@
+// 
+// $Id$
 // Fl_Time.cxx
 // Source file for the time widget class
 //
 // Copyright (C) 2000 Softfield Research Ltd.
-//
 // Changes 02/09/2001 by Martin Pekar
 //
 // This program is free software; you can redistribute it and/or
@@ -29,10 +30,23 @@
 #include <efltk/fl_ask.h>
 #include <efltk/Fl_Util.h>
 #include <efltk/Fl_Locale.h>
+#include <efltk/Fl_Config.h>
 #include <efltk/filename.h>
 
 #include "etimedate.h"
 #include "fl_time.h"
+
+#ifndef HAVE_STIME
+// Stupid BSD has no stime() function
+int stime(time_t *t) 
+{
+    struct tm *time = gmtime(t);
+    char s[18];
+    strftime (s, 18, "date %m%d%H%M.%S", time);
+    fl_start_child_process(s);
+    return 0;
+}
+#endif /* HAVE_STIME */
 
 Fl_Time::Fl_Time(int x, int y, int w, int h, char *l) : Fl_Group(x, y, w, h, l)
 {
@@ -383,18 +397,65 @@ Fl_Color Fl_Time::textcolor()
 }
 
 
+// format functions
+
+int get_format() 
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        Fl_String timeformatstr;
+        pGlobalConfig.get("Clock", "TimeFormat", timeformatstr, "");
+	if (timeformatstr == "24") {
+            return 1;
+        }
+    }
+    //Default to 12 hour is there's a problem
+    return 0;
+}
+
+void set_format12(Fl_Widget *widget, void *data) 
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        pGlobalConfig.set("Clock", "TimeFormat", "12");
+	pGlobalConfig.flush();
+    }
+}
+
+void set_format24(Fl_Widget *widget, void *data)
+{
+    Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", true));
+    if(!pGlobalConfig.error()) {
+        pGlobalConfig.set("Clock", "TimeFormat", "24");
+	pGlobalConfig.flush();
+    }
+}
+
+
 // timezone functions
 
 void getCurrentTimeZone()
 {
-    char szZone[100];
+    char szZone[100],tempstring[101];
+    FILE *f;
 
     if(readlink("/etc/localtime", szZone, sizeof(szZone)-1)>0) {
         char **tz = fl_split(szZone, "/zoneinfo/", 2);
         timeZonesList->value(tz[1]);
         fl_freev(tz);
     } else {
-        timeZonesList->value(_("Zone information not found."));
+        // some distros just copy the file instead of symlinking
+        // thus try /etc/sysconfig/clock
+        if((f = fopen("/etc/sysconfig/clock", "r")) != NULL) {
+            while (fgets(tempstring,100,f) != NULL) {
+                if (strstr(tempstring,"ZONE=") == tempstring) {
+                    // last char is newline, let's strip that:
+                    timeZonesList->value(fl_trimright(tempstring+5));
+                }
+            }
+        } else {
+            timeZonesList->value(_("Zone information not found."));
+        }
     }
 }
 

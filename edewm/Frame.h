@@ -1,4 +1,14 @@
-// Frame.H
+/*
+ * $Id$
+ *
+ * Edewm, window manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
 
 // Each X window being managed by fltk has one of these
 
@@ -6,9 +16,9 @@
 #define Frame_H
 
 #include "config.h"
-
 #include "Mwm.h"
 #include "Icccm.h"
+#include "Titlebar.h"
 
 #include <efltk/Fl.h>
 #include <efltk/Fl_Window.h>
@@ -94,7 +104,6 @@ enum {
 
 class Icon;
 class Desktop;
-#include "Titlebar.h"
 
 class Frame : public Fl_Window {
     friend class Titlebar;
@@ -102,11 +111,8 @@ class Frame : public Fl_Window {
     friend class MWM;
     friend class NETWM;
 
-    Titlebar *title;
+    Titlebar* title;
     Window window_;
-
-
-
 
     int wintype; //Type of window (see NETWM types)
 
@@ -243,7 +249,6 @@ public:
     void destroy_frame();
 
     void settings_changed();
-    static void settings_changed_all();
 
     Fl_Rect *strut() { return strut_; }
     Icon *icon() { return icon_; }
@@ -266,8 +271,11 @@ public:
     // Lowers and put window back of stack
     void lower();
 
-    // Iconize Window
     void iconize();
+	void maximize();
+	void restore();
+	void shade();
+	void unshade();
 
     void throw_focus(int destructor = 0);
 
@@ -285,9 +293,6 @@ public:
     short state() const {return state_;}
     void state(short newstate); // don't call this unless you know what you are doing!
 
-    // restack windows and focus the latest
-    void restack_and_focus(Frame *f);
-
     int active() const {return active_==this;}
     static Frame* activeFrame() {return active_;}
 
@@ -297,6 +302,7 @@ public:
     static int animate_speed;
 
     bool maximized;
+	bool shaded;
 };
 
 // handy wrappers for those ugly X routines:

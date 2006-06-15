@@ -1,3 +1,13 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2006 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+
 include ../../makeinclude
 
 iconsdir = $(datadir)/ede/icons
@@ -220,3 +230,4 @@ install:
 uninstall:
 	$(RM) -r $(icons16dir)
 
+clean:

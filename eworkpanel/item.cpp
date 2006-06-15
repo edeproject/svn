@@ -116,7 +116,7 @@ int EItem::handle(int event)
         if(type()==FILE) {
             if(Fl::event_button() == 3) {
                 ::dir = this->dir();
-                int ret = popup_menu();
+                popup_menu();
                 ::dir = 0;
                 return 1;
             }

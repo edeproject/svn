@@ -1,3 +1,13 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2006 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+
 # main file for making
 
 include makeinclude
@@ -6,10 +16,11 @@ DIRS =	common\
 		ecolorconf\
 		econtrol\
 		efinder\
-		ehelpbook\
 		eiconman\
 		eiconsconf\
 		einstaller\
+		ekeyconf\
+		elauncher\
 		emenueditor\
 		epanelconf\
 		erun\
@@ -19,8 +30,6 @@ DIRS =	common\
 		ewmconf\
 		eworkpanel\
 		edisplayconf\
-		elauncher\
-		evolume\
 		edewm\
 		datas\
 		datas/programs-links\
@@ -28,7 +37,7 @@ DIRS =	common\
 		datas/icons-16\
 		datas/icons-48\
 		datas/schemes\
-		docs/ede
+		docs/ede $(EVOLUME)
 
 all: makeinclude
 	for dir in $(DIRS); do\
@@ -64,3 +73,31 @@ depend: makeinclude
 		echo "Creating dependencies in $$dir...";\
 		(cd $$dir; $(MAKEDEPEND) -- $(CXXFLAGS) *.cpp) || exit;\
 	done
+
+
+# for maintainers
+define make-archive
+	NAME=`awk '/PACKAGE_TARNAME/ {print $$3}' $1 | sed -e 's/\"//g'`; \
+	VERS=`awk '/PACKAGE_VERSION/ {print $$3}' $1 | sed -e 's/\"//g'`; \
+	ARCH=$$NAME-$$VERS.tar.bz2; \
+	if [ -e $$ARCH ]; then \
+		echo "Removing previous package..."; \
+		rm $$ARCH; \
+	fi; \
+	tar -cjpvf $$ARCH --exclude $$ARCH .
+endef
+
+# cvs made some files executable
+define fix-chmod
+	echo "Fixing permissions..."; \
+	find . -name "*.*" -exec chmod -x {} \;; \
+	chmod +x l10n-prepare.pl; \
+	chmod -x AUTHORS BUGS COPYING ChangeLog INSTALL NEWS
+endef
+
+archive: clean
+	rm -Rf `find . -name "CVS"`
+	autoconf
+	rm -Rf autom4te.cache
+	$(call fix-chmod)
+	$(call make-archive, edeconf.h)

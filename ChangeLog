@@ -1,3 +1,81 @@
+1.1
+* general
+- Version number is now uniformly handled throught the docs, via configure
+* eworkpanel
+- Notification Area a.k.a System Tray support - patch by Elleo + fixes 
+for proper unloading and some KDE support
+- Battery Status Monitor with support for ACPI and APM
+- Quick Launch Bar (area with programmable icons) - "patch" by dzooli
+- Time Format (12h vs. 24h) patch by Elleo
+- Numerous layout and redraw issues with panel fixed
+- Implemented maximize and restore in taskbar context menu
+* edewm
+- Support for Focus Follows Mouse policy (by AW)
+- Improved and fixes for keyboard shortcut handling (thanks to AW)
+- Several new shortcuts (thanks to AW)
+- Added support for maximize via NETWM (although not horizontal-vertical specific) 
+* ekeyconf
+- Add support for custom shortcuts - now you can define any command you 
+want and assign a keyboard shortcut (patch to edewm by AW)
+- Fix bug 1329447 - ekeyconf not properly grabbing keyboard (making it 
+impossible to use already defined shortcuts for something else)
+- Some improvements to UI
+* etip
+- Completely new etip
+
+
+1.0.4
+(NOTE: I would like to thank Google Summer of Code for funding my work on (among else)
+EDE 1.0.4. Thanks guys! You rock :) Vedran <vljubovic at smartnet dot ba>)
+* general
+- improved Russian translations
+* econtrol
+- re-add ekeyconf (left out by mistake)
+* eiconman
+- patch by Mike "elleo" - make transparent terminals work
+- fix bug with icons getting on top of other windows
+* einstaller
+- fix bug 949024 "Install new program window smears"
+- disable Install button a) when no package is selected b) after installation
+* elauncher
+- fix compilation on *BSD systems
+* etimedate
+- fix for systems with no stime() function (*BSD etc.)
+* evolume
+- disable compilation on systems without ALSA (e.g. non-Linux)
+* eworkpanel
+- show windows from all virtual desktops - to enable, edit ede.conf
+and in section [Panel] add "AllDesktops=true"
+- fix compilation on non-Linux systems
+- CPU monitor: add support for FreeBSD (previously worked only on Linux and Solaris)
+- layout fixes
+
+
+1.0.3
+- fixed silent option for configure script
+- fixed "make clean" issue
+* locales:
+- enable building translations
+- fix several translation-related problems (by Nemeth Otto)
+- add Hungarian (hu) language (by Nemeth Otto)
+- fix for efinder locale installation
+* eiconman:
+- fix problem with dragging icons
+* ecolorconf:
+- fix crash and other problems with fonts
+- reorganize colors
+* edewm:
+- disable killing eiconman/eworkpanel using hotkeys
+- fixed border redraw when window itself change width or height
+- fixed focus issue (again)
+- fixed OpenOffice redraw problem
+* emenueditor:
+- disable editing subdirs
+* ehelpbook:
+- removed
+
+
+
 1.0.2
 * new build system
 * netscape and opera replaced with mozilla everywhere
