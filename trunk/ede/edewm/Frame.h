@@ -16,9 +16,9 @@
 #define Frame_H
 
 #include "config.h"
-
 #include "Mwm.h"
 #include "Icccm.h"
+#include "Titlebar.h"
 
 #include <efltk/Fl.h>
 #include <efltk/Fl_Window.h>
@@ -104,7 +104,6 @@ enum {
 
 class Icon;
 class Desktop;
-#include "Titlebar.h"
 
 class Frame : public Fl_Window {
     friend class Titlebar;
@@ -275,6 +274,8 @@ public:
     void iconize();
 	void maximize();
 	void restore();
+	void shade();
+	void unshade();
 
     void throw_focus(int destructor = 0);
 
@@ -301,6 +302,7 @@ public:
     static int animate_speed;
 
     bool maximized;
+	bool shaded;
 };
 
 // handy wrappers for those ugly X routines:

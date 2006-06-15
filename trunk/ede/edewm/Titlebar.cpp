@@ -39,6 +39,7 @@ Frame *menu_frame = 0; //This is set to frame,where menu were popped up
 // For menu
 Fl_Widget* menu_max = 0;
 Fl_Widget* menu_min = 0;
+Fl_Widget* menu_shade = 0;
 Fl_Widget* menu_set_size = 0;
 Fl_Widget* menu_desktop = 0;
 
@@ -149,6 +150,15 @@ void button_cb_min(Fl_Widget*, void* f)
 {
 	Frame* frame = (Frame*)f;
 	frame->iconize();
+}
+
+void button_cb_shade(Fl_Widget*, void* f)
+{
+	Frame* frame = (Frame*)f;
+	if(frame->shaded)
+		frame->unshade();
+	else
+		frame->shade();
 }
 
 // Set size window
@@ -306,8 +316,9 @@ Fl_Window(x, y, w, h, l), minb(TITLEBAR_MIN_UP), maxb(TITLEBAR_MAX_UP), closeb(T
 	title_menu = new Fl_Menu_();
 	menu_max = title_menu->add(_("Maximize"), 0, button_cb_max, curr_frame);
 	menu_min = title_menu->add(_("Minimize"), 0, button_cb_min, curr_frame);
+	menu_shade = title_menu->add(_("Shade"), 0, button_cb_shade, curr_frame);
 	menu_set_size = title_menu->add(_("Set size"), 0, set_size_cb, curr_frame, FL_MENU_DIVIDER);
-	menu_desktop = title_menu->add(_("To Desktop"), 0, 0, 0, FL_SUBMENU|FL_MENU_DIVIDER);
+	//menu_desktop = title_menu->add(_("To Desktop"), 0, 0, 0, FL_SUBMENU|FL_MENU_DIVIDER);
 	title_menu->add(_("Kill"), 0, button_cb_kill, curr_frame);
 	title_menu->add(_("Close"), 0, button_cb_close, curr_frame);
 	end();
@@ -350,8 +361,6 @@ void Titlebar::hide()
 
 #define set_box(b) if(box() != b) box(b)
 
-#include <assert.h>
-#include <stdio.h>
 void Titlebar::layout()
 {
 	//if(Theme::use_theme())
@@ -523,7 +532,6 @@ void Titlebar::popup_menu()
 	// must use it here, since it will
 	// be initialized for other files where is
 	// used
-	/*
 	
 	menu_frame = curr_frame;
 
@@ -531,6 +539,11 @@ void Titlebar::popup_menu()
 		menu_max->label(_("Restore"));
 	else
 		menu_max->label(_("Maximize"));
+
+	if(curr_frame->shaded)
+		menu_shade->label(_("Unshade"));
+	else
+		menu_shade->label(_("Shade"));
 
 	// we don't want animation for dialogs and utils frames
 	// MWM hints can set MAXIMIZE and MINIMIZE options separately
@@ -552,12 +565,13 @@ void Titlebar::popup_menu()
 		menu_min->deactivate();
 	}
 
-	update_desktops((Fl_Group*)menu_desktop); // <-- trace here
+	// TODO: BUG IS HERE
+	//update_desktops((Fl_Group*)menu_desktop); // <-- trace here
+
 	title_menu->Fl_Group::focus(-1);
 	title_menu->popup(Fl::event_x_root(), Fl::event_y_root());
 
 	menu_frame = 0;
-	*/
 }
 
 // handle double click on titlebar area
