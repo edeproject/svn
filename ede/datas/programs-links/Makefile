@@ -1,3 +1,12 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2006 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
 
 include ../../makeinclude
 
@@ -56,7 +65,6 @@ Applications_DATA = \
 
 Graphics_DATA = \
 	acroread.desktop \
-	eimgviewer.desktop \
 	GIMP.desktop \
 	gv.desktop \
 	xdvi.desktop \
@@ -75,12 +83,10 @@ Settings_DATA =	\
 	colorsconf.desktop \
 	control.desktop \
 	edisplayconf.desktop \
-	ehardware.desktop \
 	eiconconf.desktop \
 	epanelconf.desktop \
 	etimedate.desktop \
 	ewmconf.desktop \
-	printers.desktop \
 	scrsaver.desktop
 
 
@@ -154,3 +160,4 @@ uninstall:
 	$(RM) -r $(Rootdir)
 	$(RM) -r $(Developmentdir)
 
+clean:

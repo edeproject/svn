@@ -1,3 +1,15 @@
+/*
+ * $Id$
+ *
+ * Edewm, window manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
 #include "Frame.h"
 
 #include <X11/Xlib.h>
@@ -114,6 +126,7 @@ void grab_cursor(bool grab)
     // Both X and Win32 have the annoying requirement that a visible window
     // be used as a target for the events, and it cannot disappear while the
     // grab is running. I just grab efltk's first window:
+	
     if(grab && Frame::activeFrame()) {
         Window window = fl_xid(Frame::activeFrame());
         if(window &&

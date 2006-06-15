@@ -1,4 +1,5 @@
 
+/* $Id$ */
 /* globber.c */
 /* 
    Copyright 2000-2001 Edscott Wilson Garcia

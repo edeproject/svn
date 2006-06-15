@@ -1,7 +1,12 @@
-# Copyright (c) 2000. - 2005. EDE Authors
-# This program is licenced under terms of the
-# GNU General Public Licence version 2 or newer.
-# See COPYING for details.
+dnl
+dnl $Id$
+dnl
+dnl Part of Equinox Desktop Environment (EDE).
+dnl Copyright (c) 2000-2006 EDE Authors.
+dnl 
+dnl This program is licenced under terms of the 
+dnl GNU General Public Licence version 2 or newer.
+dnl See COPYING for details.
 
 dnl If edeconf.h.in missing, parse this file with autoheader
 
@@ -10,9 +15,12 @@ dnl Should we add AC_HELP_STRING ???
 dnl It seems that RH 7.2 have old autoconf without this macro
 
 AC_PREREQ(2.16)
-AC_INIT(EDE, 1.0.2, [karijes@users.sourceforge.net])
-AC_DEFINE(VERSION, 102, [Short version number])
+AC_INIT(EDE, 1.1, [karijes@users.sourceforge.net])
+AC_DEFINE(VERSION, 11, [Short version number])
 AC_CONFIG_HEADER(edeconf.h:edeconf.h.in)
+
+dnl $PACKAGE_VERSION is filled from AC_INIT
+EDE_VERSION=$PACKAGE_VERSION
 
 AC_PROG_CXX
 AC_PROG_CPP
@@ -29,6 +37,10 @@ AC_CHECK_HEADER(dirent.h, AC_DEFINE(HAVE_DIRENT_H))
 AC_CHECK_HEADER(ndir.h, AC_DEFINE(HAVE_NDIR_H))
 AC_CHECK_HEADER(sys/dir.h, AC_DEFINE(HAVE_SYS_DIR_H))
 AC_CHECK_HEADER(sys/ndir.h, AC_DEFINE(HAVE_SYS_NDIR_H))
+AC_CHECK_HEADER(linux/soundcard.h, AC_DEFINE(HAVE_ALSA))
+
+AC_CHECK_HEADER(time.h, AC_DEFINE(HAVE_TIME_H))
+AC_CHECK_FUNCS(stime, AC_DEFINE(HAVE_STIME))
 
 if test "$prefix" = NONE; then
 	INSTALL_DIR="/usr/local"
@@ -70,7 +82,7 @@ AC_ARG_ENABLE(debug, [  --enable-debug          compile with debug information],
 
 AC_ARG_ENABLE(silent, [  --disable-silent        show compiler output],
 			[
-			 if eval "test x$disable_silent = xyes"; then
+			 if eval "test x$enable_silent = xno"; then
 				 SILENT=""
 			 fi
 			])
@@ -100,60 +112,49 @@ fi
 
 
 dnl Check efltk's version.
-dnl Less than 2.0.3 is not supported
-dnl [34] will match 2.0.3 and 2.0.4 version
+dnl Less than 2.0.4 is not supported
+dnl [45] will match 2.0.4 and 2.0.5 version
 
-AC_MSG_CHECKING(efltk version >= 2.0.3)
+AC_MSG_CHECKING(efltk version >= 2.0.4)
 
 EFLTK_VERSION="`efltk-config --version`"
-case "$EFLTK_VERSION" in ["2.0."[34]])
+case "$EFLTK_VERSION" in ["2.0."[45]])
 	dnl Display 'yes' for efltk version check
 	AC_MSG_RESULT(yes)
 	;;
 	*)
-	AC_MSG_ERROR([It seems that you have older efltk version. Required is >= 2.0.3])
+	AC_MSG_ERROR([It seems that you have older efltk version. Required is >= 2.0.4])
 esac
 
-
-
-dnl From old configure.in
-dnl Just checks are we going to use libsupc++ or libstdc++
-
-dnl if test "$CXX" = "gcc";
-dnl then
-dnl     # Starting with GCC 3.0, you must link C++ programs against either
-dnl     # libstdc++ (shared by default), or libsupc++ (always static).  If
-dnl     # you care about binary portability between Linux distributions,
-dnl     # you need to either 1) build your own GCC with static C++ libraries
-dnl     # or 2) link using gcc and libsupc++.  We choose the latter since
-dnl     # CUPS doesn't (currently) use any of the stdc++ library.
-dnl     #
-dnl     # Also, GCC 3.0.x still has problems compiling some code.  You may
-dnl     # or may not have success with it.  USE 3.0.x WITH EXTREME CAUTION!
-dnl     #
-dnl     # Previous versions of GCC do not have the reliance on the stdc++
-dnl     # or g++ libraries, so the extra supc++ library is not needed.
-dnl 
-dnl     AC_MSG_CHECKING(if libsupc++ is required)
-dnl 
-dnl     SUPC="`$CXX -print-file-name=libsupc++.a 2>/dev/null`"
-dnl     case "$SUPC" in
-dnl     	libsupc++.a*)
-dnl 	    # Library not found, so this is and older GCC...
-dnl 	    AC_MSG_RESULT(no)
-dnl 	    ;;
-dnl 	*)
-dnl             # This is gcc 3.x, and it knows of libsupc++, so we need it
-dnl             LIBS="$LIBS -lsupc++"
-dnl             AC_MSG_RESULT(yes)
-dnl 	    ;;
-dnl  	esac
-dnl fi
+if test $ac_cv_header_linux_soundcard_h = yes; then
+	EVOLUME=evolume/
+else
+	echo
+	echo "***************************************"
+	echo "*         ALSA WAS NOT FOUND          *"
+	echo "*                                     *"
+	echo "* Sadly, evolume is ALSA-only at this *"
+	echo "* moment. It will be disabled.        *"
+	echo "***************************************"
+	EVOLUME=
+fi
 
 
 AC_SUBST(CXXFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(SILENT)
 AC_SUBST(HOME_DIR)
+AC_SUBST(EVOLUME)
+AC_SUBST(EDE_VERSION)
 
-AC_OUTPUT(makeinclude datas/startede)
+AC_OUTPUT([
+ makeinclude
+ datas/startede
+ README
+ docs/ede/index.html
+ docs/ede/authors.html
+ docs/ede/changelog.html
+ docs/ede/copying.html
+ docs/ede/help.html
+ ede.spec
+ ])

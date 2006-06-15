@@ -1,3 +1,5 @@
+// 
+// $Id$
 // Fl_Time.h
 // Header file for the time Widget class
 //
@@ -212,6 +214,10 @@ public:
   void settime(); //just for superuser
 };
 
+// format setting
+int get_format();
+void set_format12(Fl_Widget *widget, void *data);
+void set_format24(Fl_Widget *widget, void *data);
 
 // timezone functions
 void getCurrentTimeZone();

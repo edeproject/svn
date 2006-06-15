@@ -1,8 +1,19 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2006 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+
+
 # Note that this is NOT a relocatable package
 # rpm -bb ede.spec ; /usr/src/RPM/SPECS
-# $Id$
+
 %define name		ede
-%define ver      	1.0.1.1
+%define ver      	@EDE_VERSION@
 %define rel		1
 %define localstatedir   /var/lib
 %define pakdir		%{name}-%{ver}
@@ -17,7 +28,7 @@ Source:         %{name}-%{ver}.tar.gz
 BuildRoot: 	 /var/tmp/%{name}-%{version}-root
 URL: 		 http://sourceforge.net/projects/ede
 Prereq: 	 	 /sbin/install-info
-Requires:       efltk-devel >= 2.0.1
+Requires:       efltk-devel >= 2.0.4
 
 %description
 Equinox Desktop Environment (EDE) is desktop environment - the piece of

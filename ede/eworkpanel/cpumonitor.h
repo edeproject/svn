@@ -3,8 +3,6 @@
 
 #include <edeconf.h>
 
-#if (defined(linux) || defined(HAVE_KSTAT_H))
-
 #ifdef HAVE_KSTAT_H
 #include <kstat.h>
 #include <sys/sysinfo.h>
@@ -48,7 +46,5 @@ private:
     long last_cpu[IWM_STATES];
     Fl_Color colors[IWM_STATES];
 };
-
-#endif
 
 #endif

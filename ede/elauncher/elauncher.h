@@ -1,7 +1,14 @@
-// Copyright (c) 2000. - 2005. EDE Authors
-// This program is licenced under terms of the
-// GNU General Public Licence version 2 or newer.
-// See COPYING for details.
+/*
+ * $Id$
+ *
+ * Elauncher, tool for running apps
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
 
 #ifndef _ELAUNCHER_H_
 #define _ELAUNCHER_H_
@@ -13,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <sys/signal.h>
 
 #include <efltk/Fl.h>
 #include <efltk/Fl_Locale.h>

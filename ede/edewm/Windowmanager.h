@@ -1,3 +1,15 @@
+/*
+ * $Id$
+ *
+ * Edewm, window manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
 #ifndef _WINDOWMANAGER_H_
 #define _WINDOWMANAGER_H_
 
@@ -10,7 +22,6 @@
 #include <efltk/Fl_Ptr_List.h>
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
-#include "../exset/exset.h"
 
 class Frame;
 
@@ -40,19 +51,33 @@ public:
 
 class WindowManager : public Fl_Window
 {
-    void init_wm(int argc, char *argv[]);
     Fl_Rect wm_area;
     Fl_Cursor cursor;
-    Exset *xset;
+	Window root_win;
+	static WindowManager* pinstance;
+	bool is_init;
+	bool is_running;
+
+	WindowManager();
+	~WindowManager();
+	WindowManager(const WindowManager&);
+	WindowManager& operator=(WindowManager&);
+    void init_internals(int argc, char *argv[]);
 
 public:
-    WindowManager(int argc, char *argv[]);
-    ~WindowManager() { }
+	static void init(int argc, char* argv[]);
+	static WindowManager* instance();
+	static void shutdown();
 
+	bool initialized() { return is_init; }
+	void exit();
+	bool running() { return is_running; }
     void set_default_cursor();
     void set_cursor(Fl_Cursor c, Fl_Color fg, Fl_Color bg);
     void read_dispconf();
     Fl_Cursor get_cursor() { return cursor; }
+
+	Window root_window() { return root_win; }
 
     void idle();
     int handle(int e);
@@ -63,13 +88,16 @@ public:
     void draw();
 
     void update_workarea(bool send=true);
+	void read_configuration();
+	void read_xset_configuration();
+	void notify_all();
 
     Frame *find_by_wid(Window wid);
     void restack_windows();
 
     //Updates GNOME and NET client list atoms
-    static void update_client_list();
-    static bool handle_desktop_msgs(const XClientMessageEvent *e);
+    void update_client_list();
+    bool handle_desktop_msgs(const XClientMessageEvent *e);
 
     int x() { return wm_area.x(); }
     int y() { return wm_area.y(); }
@@ -77,16 +105,9 @@ public:
     int h() { return wm_area.h(); }
 
     int XShapeEventBase, XShapeErrorBase;
-
-
-
 };
-
-extern WindowManager *root;
-extern Window root_win;
 
 extern Frame_List stack_order;
 extern Frame_List map_order;
-
 extern Frame_List remove_list;
 #endif

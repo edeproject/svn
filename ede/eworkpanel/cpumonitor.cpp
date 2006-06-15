@@ -26,7 +26,96 @@
 #include <kstat.h>
 #endif
 
-#if (defined(linux) || defined(HAVE_KSTAT_H))
+#ifdef __FreeBSD__
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#if __FreeBSD_version < 500101
+#include <sys/dkstat.h>
+#else
+#include <sys/resource.h>
+#endif
+#include <sys/stat.h>
+#endif
+
+
+
+#ifdef __FreeBSD__
+
+/* The part ripped from top... */
+/*
+ *  Top users/processes display for Unix
+ *  Version 3
+ *
+ *  This program may be freely redistributed,
+ *  but this entire comment MUST remain intact.
+ *
+ *  Copyright (c) 1984, 1989, William LeFebvre, Rice University
+ *  Copyright (c) 1989, 1990, 1992, William LeFebvre, Northwestern University
+ */
+
+/*
+ *  percentages(cnt, out, new, old, diffs) - calculate percentage change
+ *	between array "old" and "new", putting the percentages i "out".
+ *	"cnt" is size of each array and "diffs" is used for scratch space.
+ *	The array "old" is updated on each call.
+ *	The routine assumes modulo arithmetic.  This function is especially
+ *	useful on BSD mchines for calculating cpu state percentages.
+ */
+
+static long cp_time[CPUSTATES];
+static long cp_old[CPUSTATES];
+static long cp_diff[CPUSTATES];
+static int cpu_states[CPUSTATES];
+
+long percentages(int cnt, int *out, long *my_new, long *old, long *diffs)
+{
+    register int i;
+    register long change;
+    register long total_change;
+    register long *dp;
+    long half_total;
+
+    /* initialization */
+    total_change = 0;
+    dp = diffs;
+
+    /* calculate changes for each state and the overall change */
+    for (i = 0; i < cnt; i++)
+    {
+	if ((change = *my_new - *old) < 0)
+	{
+	    /* this only happens when the counter wraps */
+	    change = (int)
+		((unsigned long)*my_new-(unsigned long)*old);
+	}
+	total_change += (*dp++ = change);
+	*old++ = *my_new++;
+    }
+
+    /* avoid divide by zero potential */
+    if (total_change == 0)
+    {
+	total_change = 1;
+    }
+
+    /* calculate percentages based on overall change, rounding up */
+    half_total = total_change / 2l;
+
+    /* Do not divide by 0. Causes Floating point exception */
+    if(total_change) {
+        for (i = 0; i < cnt; i++)
+        {
+          *out++ = (int)((*diffs++ * 1000 + half_total) / total_change);
+        }
+    }
+
+    /* return the total in case the caller wants to use it */
+    return(total_change);
+}
+
+#endif /* freebsd */
+
+
 
 #define UPDATE_INTERVAL .5f
 
@@ -384,6 +473,36 @@ void CPUMonitor::get_cpu_info()
     cpu[samples()-1][IWM_IDLE] = cp_pct[CPU_IDLE];
 
 #endif /* have_kstat_h */
-}
+
+
+#ifdef __FreeBSD__
+//    char *p, buf[128];
+//    long cur[IWM_STATES];
+//    int len, fd = open("/proc/stat", O_RDONLY);
+    size_t len = sizeof(cp_time);
+
+    cpu[samples()-1][IWM_USER] = 0;
+    cpu[samples()-1][IWM_NICE] = 0;
+    cpu[samples()-1][IWM_SYS] = 0;
+    cpu[samples()-1][IWM_IDLE] = 0;
+
+    if (sysctlbyname("kern.cp_time", &cp_time, &len, NULL, 0) == -1)
+        return; /* FIXME : need err handler? */
+
+    percentages(CPUSTATES, cpu_states, cp_time, cp_old, cp_diff);
+
+    // Translate FreeBSD stuff into ours (probably the same thing anyway)
+    cpu[samples()-1][IWM_USER] = cp_diff[CP_USER];
+    cpu[samples()-1][IWM_NICE] = cp_diff[CP_NICE];
+    cpu[samples()-1][IWM_SYS] = cp_diff[CP_SYS];
+    cpu[samples()-1][IWM_IDLE] = cp_diff[CP_IDLE];
+
+#if 0
+    fprintf(stderr, "cpu: %d %d %d %d\n",
+            cpu[samples()-1][IWM_USER], cpu[samples()-1][IWM_NICE],
+            cpu[samples()-1][IWM_SYS],  cpu[samples()-1][IWM_IDLE]);
 #endif
+
+#endif /* freebsd */
+}
 

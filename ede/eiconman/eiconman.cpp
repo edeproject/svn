@@ -1,8 +1,14 @@
-// Equinox Desktop Environment - desktop icons manager
-// Copyright (C) 2000-2005 EDE Authors
-// This program is licenced under terms of the
-// GNU General Public Licence version 2 or newer.
-// See COPYING for details.
+/*
+ * $Id$
+ *
+ * Eiconman, desktop and icon manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
 
 #include "eiconman.h"
 #include "edeskconf.h"
@@ -12,6 +18,7 @@
 #include <efltk/Fl_WM.h>
 #include <efltk/Fl_Image.h>
 #include <efltk/Fl_Renderer.h>
+#include <efltk/x.h>
 
 #include <edeconf.h>
 
@@ -459,8 +466,13 @@ void WPaper::_draw(int dx, int dy, int dw, int dh,
     }
     if(id) {
         // convert to Xlib coordinates:
+        Pixmap pix = (Pixmap) id;
         fl_transform(dx,dy);
-        fl_copy_offscreen(dx,dy,dw,dh,(Pixmap)id,0,0);
+        fl_copy_offscreen(dx,dy,dw,dh,pix,0,0);
+
+        // Set X root (used by terms for 'transparency')
+        Atom prop_root = XInternAtom(fl_display, "_XROOTPMAP_ID", False);
+        XChangeProperty(fl_display, RootWindow(fl_display, fl_screen), prop_root, XA_PIXMAP, 32, PropModeReplace, (unsigned char *) &pix, 1);	
     }
 }
 

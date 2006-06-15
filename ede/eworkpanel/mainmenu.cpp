@@ -255,7 +255,7 @@ bool is_group_item(int t) { return (t==ITEM_APPDIR || t==ITEM_SUBDIR || t==ITEM_
 Fl_String MainMenu::get_item_name(Fl_XmlNode *node)
 {
     Fl_String name;
-    for(int n=0; n<node->children(); n++) {
+    for(uint n=0; n<node->children(); n++) {
         Fl_XmlNode *np = node->child(n);
         if(np->is_element() && np->name()=="Name") {
             Fl_String &lang = np->get_attribute("Lang");
@@ -355,7 +355,7 @@ void MainMenu::build_menu_item(Fl_XmlNode *node)
     Fl_String label = get_item_name(node);
     w->label(label);
 
-    for(int n=0; n<node->children(); n++) {
+    for(uint n=0; n<node->children(); n++) {
         Fl_XmlNode *np = node->child(n);
         if((np->is_element() || np->is_leaf()) && np->name()=="Item")
             build_menu_item(np);
@@ -431,7 +431,7 @@ void MainMenu::init_entries()
 
         Fl_XmlNode *node = doc->root_node();
         if(node) {
-            for(int n=0; n<node->children(); n++) {
+            for(uint n=0; n<node->children(); n++) {
                 Fl_XmlNode *np = node->child(n);
                 if((np->is_element() || np->is_leaf()) && np->name()=="Item")
                     build_menu_item(np);
