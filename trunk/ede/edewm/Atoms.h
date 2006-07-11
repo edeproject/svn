@@ -81,11 +81,11 @@ extern Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
 extern Atom _XA_NET_WM_STATE_SHADED;
 extern Atom _XA_NET_WM_STATE_SKIP_TASKBAR;
 extern Atom _XA_NET_WM_STATE_SKIP_PAGER;
-extern Atom _XA_NET_WM_STATE_HIDDEN; // new in spec. 1.3
-extern Atom _XA_NET_WM_STATE_FULLSCREEN; // new in spec. 1.3
-extern Atom _XA_NET_WM_STATE_ABOVE; // new in spec. 1.3
-extern Atom _XA_NET_WM_STATE_BELOW; // new in spec. 1.3
-extern Atom _XA_NET_WM_STATE_DEMANDS_ATTENTION; // new in spec. 1.3
+extern Atom _XA_NET_WM_STATE_HIDDEN; 
+extern Atom _XA_NET_WM_STATE_FULLSCREEN;
+extern Atom _XA_NET_WM_STATE_ABOVE;
+extern Atom _XA_NET_WM_STATE_BELOW;
+extern Atom _XA_NET_WM_STATE_DEMANDS_ATTENTION;
 extern Atom _XA_NET_WM_ALLOWED_ACTIONS;
 extern Atom _XA_NET_WM_ACTION_MOVE;
 extern Atom _XA_NET_WM_ACTION_RESIZE;
