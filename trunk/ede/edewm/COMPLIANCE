@@ -40,13 +40,14 @@ Application window
 ------------------
 
 (x) _NET_WM_NAME
-(+) _NET_WM_WINDOW_TYPE
+(/) _NET_WM_WINDOW_TYPE
 	(+) _NET_WM_WINDOW_TYPE_NORMAL
 	(?) _NET_WM_WINDOW_TYPE_DOCK
 	(+) _NET_WM_WINDOW_TYPE_TOOLBAR
 	(+) _NET_WM_WINDOW_TYPE_MENU
-	(+) _NET_WM_WINDOW_TYPE_UTIL
-	(+) _NET_WM_WINDOW_TYPE_DIALOG
+	(?) _NET_WM_WINDOW_TYPE_UTIL
+	(?) _NET_WM_WINDOW_TYPE_DIALOG
+	(+) _NET_WM_WINDOW_TYPE_SPLASH
 	(?) _NET_WM_WINDOW_TYPE_DESKTOP
 
 (/) _NET_WM_STATE
@@ -106,18 +107,10 @@ GNOME
 -----
 (-) None of them, since no one requested it.
 
-EDE specific
-------------
-(?) _EDE_WM_ACTION
-	Format of _EDE_WM_ACTION is same as _NET_WM_STATE, with below data:
-
-	(?) _EDE_WM_RESTORE_SIZE - restore previous maximized state
-	(?) _EDE_WM_LOGOUT       - close all windows imediatelly and close X session
-
 
 Ambiguities 
 ===========
-If ambiguities arise between similar (or exact) hints, Netwm is preferred. Then
+If ambiguities arise between similar hints, Netwm is preferred. Then
 comes Icccm and Other.
 
 
