@@ -14,7 +14,7 @@
 #include "Atoms.h"
 #include "Hints.h"
 #include "Frame.h"
-#include "../../exset/exset.h"
+#include "../exset/exset.h"
 #include "Tracers.h"
 #include "debug.h"
 
