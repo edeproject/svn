@@ -362,7 +362,8 @@ void Frame::feed_data(XWindowAttributes* existing)
 	// TODO: For testing only. Better solution will be.
 	fdata->type = wm->hints()->netwm_window_type(fdata);
 	setup_borders();
-	if(fdata->type == FrameTypeSplash || fdata->type == FrameTypeMenu || fdata->type == FrameTypeDesktop)
+	if(fdata->type == FrameTypeSplash || fdata->type == FrameTypeMenu || fdata->type == FrameTypeDesktop ||
+			fdata->type == FrameTypeDock)
 		show_titlebar = false;
 	// ------------------------------------------------
 
@@ -525,6 +526,7 @@ void Frame::setup_borders(void)
 		case FrameTypeSplash:
 		case FrameTypeDesktop:
 		case FrameTypeMenu:
+		case FrameTypeDock:
 			borders.leftright(0);
 			borders.updown(0);
 			// they don't have visible borders
@@ -1250,10 +1252,14 @@ void Frame::change_window_type(short type)
 		case FrameTypeSplash:
 		case FrameTypeDesktop:
 		case FrameTypeMenu:
+		case FrameTypeDock:
 			borders.leftright(0);
 			borders.updown(0);
 			if(show_titlebar && titlebar)
+			{
 				titlebar->hide();
+				show_titlebar = false;
+			}
 			// they don't have visible borders
 			break;
 	}
@@ -1265,10 +1271,12 @@ void Frame::change_window_type(short type)
 		int tx, ty;
 		tx = fdata->plain.x - borders.leftright();
 		ty = fdata->plain.y - borders.updown();
+		/*
 		if(tx < 0)
 			fdata->plain.x = borders.leftright();
 		if(ty < 0)
 			fdata->plain.y = borders.updown();
+		*/
 		x(fdata->plain.x);
 		y(fdata->plain.y); 
 
@@ -1278,10 +1286,15 @@ void Frame::change_window_type(short type)
 	// means only borders
 	else
 	{
-		// here x and y are offset in our frame
-		fdata->plain.w = w();
-		fdata->plain.h = h();
-		XMoveResizeWindow(fl_display, fdata->window, 0, 0, w(), h()); 
+		/* First resize window to size of child (x,y will be preserved)
+		 * then resize child. 
+		 * XXX: child window's x,y are offsets from x,y of parent, so
+		 * they are 0.
+		 * We can't use Fl_Window::size(), since explicit window sizing
+		 * does not work. In that case, slap it with hammer !
+		 */
+		XResizeWindow(fl_display, fl_xid(this), fdata->plain.w, fdata->plain.h);
+		XMoveResizeWindow(fl_display, fdata->window, 0, 0, fdata->plain.w, fdata->plain.h);
 	}
 
 	WindowManager::instance()->hints()->netwm_set_window_type(fdata);
