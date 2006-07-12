@@ -10,10 +10,8 @@ for proper unloading and some KDE support
 - Numerous layout and redraw issues with panel fixed
 - Implemented maximize and restore in taskbar context menu
 * edewm
-- Support for Focus Follows Mouse policy (by AW)
-- Improved and fixes for keyboard shortcut handling (thanks to AW)
-- Several new shortcuts (thanks to AW)
-- Added support for maximize via NETWM (although not horizontal-vertical specific) 
+- New code. Too much of things to be noted here. Maybe there should
+be a separate changelog for it.
 * ekeyconf
 - Add support for custom shortcuts - now you can define any command you 
 want and assign a keyboard shortcut (patch to edewm by AW)
