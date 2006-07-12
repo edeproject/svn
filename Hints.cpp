@@ -391,9 +391,9 @@ void Hints::netwm_set_window_state(FrameData* fd)
 		data[i++] = _XA_NET_WM_STATE_STICKY;
 	if(fd->state & FrameStateShaded)
 		data[i++] = _XA_NET_WM_STATE_SHADED;
-	if(fd->state & FrameStateAbove)
+	if(fd->state & FrameStateAlwaysAbove)
 		data[i++] = _XA_NET_WM_STATE_ABOVE;
-	if(fd->state & FrameStateBelow)
+	if(fd->state & FrameStateAlwaysBelow)
 		data[i++] = _XA_NET_WM_STATE_BELOW;
 	if((fd->state & FrameStateMaximizedHorz) || (fd->state & FrameStateMaximized))
 		data[i++] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
