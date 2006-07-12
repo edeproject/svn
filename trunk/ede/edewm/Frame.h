@@ -42,8 +42,16 @@
 #define FrameStateShaded         (1 << 6)
 #define FrameStateHidden         (1 << 7)    // or iconized
 #define FrameStateIconized       FrameStateHidden
-#define FrameStateAbove          (1 << 8)
-#define FrameStateBelow          (1 << 9)
+
+/* These two types are used to emit _NET_WM_STATE_ABOVE and _NET_WM_STATE_BELOW.
+ * For me it is unclear why they didn't called _NET_WM_STATE_ALWAYS_(ABOVE,BELOW)
+ * since all wm's set them in this state (except transient who are always above all
+ * windows), and stacking order can't be changed. Anyway, enjoy with more apropriate
+ * names.
+ */
+#define FrameStateAlwaysAbove    (1 << 8)
+#define FrameStateAlwaysBelow    (1 << 9)
+
 #define FrameStateMaximizedHorz  (1 << 10)
 #define FrameStateMaximizedVert  (1 << 11)
 #define FrameStateMaximized      (FrameStateMaximizedHorz | FrameStateMaximizedVert)

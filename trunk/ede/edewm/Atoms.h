@@ -62,6 +62,12 @@ extern Atom _XA_NET_WM_WINDOW_TYPE;
 	extern Atom _XA_NET_WM_WINDOW_TYPE_SPLASH;
 	extern Atom _XA_NET_WM_WINDOW_TYPE_DESKTOP;
 
+extern Atom _XA_NET_WM_STATE_SHADED;
+extern Atom _XA_NET_WM_STATE_MAXIMIZED_VERT;
+extern Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
+extern Atom _XA_NET_WM_STATE_ABOVE;
+extern Atom _XA_NET_WM_STATE_BELOW;
+
 // atoms for debugging (not implemented)
 extern Atom _XA_NET_VIRTUAL_ROOTS;
 extern Atom _XA_NET_DESKTOP_LAYOUT;
@@ -76,16 +82,12 @@ extern Atom _XA_NET_WM_DESKTOP;
 extern Atom _XA_NET_WM_STATE;
 extern Atom _XA_NET_WM_STATE_MODAL; //Needs transient for (root for whole group)
 extern Atom _XA_NET_WM_STATE_STICKY; //Pos fixed, even if virt. desk. scrolls
-extern Atom _XA_NET_WM_STATE_MAXIMIZED_VERT;
-extern Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
-extern Atom _XA_NET_WM_STATE_SHADED;
 extern Atom _XA_NET_WM_STATE_SKIP_TASKBAR;
 extern Atom _XA_NET_WM_STATE_SKIP_PAGER;
 extern Atom _XA_NET_WM_STATE_HIDDEN; 
 extern Atom _XA_NET_WM_STATE_FULLSCREEN;
-extern Atom _XA_NET_WM_STATE_ABOVE;
-extern Atom _XA_NET_WM_STATE_BELOW;
 extern Atom _XA_NET_WM_STATE_DEMANDS_ATTENTION;
+
 extern Atom _XA_NET_WM_ALLOWED_ACTIONS;
 extern Atom _XA_NET_WM_ACTION_MOVE;
 extern Atom _XA_NET_WM_ACTION_RESIZE;

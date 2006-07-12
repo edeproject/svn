@@ -1086,7 +1086,6 @@ void Frame::raise(void)
 		++it;
 	}
 	wm->restack_windows();
-
 	focus();
 }
 
@@ -1184,7 +1183,6 @@ void Frame::unshade(void)
 void Frame::borders_color(FrameBordersState s)
 {
 	TRACE_FUNCTION("void Frame::borders_color(FrameBordersState s)");
-
 
 	Fl_Color szc = borders.sizers_color(s);
 	sizer_top_left->color(szc);
