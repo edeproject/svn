@@ -62,17 +62,6 @@ int wm_event_handler(int e)
 				break;
 		}
 
-		/*
-		for(uint i = WindowManager::instance()->window_list.size(); i--;)
-		{
-			Frame *c = WindowManager::instance()->window_list[i];
-			if(c->window() == window || fl_xid(c) == window)
-			{
-				//ELOG("wm_event_handler-> window found (%i), sending a message", i);
-				return c->handle(&fl_xevent);
-			}
-		}
-		*/
 		FrameList::iterator last = WindowManager::instance()->window_list.end();
 		for(FrameList::iterator it = WindowManager::instance()->window_list.begin(); it != last; ++it)
 		{
@@ -147,13 +136,6 @@ WindowManager::~WindowManager()
 {
 	ELOG("WindowManager destructor");
 
-	/*
-	for(uint i = 0; i < window_list.size(); i++)
-	{
-		Frame* f = window_list[i];
-		delete f;
-	}
-	*/
 	FrameList::iterator last = window_list.end();
 	for(FrameList::iterator it = window_list.begin(); it != last; ++it)
 	{
@@ -164,6 +146,7 @@ WindowManager::~WindowManager()
 
 	delete wm_conf;
 	delete hint_stuff;
+	delete cur;
 }
 
 WindowManager* WindowManager::instance(void)
@@ -223,8 +206,12 @@ void WindowManager::init_internals(void)
 	InitAtoms(fl_display);
 #endif
 
-	cur = XCreateFontCursor(fl_display, XC_left_ptr);
-	XDefineCursor(fl_display, RootWindow(fl_display, fl_screen), cur);
+	//cur = XCreateFontCursor(fl_display, XC_left_ptr);
+	//XDefineCursor(fl_display, RootWindow(fl_display, fl_screen), cur);
+	// load cursor
+	cur = new CursorHandler;
+	cur->load(X_CURSORS);
+	cur->set_root_cursor();
 
 	// the world is starting here
 	show();
@@ -346,9 +333,10 @@ void WindowManager::show(void)
 	if(!shown())
 	{
 		create();
-		// destroy efltk window, set RootWindow to our
-		// xid and redirect all messages to us, which
-		// will make us a window manager
+		/* Destroy efltk window, set RootWindow to our
+		 * xid and redirect all messages to us, which
+		 * will make us a window manager.
+		 */
 		XDestroyWindow(fl_display, Fl_X::i(this)->xid);
 		Fl_X::i(this)->xid = RootWindow(fl_display, fl_screen);
 		root_win = RootWindow(fl_display, fl_screen);
@@ -380,13 +368,6 @@ void WindowManager::draw(void)
 void WindowManager::idle(void)
 {
 	//ELOG("Idle");
-	/*
-	for(uint i = 0; i < remove_list.size(); i++)
-	{
-		Frame* f = remove_list[i];
-		delete f;
-	}
-	*/
 	FrameList::iterator last = remove_list.end();
 	for(FrameList::iterator it = remove_list.begin(); it != last; ++it)
 	{
@@ -402,6 +383,21 @@ void WindowManager::exit(void)
 		is_running = false;
 }
 
+const Cursor WindowManager::root_cursor(void)
+{
+	assert(cur != NULL);
+	return cur->root_cursor();
+}
+
+void WindowManager::set_cursor(Frame* f, CursorType t)
+{
+	assert(f != NULL);
+	if(cur->cursor_shape_type() == FLTK_CURSORS)
+		cur->set_fltk_cursor(f, t);
+	else
+		cur->set_x_cursor(f, t);
+}
+
 int WindowManager::handle(int event)
 {
 	Window window = fl_xevent.xany.window;
@@ -409,17 +405,6 @@ int WindowManager::handle(int event)
 	{
 		case FL_PUSH:
 		{
-			/*
-			for(uint i = 0; i < window_list.size(); i++)
-			{
-				Frame* f = window_list[i];
-				if(f->window() == window)
-				{
-					f->content_click();
-					return 0;
-				}
-			}
-			*/
 			FrameList::iterator last = window_list.end();
 			for(FrameList::iterator it = window_list.begin(); it != last; ++it)
 			{
@@ -492,8 +477,7 @@ void WindowManager::update_client_list(void)
 		Frame* f = *it;
 		if(f->destroy_scheduled())
 		{
-			// erase current and let 'it' point
-			// to next element
+			// erase current and let 'it' point to next element
 			it = aot_list.erase(it);
 			found = true;
 		}
@@ -559,14 +543,6 @@ bool WindowManager::query_best_position(int* x, int* y, int w, int h)
 
 Frame* WindowManager::find_xid(Window win)
 {
-	/*
-	for(uint i = 0; i < window_list.size(); i++)
-	{
-		Frame* f = window_list[i];
-		if(f->window() == win)
-			return f;
-	}
-	*/
 	FrameList::iterator last = window_list.end();
 	for(FrameList::iterator it = window_list.begin(); it != last; ++it)
 	{
@@ -632,43 +608,43 @@ bool WindowManager::validate_drawable(Drawable d)
 #ifdef _DEBUG
 void WindowManager::register_events(void)
 {
-	xevent_map[CirculateNotify] = "CirculateNotify";
+	xevent_map[CirculateNotify]  = "CirculateNotify";
 	xevent_map[CirculateRequest] = "CirculateRequest";
-	xevent_map[ConfigureNotify] = "ConfigureNotify";
+	xevent_map[ConfigureNotify]  = "ConfigureNotify";
 	xevent_map[ConfigureRequest] = "ConfigureRequest";
-	xevent_map[CreateNotify] = "CreateNotify";
-	xevent_map[GravityNotify] = "GravityNotify";
-	xevent_map[MapNotify] = "MapNotify";
-	xevent_map[MapRequest] = "MapRequest";
-	xevent_map[ReparentNotify] = "ReparentNotify";
-	xevent_map[UnmapNotify] = "UnmapNotify";
-	xevent_map[DestroyNotify] = "DestroyNotify";
-	xevent_map[PropertyNotify] = "PropertyNotify";
-	xevent_map[EnterNotify] = "EnterNotify";
-	xevent_map[LeaveNotify] = "LeaveNotify";
+	xevent_map[CreateNotify]     = "CreateNotify";
+	xevent_map[GravityNotify]    = "GravityNotify";
+	xevent_map[MapNotify]        = "MapNotify";
+	xevent_map[MapRequest]       = "MapRequest";
+	xevent_map[ReparentNotify]   = "ReparentNotify";
+	xevent_map[UnmapNotify]      = "UnmapNotify";
+	xevent_map[DestroyNotify]    = "DestroyNotify";
+	xevent_map[PropertyNotify]   = "PropertyNotify";
+	xevent_map[EnterNotify]      = "EnterNotify";
+	xevent_map[LeaveNotify]      = "LeaveNotify";
 	xevent_map[VisibilityNotify] = "VisibilityNotify";
-	xevent_map[FocusIn] = "FocusIn";
-	xevent_map[FocusOut] = "FocusOut";
+	xevent_map[FocusIn]          = "FocusIn";
+	xevent_map[FocusOut]         = "FocusOut";
 
-	efltkevent_map[FL_PUSH] = "FL_PUSH";
-	efltkevent_map[FL_RELEASE] = "FL_RELEASE";
-	efltkevent_map[FL_ENTER] = "FL_ENTER";
-	efltkevent_map[FL_LEAVE] = "FL_LEAVE";
-	efltkevent_map[FL_DRAG] = "FL_DRAG";
-	efltkevent_map[FL_FOCUS] = "FL_FOCUS";
-	efltkevent_map[FL_UNFOCUS] = "FL_UNFOCUS";
-	efltkevent_map[FL_KEY] = "FL_KEY";
-	efltkevent_map[FL_KEYUP] = "FL_KEYUP";
-	efltkevent_map[FL_MOVE] = "FL_MOVE";
-	efltkevent_map[FL_SHORTCUT] = "FL_SHORTCUT";
-	efltkevent_map[FL_ACTIVATE] = "FL_ACTIVATE";
-	efltkevent_map[FL_DEACTIVATE] = "FL_DEACTIVATE";
-	efltkevent_map[FL_SHOW] = "FL_SHOW";
-	efltkevent_map[FL_HIDE] = "FL_HIDE";
-	efltkevent_map[FL_MOUSEWHEEL] = "FL_MOUSEWHEEL";
-	efltkevent_map[FL_PASTE] = "FL_PASTE";
+	efltkevent_map[FL_PUSH]      = "FL_PUSH";
+	efltkevent_map[FL_RELEASE]   = "FL_RELEASE";
+	efltkevent_map[FL_ENTER]     = "FL_ENTER";
+	efltkevent_map[FL_LEAVE]     = "FL_LEAVE";
+	efltkevent_map[FL_DRAG]      = "FL_DRAG";
+	efltkevent_map[FL_FOCUS]     = "FL_FOCUS";
+	efltkevent_map[FL_UNFOCUS]   = "FL_UNFOCUS";
+	efltkevent_map[FL_KEY]       = "FL_KEY";
+	efltkevent_map[FL_KEYUP]     = "FL_KEYUP";
+	efltkevent_map[FL_MOVE]      = "FL_MOVE";
+	efltkevent_map[FL_SHORTCUT]  = "FL_SHORTCUT";
+	efltkevent_map[FL_ACTIVATE]  = "FL_ACTIVATE";
+	efltkevent_map[FL_DEACTIVATE]= "FL_DEACTIVATE";
+	efltkevent_map[FL_SHOW]      = "FL_SHOW";
+	efltkevent_map[FL_HIDE]      = "FL_HIDE";
+	efltkevent_map[FL_MOUSEWHEEL]= "FL_MOUSEWHEEL";
+	efltkevent_map[FL_PASTE]     = "FL_PASTE";
 	efltkevent_map[FL_DND_ENTER] = "FL_DND_ENTER";
-	efltkevent_map[FL_DND_DRAG] = "FL_DND_DRAG";
+	efltkevent_map[FL_DND_DRAG]  = "FL_DND_DRAG";
 	efltkevent_map[FL_DND_LEAVE] = "FL_DND_LEAVE";
 	efltkevent_map[FL_DND_RELEASE] = "FL_DND_RELEASE";
 }

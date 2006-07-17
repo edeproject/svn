@@ -22,6 +22,8 @@
 #include <efltk/Fl_Config.h>
 #include <efltk/Fl_Locale.h>
 
+#include "Cursor.h"
+
 #ifdef _DEBUG
 #include <map>
 #endif
@@ -74,6 +76,7 @@ struct WindowManagerConfig
 
 struct Hints;
 class Frame;
+class CursorHandler;
 typedef std::list<Frame*> FrameList;
 
 class WindowManager : public Fl_Window
@@ -86,8 +89,7 @@ class WindowManager : public Fl_Window
 		Window root_win;
 		Hints* hint_stuff;
 
-		// TODO: make this specific class
-		Cursor cur;
+		CursorHandler* cur;
 
 		WindowManager();
 		~WindowManager();
@@ -125,7 +127,8 @@ class WindowManager : public Fl_Window
 		void restack_windows(void);
 		void clear_focus_windows(void);
 
-		const Cursor cursor(void)      { return cur; }
+		const Cursor root_cursor(void);
+		void set_cursor(Frame* f, CursorType t);
 
 		bool validate_drawable(Drawable d);
 
