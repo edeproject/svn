@@ -34,6 +34,7 @@ class FrameEventHandler
 		int property_event(const XPropertyEvent& e);
 		int enter_event(const XCrossingEvent& e);
 		int configure_event(const XConfigureRequestEvent& e);
+		int enter_leave_event(const XCrossingEvent& e);
 	public:
 		FrameEventHandler(Frame* f);
 		~FrameEventHandler();
