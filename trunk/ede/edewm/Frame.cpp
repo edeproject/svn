@@ -1243,6 +1243,11 @@ void Frame::hide_sizers(void)
 	sizer_bottom_right->hide();
 }
 
+void Frame::set_cursor(CursorType t)
+{
+	WindowManager::instance()->set_cursor(this, t);
+}
+
 /* This function will change window type, to some of
  * netwm types. Note, this function should _not_ be used
  * anywhere except from toolbar menu, where window can
@@ -1384,7 +1389,7 @@ void Frame::grab_cursor(void)
 				GrabModeAsync,  /* pointer mode */
 				GrabModeAsync, /* keyboard mode */
 				None,
-				WindowManager::instance()->cursor(), fl_event_time) == GrabSuccess)
+				WindowManager::instance()->root_cursor(), fl_event_time) == GrabSuccess)
 	{
 		//XAllowEvents(fl_display, AsyncPointer, CurrentTime);
 		cursor_grabbed = true;

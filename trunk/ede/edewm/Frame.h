@@ -17,18 +17,7 @@
 #include <efltk/Fl_Window.h>
 #include <efltk/Fl_Box.h>
 
-/*
-#define FrameStateNormal         (1 << 0)    // nither of below states
-#define FrameStateMaximized      (1 << 1)
-#define FrameStateMaximizedVert  (1 << 2)
-#define FrameStateMaximizedHoriz (1 << 3)
-#define FrameStateIconized       (1 << 4)
-#define FrameStateShaded         (1 << 5)
-#define FrameStateSticky         (1 << 6)
-#define FrameStateUnmapped       (1 << 7)    // or Withdrawn
-#define FrameStateDestroyed      (1 << 8)    // destroyed window, handled by WindowManager
-#define FrameStateFocused        (1 << 9)
-*/
+#include "Cursor.h"
 
 // frame states (internal)
 #define FrameStateNormal         (1 << 0)    // neither of below states
@@ -75,14 +64,6 @@
  * prevent they be unmapped
  */
 #define FrameOptIgnoreUnmap      (1 << 12)
-
-
-// What are differences between FrameOptTakeFocus and FrameOptPutMeAtTheTop ?
-// Focused can receive events, but depending on configuration, don't have to be
-// at the top of all windows. Second will force wm to put it there giving him
-// initial focus.
-#define FrameOptPutMeAtTheTop    (1 << 13)
-
 
 // frame type
 #define FrameTypeNormal          0
@@ -289,6 +270,7 @@ class Frame : public Fl_Window
 		void lower(void);
 		void borders_color(FrameBordersState s);
 		void change_window_type(short type);
+		void set_cursor(CursorType t);
 
 		//const FrameBorders& frame_borders(void) { return borders; }
 

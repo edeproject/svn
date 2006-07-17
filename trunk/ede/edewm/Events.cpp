@@ -17,6 +17,7 @@
 #include "Tracers.h"
 #include "Atoms.h"
 #include "Hints.h"
+#include "Cursor.h"
 #include "debug.h"
 
 #include <assert.h>
@@ -26,7 +27,7 @@
 
 FrameEventHandler::FrameEventHandler(Frame* f) : curr_frame(f)
 {
-	assert(curr_frame != 0);
+	assert(curr_frame != NULL);
 }
 
 FrameEventHandler::~FrameEventHandler()
@@ -43,11 +44,12 @@ int FrameEventHandler::handle_fltk(int event)
 {
 	long gggg;
 	static long bbbb;
+	static CursorType ctype;
 
 	if(curr_frame->show_titlebar)
 	{
 		Titlebar* tbar = curr_frame->titlebar;
-		assert(tbar != 0);
+		assert(tbar != NULL);
 
 		if((Fl::event_inside(tbar->x(), tbar->y(), tbar->w(), tbar->h()) || curr_frame->moving()))
 			return tbar->handle(event);
@@ -75,46 +77,54 @@ int FrameEventHandler::handle_fltk(int event)
 			{
 				case ResizeTypeUpLeft:
 					ELOG("FrameEventHandler (resizing): ResizeTypeUpLeft");
-					curr_frame->cursor(FL_CURSOR_NWSE);
+					curr_frame->set_cursor(CURSOR_NW);
+					ctype = CURSOR_NE;
 					bbbb = ResizeTypeUpLeft;
 					return 1;
 				case ResizeTypeUpRight:
 					ELOG("FrameEventHandler (resizing): ResizeTypeUpRight");
-					curr_frame->cursor(FL_CURSOR_NESW);
+					curr_frame->set_cursor(CURSOR_NE);
+					ctype = CURSOR_NW;
 					bbbb = ResizeTypeUpRight;
 					return 1;
 				case ResizeTypeDownLeft:
 					ELOG("FrameEventHandler (resizing): ResizeTypeDownLeft");
-					curr_frame->cursor(FL_CURSOR_NESW);
+					curr_frame->set_cursor(CURSOR_SW);
+					ctype = CURSOR_SW;
 					bbbb = ResizeTypeDownLeft;
 					return 1;
 				case ResizeTypeDownRight:
 					ELOG("FrameEventHandler (resizing): ResizeTypeDownRight");
-					curr_frame->cursor(FL_CURSOR_NWSE);
+					curr_frame->set_cursor(CURSOR_SE);
+					ctype = CURSOR_SE;
 					bbbb = ResizeTypeDownRight;
 					return 1;
 				case ResizeTypeUp:
 					ELOG("FrameEventHandler (resizing): ResizeTypeUp");
-					curr_frame->cursor(FL_CURSOR_NS);
+					curr_frame->set_cursor(CURSOR_N);
+					ctype = CURSOR_N;
 					bbbb = ResizeTypeUp;
 					return 1;
 				case ResizeTypeLeft:
 					ELOG("FrameEventHandler (resizing): ResizeTypeLeft");
-					curr_frame->cursor(FL_CURSOR_WE);
+					curr_frame->set_cursor(CURSOR_W);
+					ctype = CURSOR_W;
 					bbbb = ResizeTypeLeft;
 					return 1;
 				case ResizeTypeRight:
 					ELOG("FrameEventHandler (resizing): ResizeTypeRight");
-					curr_frame->cursor(FL_CURSOR_WE);
+					curr_frame->set_cursor(CURSOR_E);
+					ctype = CURSOR_E;
 					bbbb = ResizeTypeRight;
 					return 1;
 				case ResizeTypeDown:
 					ELOG("FrameEventHandler (resizing): ResizeTypeDown");
-					curr_frame->cursor(FL_CURSOR_NS);
+					curr_frame->set_cursor(CURSOR_S);
+					ctype = CURSOR_S;
 					bbbb = ResizeTypeDown;
 					return 1;
 				default:
-					curr_frame->cursor(FL_CURSOR_DEFAULT);
+					//curr_frame->set_cursor(CURSOR_DEFAULT);
 					bbbb = ResizeTypeNone;
 					return 1;
 			}
@@ -137,6 +147,10 @@ int FrameEventHandler::handle_fltk(int event)
 			{
 				if(!curr_frame->resizing())
 					curr_frame->resize_start();
+
+				//XGrabServer(fl_display);
+
+				curr_frame->set_cursor(ctype);
 				curr_frame->resize_window(Fl::event_x_root(), Fl::event_y_root(), bbbb);
 			}
 			return 1;
@@ -144,7 +158,11 @@ int FrameEventHandler::handle_fltk(int event)
 		case FL_RELEASE:
 			ELOG("FrameEventHandler: FL_RELEASE");
 			if(curr_frame->resizing())
+			{
+				//XUngrabServer(fl_display);
 				curr_frame->resize_end();
+				curr_frame->set_cursor(CURSOR_DEFAULT);
+			}
 
 			//curr_frame->color(FL_GRAY);
 			curr_frame->borders_color(FOCUSED);
@@ -171,6 +189,9 @@ int FrameEventHandler::handle_x(XEvent* event)
 			return destroy_event(event->xdestroywindow);
 		case ClientMessage:
 			return client_message(event->xclient);
+		case LeaveNotify:
+		case EnterNotify:
+			return enter_leave_event(event->xcrossing);
 
 		/* FocusIn, as FocusOut is not used, but for
 		 * debugging is here. When we map a large number
@@ -240,8 +261,6 @@ int FrameEventHandler::handle_x(XEvent* event)
 			return 1;
 		case PropertyNotify:
 			return property_event(event->xproperty);
-		case EnterNotify:
-			return enter_event(event->xcrossing);
 		case ConfigureRequest:
 			return configure_event(event->xconfigurerequest);
 			return 1;
@@ -313,7 +332,7 @@ int FrameEventHandler::reparent_event(const XReparentEvent& e)
 
 	if(e.override_redirect)
 	{
-		ELOG("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		ELOG("override_redirect from reparent_event");
 	}
 
 	EWARNING("Destroy in ReparentNotify!");
@@ -389,10 +408,21 @@ int FrameEventHandler::property_event(const XPropertyEvent& e)
 	return 1;
 }
 
-int FrameEventHandler::enter_event(const XCrossingEvent& e)
+/* Handle EnterNotify and LeaveNotify events.
+ * Here is used only LeaveNotify to change cursor, since it will be
+ * trigered only on window borders (exact what is needed). On other
+ * hand, entering frame's child (or plain window) is handled by
+ * window itself, with ability to change cursor as like.
+ * Note, this event could not be simulated with FL_LEAVE, since
+ * it will be trigered only when mouse if off from whole window
+ * (including childs).
+ */
+int FrameEventHandler::enter_leave_event(const XCrossingEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::enter_event(const XEnterWindowEvent& e)");
-	//curr_frame->activate();
+	if(e.type == LeaveNotify)
+		curr_frame->set_cursor(CURSOR_DEFAULT);
+
 	return 1;
 }
 
