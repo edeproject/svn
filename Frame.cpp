@@ -952,7 +952,7 @@ void Frame::shape_borders(void)
 }
 
 // apply shape on edges, based on pixmap mask
-#include "mask2.xpm"
+#include "mask.xpm"
 #include <efltk/Fl_Image.h>
 void Frame::shape_edges(void)
 {
