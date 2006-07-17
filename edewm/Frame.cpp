@@ -20,12 +20,12 @@
 #include "debug.h"
 #include "Tracers.h"
 
+#include <assert.h>
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
 #endif // SHAPE
 
-#include <stdio.h>
 
 #define FRAME_NAME(frame) (frame->label ? frame->label : "NULL")
 
@@ -174,7 +174,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	borders.border_color(FL_WHITE, UNFOCUSED);
 	borders.border_color(FL_BLUE, CLICKED);
 
-	borders.sizers_color(FL_BLUE, FOCUSED);
+	borders.sizers_color(FL_GRAY, FOCUSED);
 	borders.sizers_color(FL_RED, UNFOCUSED);
 	borders.sizers_color(FL_RED, CLICKED);
 	// recalculated in setup_borders
@@ -614,19 +614,29 @@ void Frame::reparent_window(void)
 
 }
 
-void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_plain)
+void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, short rtype)
 {
-	TRACE_FUNCTION("void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_plain)");
+	TRACE_FUNCTION("void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, short rtype");
 
-	if(!apply_on_plain)
+	if(rtype == GeometryRecalcAll)
 	{
-		x(x_pos); y(y_pos); w(w_sz); h(h_sz);
+		x(x_pos); y(y_pos); 
+		w(w_sz); h(h_sz);
 
 		fdata->plain.x = x() + borders.leftright();
 		fdata->plain.y = y() + borders.updown();
 		fdata->plain.w = w() - borders.leftright2x();
 	}
-	else
+	else if(rtype == GeometryRecalcAllXY)
+	{
+		// do not include fdata->plain.w
+		// FIXME: duplication as above
+		x(x_pos); y(y_pos);
+		w(w_sz); h(h_sz);
+		fdata->plain.x = x() + borders.leftright();
+		fdata->plain.y = y() + borders.updown();
+	}
+	else if(rtype == GeometryRecalcPlain)
 	{
 		fdata->plain.x = x_pos;
 		fdata->plain.y = y_pos;
@@ -637,30 +647,42 @@ void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, bool apply
 		y(y_pos - borders.updown());
 		w(w_sz  + borders.leftright2x());
 	}
+	else
+	{
+		// we should no be here
+		assert(0);
+	}
+
 
 	if(show_titlebar)
 	{
 		// titlebar->resize(border, border, w() - border2x, titlebar->h());
-		if(!apply_on_plain)
+		if(rtype == GeometryRecalcAll)
+		{
 			fdata->plain.h = h() - (titlebar->h() + borders.updown2x());
-		else
+		}
+		else if(rtype == GeometryRecalcPlain)
+		{
 			h(h_sz + titlebar->h() + borders.updown2x());
+		}
 			
 		titlebar->size(w() - borders.leftright2x(), titlebar->h());
 	}
 	else
 	{
-		if(!apply_on_plain)
+		if(rtype == GeometryRecalcAll)
+		{
 			fdata->plain.h = h() - borders.updown2x();
-		else
+		}
+		else if(rtype == GeometryRecalcPlain)
+		{
 			h(h_sz + borders.updown2x());
+		}
 	}
 
 		ELOG("p: %i %i %i %i w: %i %i %i %i",
 			fdata->plain.x, fdata->plain.y, fdata->plain.w, fdata->plain.h,
 			x(), y(), w(), h());
-
-
 }
 
 /* Set size of window, accepting coordinates for fdata->window + frame,
@@ -670,7 +692,13 @@ void Frame::set_size(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_pla
 {
 	TRACE_FUNCTION("void Frame::set_size(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_plain)");
 
-	recalc_geometry(x_pos, y_pos, w_sz, h_sz, apply_on_plain);
+	short how;
+	if(apply_on_plain)
+		how = GeometryRecalcPlain;
+	else
+		how = GeometryRecalcAll;
+
+	recalc_geometry(x_pos, y_pos, w_sz, h_sz, how);
 
 	XGrabServer(fl_display);
 
@@ -720,7 +748,7 @@ void Frame::move_window(int x_pos, int y_pos)
 			y_pos = screen_h - h();
 	}
 
-	recalc_geometry(x_pos, y_pos, w(), h(), false);
+	recalc_geometry(x_pos, y_pos, w(), h(), GeometryRecalcAllXY);
 	CHECK_RET3(XMoveWindow(fl_display, fl_xid(this), x(), y()), BadMatch, BadWindow, BadValue);
 	configure_notify();
 }
@@ -924,13 +952,12 @@ void Frame::shape_borders(void)
 }
 
 // apply shape on edges, based on pixmap mask
-#include "mask.xpm"
+#include "mask2.xpm"
 #include <efltk/Fl_Image.h>
 void Frame::shape_edges(void)
 {
 	TRACE_FUNCTION("void Frame::shape_edges(void)");
 #if 0
-
 	// TODO: finish with other three edges
 	Fl_Image img((const char**)mask_xpm);
 	Pixmap mask = img.create_mask(img.width(), img.height());
@@ -1158,8 +1185,9 @@ void Frame::shade(void)
 
 	set_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
-
-	configure_notify();
+	
+	// Configure not needed, since we do nothing usefull to window
+	//configure_notify();
 }
 
 void Frame::unshade(void)
@@ -1177,7 +1205,8 @@ void Frame::unshade(void)
 	clear_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
 
-	configure_notify();
+	// Configure not needed, since we do nothing usefull to window
+	//configure_notify();
 }
 
 void Frame::borders_color(FrameBordersState s)

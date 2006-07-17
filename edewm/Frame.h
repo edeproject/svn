@@ -107,6 +107,11 @@
 #define ResizeTypeDownRight      (ResizeTypeDown | ResizeTypeRight)
 #define ResizeTypeAll            (ResizeTypeUp | ResizeTypeDown | ResizeTypeLeft | ResizeTypeRight)
 
+// type of recalc_geometry()
+#define GeometryRecalcAll        0
+#define GeometryRecalcAllXY      1  // recalc all, except for plain w and h
+#define GeometryRecalcPlain      2
+
 // now lets go to code...
 
 // window sizes without borders, titlebar etc.
@@ -224,7 +229,7 @@ class Frame : public Fl_Window
 		void place_sizers(int x, int y, int w, int h);
 		long resize_type(int x, int y);
 
-		void recalc_geometry(int x, int y, int w, int h, bool apply_on_plain);
+		void recalc_geometry(int x, int y, int w, int h, short rtype);
 		void configure_notify(void);
 		void shape_borders(void);
 		void shape_edges(void);
