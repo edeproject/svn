@@ -51,8 +51,11 @@ int FrameEventHandler::handle_fltk(int event)
 		Titlebar* tbar = curr_frame->titlebar;
 		assert(tbar != NULL);
 
-		if((Fl::event_inside(tbar->x(), tbar->y(), tbar->w(), tbar->h()) || curr_frame->moving()))
-			return tbar->handle(event);
+		if(!curr_frame->resizing())
+		{
+			if(Fl::event_inside(tbar->x(), tbar->y(), tbar->w(), tbar->h()) || curr_frame->moving())
+				return tbar->handle(event);
+		}
 	}
 
 	switch(event)
@@ -146,7 +149,10 @@ int FrameEventHandler::handle_fltk(int event)
 			if(bbbb != ResizeTypeNone)
 			{
 				if(!curr_frame->resizing())
+				{
+					curr_frame->grab_cursor();
 					curr_frame->resize_start();
+				}
 
 				//XGrabServer(fl_display);
 
@@ -161,6 +167,7 @@ int FrameEventHandler::handle_fltk(int event)
 			{
 				//XUngrabServer(fl_display);
 				curr_frame->resize_end();
+				curr_frame->ungrab_cursor();
 				curr_frame->set_cursor(CURSOR_DEFAULT);
 			}
 
@@ -416,11 +423,18 @@ int FrameEventHandler::property_event(const XPropertyEvent& e)
  * Note, this event could not be simulated with FL_LEAVE, since
  * it will be trigered only when mouse if off from whole window
  * (including childs).
+ *
+ * Also, checkings of frame resizings are must, since mouse moving is
+ * usually faster than window resizing, so we will get flickering in
+ * cursors changes if not checked.
+ *
+ * TODO: better will be cursor is grabbed !
  */
 int FrameEventHandler::enter_leave_event(const XCrossingEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::enter_event(const XEnterWindowEvent& e)");
-	if(e.type == LeaveNotify)
+
+	if(e.type == LeaveNotify && !curr_frame->resizing())
 		curr_frame->set_cursor(CURSOR_DEFAULT);
 
 	return 1;

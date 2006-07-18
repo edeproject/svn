@@ -401,6 +401,12 @@ void WindowManager::set_cursor(Frame* f, CursorType t)
 */
 }
 
+const CursorHandler* WindowManager::cursor_handler(void)
+{
+	assert(cur != NULL);
+	return cur;
+}
+
 int WindowManager::handle(int event)
 {
 	Window window = fl_xevent.xany.window;
