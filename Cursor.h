@@ -37,6 +37,8 @@ enum CursorType
 	CURSOR_NONE
 };
 
+#define CURSOR_LIST_SIZE 13
+
 enum CursorShapeType
 {
 	FLTK_CURSORS = 0,
@@ -48,17 +50,17 @@ class Frame;
 class CursorHandler
 {
 	private:
-		int cursors[13];
+		int cursors[CURSOR_LIST_SIZE];
 		CursorShapeType st;
 		CursorType curr_cursor;
 		Cursor root_window_cursor;
 		bool locked;
+		bool cursors_loaded;
 	public:
 		CursorHandler();
 		~CursorHandler();
 		void load(CursorShapeType s);
-		void set_fltk_cursor(Frame* f, CursorType t);
-		void set_x_cursor(Frame* f, CursorType t);
+		void set_cursor(Frame* f, CursorType t);
 		void set_root_cursor(void);
 		Cursor root_cursor(void)                { return root_window_cursor; }
 		CursorShapeType cursor_shape_type(void) { return st; }
