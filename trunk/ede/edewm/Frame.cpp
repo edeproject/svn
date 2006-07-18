@@ -1017,7 +1017,7 @@ void Frame::restore(void)
 }
 
 /* First will inspect does window participate for WM_DELETE_WINDOW
- * message, and if not, it will be killed. That is life...
+ * message, and if not, it will be killed. That is the life...
  */
 void Frame::close_kill(void)
 {
@@ -1382,14 +1382,16 @@ void Frame::grab_cursor(void)
 	if(cursor_grabbed)
 		return;
 
-	//if(XGrabPointer(fl_display, fdata->window, 
+	// use currently set cursor
+	Cursor cc = WindowManager::instance()->cursor_handler()->current_cursor();
+
 	if(XGrabPointer(fl_display, fl_xid(this), 
 				true, /* owner events */
 				ButtonMotionMask | ButtonPressMask |ButtonReleaseMask | PointerMotionMask,
 				GrabModeAsync,  /* pointer mode */
 				GrabModeAsync, /* keyboard mode */
 				None,
-				WindowManager::instance()->root_cursor(), fl_event_time) == GrabSuccess)
+				cc, fl_event_time) == GrabSuccess)
 	{
 		//XAllowEvents(fl_display, AsyncPointer, CurrentTime);
 		cursor_grabbed = true;
