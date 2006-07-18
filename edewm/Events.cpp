@@ -78,13 +78,13 @@ int FrameEventHandler::handle_fltk(int event)
 				case ResizeTypeUpLeft:
 					ELOG("FrameEventHandler (resizing): ResizeTypeUpLeft");
 					curr_frame->set_cursor(CURSOR_NW);
-					ctype = CURSOR_NE;
+					ctype = CURSOR_NW;
 					bbbb = ResizeTypeUpLeft;
 					return 1;
 				case ResizeTypeUpRight:
 					ELOG("FrameEventHandler (resizing): ResizeTypeUpRight");
 					curr_frame->set_cursor(CURSOR_NE);
-					ctype = CURSOR_NW;
+					ctype = CURSOR_NE;
 					bbbb = ResizeTypeUpRight;
 					return 1;
 				case ResizeTypeDownLeft:
