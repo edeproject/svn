@@ -392,10 +392,13 @@ const Cursor WindowManager::root_cursor(void)
 void WindowManager::set_cursor(Frame* f, CursorType t)
 {
 	assert(f != NULL);
+	cur->set_cursor(f, t);
+/*
 	if(cur->cursor_shape_type() == FLTK_CURSORS)
 		cur->set_fltk_cursor(f, t);
 	else
 		cur->set_x_cursor(f, t);
+*/
 }
 
 int WindowManager::handle(int event)
