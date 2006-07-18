@@ -127,8 +127,9 @@ class WindowManager : public Fl_Window
 		void restack_windows(void);
 		void clear_focus_windows(void);
 
-		const Cursor root_cursor(void);
-		void set_cursor(Frame* f, CursorType t);
+		const Cursor         root_cursor(void);
+		const CursorHandler* cursor_handler(void);
+		void  set_cursor(Frame* f, CursorType t);
 
 		bool validate_drawable(Drawable d);
 

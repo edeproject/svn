@@ -52,7 +52,7 @@ class CursorHandler
 	private:
 		int cursors[CURSOR_LIST_SIZE];
 		CursorShapeType st;
-		CursorType curr_cursor;
+		CursorType curr_cursor_type;
 		Cursor root_window_cursor;
 		bool locked;
 		bool cursors_loaded;
@@ -62,6 +62,7 @@ class CursorHandler
 		void load(CursorShapeType s);
 		void set_cursor(Frame* f, CursorType t);
 		void set_root_cursor(void);
+		Cursor current_cursor(void) const;
 		Cursor root_cursor(void)                { return root_window_cursor; }
 		CursorShapeType cursor_shape_type(void) { return st; }
 };

@@ -117,6 +117,12 @@ Cursor CreateFltkCursor(Fl_Cursor c)
 CursorHandler::CursorHandler()
 {
 	cursors_loaded = false;
+	
+	/* In some cases curr_cursor_type can't be set
+	 * fast enough (mostly for Frame::grab_cursor()) which
+	 * will crash whole wm. This will prevent that.
+	 */
+	curr_cursor_type = CURSOR_DEFAULT;
 }
 
 CursorHandler::~CursorHandler()
@@ -192,12 +198,12 @@ void CursorHandler::set_cursor(Frame* f, CursorType t)
 	assert(f != NULL);
 
 	// do not set cursor to same type again
-	if(t == curr_cursor)
+	if(t == curr_cursor_type)
 		return;
 
-	curr_cursor = t;
+	curr_cursor_type = t;
 
-	XDefineCursor(fl_display, fl_xid(f), cursors[curr_cursor]);
+	XDefineCursor(fl_display, fl_xid(f), cursors[curr_cursor_type]);
 }
 
 // only for root window
@@ -208,4 +214,11 @@ void CursorHandler::set_root_cursor(void)
 
 	root_window_cursor = cursors[CURSOR_DEFAULT];
 	XDefineCursor(fl_display, RootWindow(fl_display, fl_screen), root_window_cursor);
+}
+
+Cursor CursorHandler::current_cursor(void) const
+{
+	TRACE_FUNCTION("Cursor CursorHandler::current_cursor(void) const");
+	//assert(current_cursor > 0 && current_cursor < CURSOR_LIST_SIZE);	
+	return cursors[curr_cursor_type];
 }
