@@ -1393,6 +1393,19 @@ void Frame::show_coordinates_window(void)
 	// calculate center of frame, and show it there
 	int cx = (x() + w()/2) - (cview->w()/2);
 	int cy = (y() + h()/2) - (cview->h()/2);
+
+	/* Check if we are inside screen coordinates or showing window
+	 * beyond them will not show window at all!
+	 */
+	if(cx < screen_x)
+		cx = screen_x;
+	if(cy < screen_y)
+		cy = screen_y;
+	if((cx + cview->w()) > screen_w)
+		cx = screen_w - cview->w();
+	if((cy + cview->h()) > screen_h)
+		cy = screen_h - cview->h();
+
 	cview->position(cx, cy);
 	//if(!cview->shown())
 	cview->show();
@@ -1406,6 +1419,16 @@ void Frame::update_coordinates_window(void)
 	TRACE_FUNCTION("void Frame::update_coordinates_window(void)");
 	int cx = (x() + w()/2) - (cview->w()/2);
 	int cy = (y() + h()/2) - (cview->h()/2);
+
+	if(cx < screen_x)
+		cx = screen_x;
+	if(cy < screen_y)
+		cy = screen_y;
+	if((cx + cview->w()) > screen_w)
+		cx = screen_w - cview->w();
+	if((cy + cview->h()) > screen_h)
+		cy = screen_h - cview->h();
+
 	cview->position(cx, cy);
 	cview->display_data(x(), y(), w(), h());
 }
