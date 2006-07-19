@@ -709,7 +709,28 @@ void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, short rtyp
 		}
 	}
 
-		ELOG("p: %i %i %i %i w: %i %i %i %i",
+	/* Sanitize sizes. If we go below min width and height
+	 * even X will start to yell. Who likes yelling ?
+	 *
+	 * TODO: maybe when we detect this, should disallow any
+	 * further moves/resizes ?
+	 */
+	if(fdata->plain.w <= fdata->plain.min_w)
+	{
+		int offset = fdata->plain.min_w - fdata->plain.w;
+		fdata->plain.w = fdata->plain.min_w;
+		w(w() + offset);
+	}
+
+	if(fdata->plain.h <= fdata->plain.min_h)
+	{
+		int offset = fdata->plain.min_h - fdata->plain.h;
+		fdata->plain.h = fdata->plain.min_h;
+		h(h() + offset);
+	}
+
+
+	ELOG("p: %i %i %i %i w: %i %i %i %i",
 			fdata->plain.x, fdata->plain.y, fdata->plain.w, fdata->plain.h,
 			x(), y(), w(), h());
 }
