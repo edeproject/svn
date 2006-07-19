@@ -152,12 +152,14 @@ int FrameEventHandler::handle_fltk(int event)
 				{
 					curr_frame->grab_cursor();
 					curr_frame->resize_start();
+					curr_frame->show_coordinates_window();
 				}
 
 				//XGrabServer(fl_display);
 
 				curr_frame->set_cursor(ctype);
 				curr_frame->resize_window(Fl::event_x_root(), Fl::event_y_root(), bbbb);
+				curr_frame->update_coordinates_window();
 			}
 			return 1;
 
@@ -168,6 +170,7 @@ int FrameEventHandler::handle_fltk(int event)
 				//XUngrabServer(fl_display);
 				curr_frame->resize_end();
 				curr_frame->ungrab_cursor();
+				curr_frame->hide_coordinates_window();
 				curr_frame->set_cursor(CURSOR_DEFAULT);
 			}
 

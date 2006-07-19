@@ -21,6 +21,7 @@
 #include "Tracers.h"
 
 #include <assert.h>
+#include <stdio.h>    // snprintf
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
@@ -130,6 +131,26 @@ void FrameBorders::shaped(bool s)
 	is_shaped = s;
 }
 
+CoordinatesView::CoordinatesView() : Fl_Window(120, 20)
+{
+	color(FL_WHITE);
+	data_box = new Fl_Box(0, 0, w(), h());
+	data_box->label_size(11);
+	end();
+}
+
+CoordinatesView::~CoordinatesView()
+{
+}
+
+void CoordinatesView::display_data(int x, int y, int w, int h)
+{
+	snprintf(data, sizeof(data)-1, "%i x %i x %i x %i", x, y, w, h);
+	data_box->label(data);
+	data_box->redraw_label();
+	redraw();
+}
+
 Frame::Frame(Window win, XWindowAttributes* attrs) : 
 	Fl_Window(0, 0), 
 	fdata(new FrameData),
@@ -146,10 +167,14 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	is_moving(false),
 	is_resizing(false),
 	cursor_grabbed(false),
-	snap_move(false)
+	snap_move(false),
+	show_coordinates(true)
 {
 	// register our events
 	events = new FrameEventHandler(this);
+
+	if(show_coordinates)
+		cview = new CoordinatesView();
 
 	fdata->window        = win;
 	fdata->transient_win = None;
@@ -343,6 +368,9 @@ Frame::~Frame()
 	ELOG("Frame::~Frame");
 	if(fdata->label_alocated)
 		free(fdata->label);
+
+	if(show_coordinates)
+		delete cview;
 
 	delete fdata;
 	delete events;
@@ -1344,12 +1372,50 @@ void Frame::change_window_type(short type)
  */
 void Frame::content_click(void)
 {
+	TRACE_FUNCTION("void Frame::content_click(void)");
+
 	ELOG("Clicked on frame: %s", FRAME_NAME(fdata));
 
 	if(fl_xevent.xbutton.button == 1) 
 		raise();
 
 	CHECK_RET1(XAllowEvents(fl_display, ReplayPointer, CurrentTime), BadValue);
+}
+
+void Frame::show_coordinates_window(void)
+{
+	if(!show_coordinates)
+		return;
+
+	TRACE_FUNCTION("void Frame::show_coordinates_window(void)");
+
+	// calculate center of frame, and show it there
+	int cx = (x() + w()/2) - (cview->w()/2);
+	int cy = (y() + h()/2) - (cview->h()/2);
+	cview->position(cx, cy);
+	//if(!cview->shown())
+	cview->show();
+}
+
+void Frame::update_coordinates_window(void)
+{
+	if(!show_coordinates)
+		return;
+
+	TRACE_FUNCTION("void Frame::update_coordinates_window(void)");
+	int cx = (x() + w()/2) - (cview->w()/2);
+	int cy = (y() + h()/2) - (cview->h()/2);
+	cview->position(cx, cy);
+	cview->display_data(x(), y(), w(), h());
+}
+
+void Frame::hide_coordinates_window(void)
+{
+	if(!show_coordinates)
+		return;
+
+	TRACE_FUNCTION("void Frame::hide_coordinates_window(void)");
+	cview->hide();
 }
 
 // handle events that efltk understainds
