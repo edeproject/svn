@@ -85,6 +85,9 @@ Icccm compliance
 
 Version 2.0 is used as guide.
 
+Note: in WM_NORMAL_HINTS, win_gravitiy is ignored since edewm always
+assume and use NorthWestGravity. This will be changed.
+
 
 Other
 =====
