@@ -49,6 +49,7 @@ void Hints::icccm_size(FrameData* f)
 
 	if(!XGetWMNormalHints(fl_display, f->window, sh, &supplied))
 		sh->flags = 0;
+
 	if(sh->flags & PResizeInc)
 	{
 		if(sh->width_inc < 1)
@@ -57,21 +58,16 @@ void Hints::icccm_size(FrameData* f)
 			sh->height_inc = 1;
 	}
 
+	/* Check if PBaseSize flag is set. If not
+	 * fill it with minimal values and use them below.
+	 */
 	if(!(sh->flags & PBaseSize))
-	{
-		if(sh->flags & PMinSize)
-		{
-			sh->base_width = sh->min_width;
-			sh->base_height = sh->min_height;
-		}
-		else
-			sh->base_width = sh->base_height = 0;
-	}
-
+		sh->base_width = sh->base_height = 0;
+	
 	if(!(sh->flags & PMinSize))
 	{
 		sh->min_width = sh->base_width;
-		sh->min_height = sh->base_height;
+		sh->min_height= sh->base_height;
 	}
 
 	if(!(sh->flags & PMaxSize))
@@ -79,11 +75,6 @@ void Hints::icccm_size(FrameData* f)
 		sh->max_width = 32767;
 		sh->max_height = 32767;
 	}
-
-	if(sh->min_width <= 0)
-		sh->min_width = 1;
-	if(sh->min_height <= 0)
-		sh->min_height = 1;
 
 	if(sh->max_width < sh->min_width || sh->max_width <= 0)
         sh->max_width = 32767;
@@ -100,6 +91,8 @@ void Hints::icccm_size(FrameData* f)
 	f->plain.max_h = sh->max_height;
 	f->plain.w     = sh->base_width;
 	f->plain.h     = sh->base_height;
+	f->plain.min_w = sh->min_width;
+	f->plain.min_h = sh->min_height;
 	f->win_gravity = sh->win_gravity;
 		
 	// TODO: maybe calculate aspect_min and aspect_max ?
