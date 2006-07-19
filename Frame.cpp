@@ -134,6 +134,7 @@ void FrameBorders::shaped(bool s)
 CoordinatesView::CoordinatesView() : Fl_Window(120, 20)
 {
 	color(FL_WHITE);
+	box(FL_BORDER_BOX);
 	data_box = new Fl_Box(0, 0, w(), h());
 	data_box->label_size(11);
 	end();
