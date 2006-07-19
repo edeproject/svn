@@ -166,10 +166,25 @@ class FrameBorders
 		bool shaped(void)     { return is_shaped; }
 };
 
+/* Window responsible for displaying parent
+ * coordinates. It will _not_ be framed.
+ */
+class CoordinatesView : public Fl_Window
+{
+	private:
+		char data[100];
+		Fl_Box* data_box;
+	public:
+		CoordinatesView();
+		~CoordinatesView();
+		void display_data(int x, int y, int w, int h);
+};
+
 
 class Titlebar;
 class FrameEventHandler;
 
+// Head honcho of everything
 class Frame : public Fl_Window
 {
 	private:
@@ -186,6 +201,7 @@ class Frame : public Fl_Window
 		bool is_resizing;
 		bool cursor_grabbed;
 		bool snap_move;
+		bool show_coordinates;
 
 		FrameBorders       borders;
 		FrameEventHandler* events;
@@ -196,6 +212,8 @@ class Frame : public Fl_Window
 		Fl_Box* sizer_top_right;
 		Fl_Box* sizer_bottom_left;
 		Fl_Box* sizer_bottom_right;
+
+		CoordinatesView* cview;
 
 		// private loaders
 		void feed_data(XWindowAttributes* attrs);
@@ -271,6 +289,10 @@ class Frame : public Fl_Window
 		void borders_color(FrameBordersState s);
 		void change_window_type(short type);
 		void set_cursor(CursorType t);
+
+		void show_coordinates_window(void);
+		void update_coordinates_window(void);
+		void hide_coordinates_window(void);
 
 		//const FrameBorders& frame_borders(void) { return borders; }
 

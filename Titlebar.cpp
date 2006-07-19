@@ -317,13 +317,18 @@ int Titlebar::handle(int event)
 			win_x1 = Fl::event_x_root() - win_x;
 			win_y1 = Fl::event_y_root() - win_y;
 
-			curr_frame->move_start();
-			// we can safely call grab_cursor() as many times
-			// as we want, since it have internal checks
-			// TODO: add XGrabServer() here
-			curr_frame->grab_cursor();
+			if(!curr_frame->moving())
+			{
+				curr_frame->move_start();
+				// we can safely call grab_cursor() as many times
+				// as we want, since it have internal checks
+				// TODO: add XGrabServer() here
+				curr_frame->grab_cursor();
+				curr_frame->show_coordinates_window();
+			}
 
 			curr_frame->move_window(win_x1, win_y1);
+			curr_frame->update_coordinates_window();
 
 			return 1;
 
@@ -333,6 +338,7 @@ int Titlebar::handle(int event)
 			{
 				curr_frame->ungrab_cursor();
 				curr_frame->move_end();
+				curr_frame->hide_coordinates_window();
 			}
 			return 1;
 
