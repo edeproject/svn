@@ -320,9 +320,13 @@ int Titlebar::handle(int event)
 			if(!curr_frame->moving())
 			{
 				curr_frame->move_start();
-				// we can safely call grab_cursor() as many times
-				// as we want, since it have internal checks
-				// TODO: add XGrabServer() here
+
+				/* We can safely call grab_cursor() as many times
+				 * as we want, since it have internal checks
+				 *
+				 * TODO: add XGrabServer() here
+				 */
+				curr_frame->set_cursor(CURSOR_MOVE);
 				curr_frame->grab_cursor();
 				curr_frame->show_coordinates_window();
 			}
@@ -337,6 +341,7 @@ int Titlebar::handle(int event)
 			if(curr_frame->moving())
 			{
 				curr_frame->ungrab_cursor();
+				curr_frame->set_cursor(CURSOR_DEFAULT);
 				curr_frame->move_end();
 				curr_frame->hide_coordinates_window();
 			}
@@ -344,7 +349,6 @@ int Titlebar::handle(int event)
 
 		case FL_ENTER:
 			ELOG("Titlebar::FL_ENTER");
-			curr_frame->cursor(FL_CURSOR_DEFAULT);
 			return 1;
 		case FL_LEAVE:
 			ELOG("Titlebar::FL_LEAVE");
