@@ -68,6 +68,11 @@ extern Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
 extern Atom _XA_NET_WM_STATE_ABOVE;
 extern Atom _XA_NET_WM_STATE_BELOW;
 
+// how to apply above states
+#define _NET_WM_STATE_REMOVE    0         // remove/unset property
+#define _NET_WM_STATE_ADD       1         // add/set property
+#define _NET_WM_STATE_TOGGLE    2         // toggle property
+
 // atoms for debugging (not implemented)
 extern Atom _XA_NET_VIRTUAL_ROOTS;
 extern Atom _XA_NET_DESKTOP_LAYOUT;
