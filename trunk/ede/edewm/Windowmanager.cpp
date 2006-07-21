@@ -16,6 +16,7 @@
 #include "Frame.h"
 #include "../exset/exset.h"
 #include "Tracers.h"
+#include "Sound.h"
 #include "debug.h"
 
 #include <efltk/Fl_Config.h>
@@ -144,6 +145,9 @@ WindowManager::~WindowManager()
 	}
 	window_list.clear();
 
+	sound_system->shutdown();
+	delete sound_system;
+
 	delete wm_conf;
 	delete hint_stuff;
 	delete cur;
@@ -212,6 +216,15 @@ void WindowManager::init_internals(void)
 	cur = new CursorHandler;
 	cur->load(X_CURSORS);
 	cur->set_root_cursor();
+
+	sound_system = new SoundSystem();
+	sound_system->init();
+
+	sound_system->add(SOUND_MINIMIZE, "sounds/minimize.ogg");
+	sound_system->add(SOUND_MAXIMIZE, "sounds/maximize.ogg");
+	sound_system->add(SOUND_CLOSE,    "sounds/close.ogg");
+	sound_system->add(SOUND_RESTORE,  "sounds/restore.ogg");
+	sound_system->add(SOUND_SHADE,    "sounds/shade.ogg");
 
 	// the world is starting here
 	show();
@@ -600,6 +613,12 @@ void WindowManager::clear_focus_windows(void)
 	FrameList::iterator last = stack_list.end();
 	for(; it != last; ++it)
 		(*it)->unfocus();
+}
+
+void WindowManager::play_sound(short event)
+{
+	assert(sound_system != NULL);
+	sound_system->play(event);
 }
 
 bool WindowManager::validate_drawable(Drawable d)
