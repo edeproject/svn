@@ -476,6 +476,7 @@ int WindowManager::handle(XEvent* event)
 			const XConfigureRequestEvent *e = &(fl_xevent.xconfigurerequest);
 			XConfigureWindow(fl_display, e->window, e->value_mask&~(CWSibling|CWStackMode),
 				(XWindowChanges*)&(e->x));
+			return 1;
 		}
 
 		default:
