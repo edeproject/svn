@@ -18,6 +18,7 @@
 #include "Utils.h"
 #include "Titlebar.h"
 #include "debug.h"
+#include "Sound.h"
 #include "Tracers.h"
 
 #include <assert.h>
@@ -1050,6 +1051,8 @@ void Frame::maximize(void)
 
 	set_size(screen_x, screen_y, screen_w, screen_h, false);
 	set_state(FrameStateMaximized);
+
+	WindowManager::instance()->play_sound(SOUND_MAXIMIZE);
 }
 
 void Frame::restore(void)
@@ -1064,6 +1067,8 @@ void Frame::restore(void)
 
 	set_size(restore_x, restore_y, restore_w, restore_h, false);
 	clear_state(FrameStateMaximized);
+
+	WindowManager::instance()->play_sound(SOUND_RESTORE);
 }
 
 /* First will inspect does window participate for WM_DELETE_WINDOW
@@ -1094,6 +1099,8 @@ void Frame::close_kill(void)
 		ELOG("Frame killed");
 		XKillClient(fl_display, fdata->window);
 	}
+
+	WindowManager::instance()->play_sound(SOUND_CLOSE);
 }
 
 // window accepts input
@@ -1235,6 +1242,8 @@ void Frame::shade(void)
 
 	set_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
+
+	WindowManager::instance()->play_sound(SOUND_SHADE);
 	
 	// Configure not needed, since we do nothing usefull to window
 	//configure_notify();
@@ -1254,6 +1263,8 @@ void Frame::unshade(void)
 
 	clear_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
+	
+	WindowManager::instance()->play_sound(SOUND_SHADE);
 
 	// Configure not needed, since we do nothing usefull to window
 	//configure_notify();

@@ -13,39 +13,96 @@
 #include "Sound.h"
 #include "debug.h"
 
-#include <vorbis/vorbisfile.h>
-#include <vorbis/codec.h>
+#ifdef SOUND
+	#include <vorbis/vorbisfile.h>
+	#include <vorbis/codec.h>
+#endif
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>	// free
+#include <string.h>	// strdup
 
-SoundSystem::SoundSystem() : device(NULL)
+SoundSystem::SoundSystem()
 {
+#ifdef SOUND
+	device = NULL;
+	inited = false;
+	down = false;
+#endif
 }
 
 SoundSystem::~SoundSystem()
 {
+#ifdef SOUND
+	if(!down)
+		shutdown();		// just in case
+#endif
 }
 
 void SoundSystem::init(void)
 {
+#ifdef SOUND
+	EPRINTF("Loading sound system\n");
+
 	ao_initialize();
 	default_driver = ao_default_driver_id();
+
+	for(int i = 0; i < KNOWN_SOUNDS; i++)
+	{
+		event_sound[i].allocated = false;
+		event_sound[i].loaded = false;
+		event_sound[i].file_to_play = NULL;
+	}
+
+	inited = true;
+#endif
 }
 
 void SoundSystem::shutdown(void)
 {
+#ifdef SOUND
+	EPRINTF("Shutting down sound system\n");
+
 	ao_shutdown();
+
+	for(int i = 0; i < KNOWN_SOUNDS; i++)
+	{
+		if(event_sound[i].allocated)
+			free(event_sound[i].file_to_play);
+	}
+
+	down = true;
+#endif
 }
 
-int SoundSystem::play(SoundEvent e)
+void SoundSystem::add(short event, const char* file)
 {
-	// not implemented
+	assert(event < KNOWN_SOUNDS);
+
+	if(event_sound[event].allocated)
+		free(event_sound[event].file_to_play);
+
+	event_sound[event].file_to_play = strdup(file);
+	event_sound[event].allocated = true;
+	event_sound[event].loaded = true;
+}
+
+int SoundSystem::play(short event)
+{
+	assert(event < KNOWN_SOUNDS);
+	if(event_sound[event].loaded)
+		play(event_sound[event].file_to_play);
+	else
+		ELOG("Skipping this sound, no file for it");
+
 	return 1;
 }
 
 int SoundSystem::play(const char* fname)
 {
+#ifdef SOUND
+	assert(inited != false);
 	assert(fname != NULL);
 
 	FILE* f = fopen(fname, "rb");
@@ -108,6 +165,7 @@ int SoundSystem::play(const char* fname)
 
 	// NOTE: fclose(f) is not needed, since ov_clear() will close file
 	ov_clear(&vf);
+#endif	// SOUND
 
 	return 1;
 }

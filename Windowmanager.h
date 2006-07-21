@@ -77,6 +77,7 @@ struct WindowManagerConfig
 struct Hints;
 class Frame;
 class CursorHandler;
+class SoundSystem;
 typedef std::list<Frame*> FrameList;
 
 class WindowManager : public Fl_Window
@@ -90,6 +91,7 @@ class WindowManager : public Fl_Window
 		Hints* hint_stuff;
 
 		CursorHandler* cur;
+		SoundSystem* sound_system;
 
 		WindowManager();
 		~WindowManager();
@@ -126,6 +128,8 @@ class WindowManager : public Fl_Window
 		Frame* find_xid(Window win);
 		void restack_windows(void);
 		void clear_focus_windows(void);
+
+		void play_sound(short event);
 
 		const Cursor         root_cursor(void);
 		const CursorHandler* cursor_handler(void);
