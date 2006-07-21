@@ -18,6 +18,7 @@ CPPFILES = \
 		   Frame.cpp         \
 		   Cursor.cpp        \
 		   Events.cpp        \
+		   Sound.cpp         \
 		   Utils.cpp
 
 TARGET   = edewm

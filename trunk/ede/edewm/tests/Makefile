@@ -22,7 +22,16 @@ endef
 
 $(eval $(call make_test, basic_moveresize))
 
-all: $(ALL)
+sound_test.o : sound_test.cpp 
+	echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) -c $<
+Sound.o : ../Sound.cpp
+	echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) -c $<
+sound_test: sound_test.o Sound.o
+	$(CXX) sound_test.o Sound.o ../debug.o -o $@ $(LIBS)
+
+all: $(ALL) sound_test
 
 clean:
 	$(RM) $(ALL)
