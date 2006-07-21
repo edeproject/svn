@@ -13,46 +13,51 @@
 #ifndef __SOUND_H__
 #define __SOUND_H__
 
-#include <ao/ao.h>
+#ifdef SOUND
+	#include <ao/ao.h>
+#endif
 
-/* Sound player based on libao and libvorbis.
- * Possible changes in stream decoder.
- */
-
-enum SoundEvent
+enum
 {
 	SOUND_MINIMIZE = 0,
 	SOUND_MAXIMIZE,
-	SOUND_CLOSE,
-	SOUND_SHADE
+	SOUND_RESTORE,
+	SOUND_SHADE,
+	SOUND_CLOSE
+};
+#define KNOWN_SOUNDS 5
+
+struct EventSound
+{
+	bool allocated;
+	bool loaded;
+	short event;
+	char* file_to_play;
 };
 
-/*
-struct StreamFormat
-{
-	int bits;
-	int channels;
-	int rate;
-	int byte_format;        // accepts as ao_sample_format::byte_format 
-};
-*/
 #define PCM_BUF_SIZE 4096
 
 class SoundSystem
 {
+#ifdef SOUND
 	private:
 		ao_device* device;
 		ao_sample_format format;
 		int default_driver;
 		char pcm_out[PCM_BUF_SIZE];
-
+		bool inited;
+		bool down;
+		EventSound event_sound[KNOWN_SOUNDS];
+#endif 
 	public:
 		SoundSystem();
 		~SoundSystem();
 		void init(void);
 		void shutdown(void);
+
+		void add(short event, const char* file);
 		int play(const char* fname);
-		int play(SoundEvent e);
+		int play(short event);
 };
 
 #endif
