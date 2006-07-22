@@ -148,6 +148,25 @@ void process_output_status(int child_val)
 	} // if (!messages...)
 }
 
+void notify_wm(void)
+{
+	fl_open_display();
+	Atom _XA_EDE_WM_STARTUP_NOTIFY   = XInternAtom(fl_display, "_EDE_WM_STARTUP_NOTIFY", False);
+	Atom _XA_EDE_WM_APP_STARTING     = XInternAtom(fl_display, "_EDE_WM_APP_STARTING", False);
+
+	XEvent xevent;
+	xevent.xclient.type = ClientMessage;
+	xevent.xclient.message_type = _XA_EDE_WM_STARTUP_NOTIFY;
+	xevent.xclient.window = RootWindow(fl_display, fl_screen);
+	xevent.xclient.format = 32;
+	xevent.xclient.data.l[0] = _XA_EDE_WM_APP_STARTING;
+
+	XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
+			PropertyChangeMask, &xevent);
+
+	XFlush(fl_display);
+}
+
 // unlike fl_start... this checks on the status of child
 // and displays some nice dialogs
 int ede_start_child_process(char *cmd) 
@@ -170,16 +189,9 @@ int ede_start_child_process(char *cmd)
     signal (SIGCHLD, SIG_DFL);
 
 
-    // FIXME: unfinished work
-    // Set busy cursor
-    // We're not using fl_cursor cause it isn't flexible enough
-/*    fl_open_display();
-    Cursor watch;
-    watch = XCreateFontCursor(fl_display,FL_CURSOR_WAIT);
-    XDefineCursor(fl_display,RootWindow(fl_display,fl_screen),watch);
-    XFlush(fl_display);*/
+	// let wm know we started application
+  	notify_wm(); 
 
-    
     switch(pid_=fork()) {
     case 0:
         // The child process goes here...  Setup stdin, stdout, and stderr
@@ -233,7 +245,6 @@ int ede_start_child_process(char *cmd)
 	// FIXME: unfinished code
 	// Add callback for attempt to read from STDIN
 //	Fl::add_fd(fds_[0], FL_READ, (void (*)(int, void*)) stdin_cb, (void *)fds_[0]);
-
 
 	// Wait for PID
         int status, child_val;
