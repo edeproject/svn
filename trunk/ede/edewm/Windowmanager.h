@@ -93,6 +93,8 @@ class WindowManager : public Fl_Window
 		CursorHandler* cur;
 		SoundSystem* sound_system;
 
+		bool app_starting;
+
 		WindowManager();
 		~WindowManager();
 		WindowManager(const WindowManager&);
