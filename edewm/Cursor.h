@@ -62,9 +62,9 @@ class CursorHandler
 		void load(CursorShapeType s);
 		void set_cursor(Frame* f, CursorType t);
 		void set_root_cursor(void);
+		void set_root_cursor(CursorType t);
 		Cursor current_cursor(void) const;
 		Cursor root_cursor(void)                { return root_window_cursor; }
 		CursorShapeType cursor_shape_type(void) { return st; }
 };
-
 #endif

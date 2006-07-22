@@ -182,6 +182,7 @@ void WindowManager::init_internals(void)
 	ELOG("Starting window manager");
 	wm_conf = new WindowManagerConfig;
 
+	app_starting = false;
 
 	// defaults, in case world goes down
 	wm_conf->title_active_color = fl_rgb(0,0,128);
@@ -458,6 +459,23 @@ int WindowManager::handle(XEvent* event)
 {
 	switch(event->type)
 	{
+		/* ClientMessage is only used for desktop handling
+		 * and startup notifications.
+		 */
+		case ClientMessage:
+		{
+			ELOG("ClientMessage in wm");
+			if(event->xclient.message_type == _XA_EDE_WM_STARTUP_NOTIFY)
+			{
+				Atom data = event->xclient.data.l[0]; 
+				if(data == _XA_EDE_WM_APP_STARTING)
+				{
+					app_starting = true;
+					cur->set_root_cursor(CURSOR_WAIT);
+				}
+			}
+			return 1;
+		}
 		case MapRequest:
 		{
 			ELOG("MapRequest from wm");
@@ -466,7 +484,16 @@ int WindowManager::handle(XEvent* event)
 			XWindowAttributes attrs;
 			XGetWindowAttributes(fl_display, e->window, &attrs);
 			if(!attrs.override_redirect)
+			{
+				ELOG("--- map from wm ---");
 				new Frame(e->window);
+
+				if(app_starting)
+				{
+					cur->set_root_cursor(CURSOR_DEFAULT);
+					app_starting = false;
+				}
+			}
 
 			return 1;
 		}
@@ -654,6 +681,7 @@ void WindowManager::register_events(void)
 	xevent_map[VisibilityNotify] = "VisibilityNotify";
 	xevent_map[FocusIn]          = "FocusIn";
 	xevent_map[FocusOut]         = "FocusOut";
+	xevent_map[ClientMessage]    = "ClientMessage";
 
 	efltkevent_map[FL_PUSH]      = "FL_PUSH";
 	efltkevent_map[FL_RELEASE]   = "FL_RELEASE";
