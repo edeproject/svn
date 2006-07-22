@@ -197,8 +197,8 @@ int FrameEventHandler::handle_x(XEvent* event)
 			return reparent_event(event->xreparent);
 		case DestroyNotify:
 			return destroy_event(event->xdestroywindow);
-		case ClientMessage:
-			return client_message(event->xclient);
+		/*case ClientMessage:
+			return client_message(event->xclient);*/
 		case LeaveNotify:
 		case EnterNotify:
 			return enter_leave_event(event->xcrossing);
@@ -292,18 +292,39 @@ int FrameEventHandler::map_event(const XMapRequestEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::map_event(const XMapRequestEvent& e)");
 
-	// first check if some of existing windows
-	// are in unmapped state
+	// First check if I send map event to myself
+	if(e.window == curr_frame->window())
+	{
+		if(curr_frame->state(FrameStateUnmapped))
+		{
+			ELOG("Mapping me");
+
+			XMapWindow(fl_display, curr_frame->window());
+			XMapWindow(fl_display, fl_xid(curr_frame));
+			curr_frame->clear_state(FrameStateUnmapped);
+		}
+		return 1;
+	}
+
+	// then check if someone via us wan't to map some window
 	Frame* f = WindowManager::instance()->find_xid(e.window);
 	if(f && f->state(FrameStateUnmapped))
 	{
+		ELOG("Mapping some window in list");
+
 		XMapWindow(fl_display, f->window());
 		XMapWindow(fl_display, fl_xid(f));
 		f->clear_state(FrameStateUnmapped);
+		return 1;
 	}
-	else
-		// our managed window
-		new Frame(e.window);
+
+	// this should not ever happen
+	assert(e.window != f->window());
+
+	// And last, no one like us :( No problem, just create window.
+	ELOG("--- map inside frame ---");
+	new Frame(e.window);
+
 	return 1;
 }
 
@@ -312,6 +333,9 @@ int FrameEventHandler::unmap_event(const XUnmapEvent& e)
 	TRACE_FUNCTION("int FrameEventHandler::unmap_event(const XUnmapEvent& e)");
 
 	ELOG("FrameEventHandler: UnmapNotify (%s)", FRAME_NAME(curr_frame->fdata));
+	if(e.from_configure)
+		return 1;
+
 	if(curr_frame->option(FrameOptIgnoreUnmap))
 	{
 		ELOG("Frame have FrameOptIgnoreUnmap, skiping this event");
@@ -323,6 +347,7 @@ int FrameEventHandler::unmap_event(const XUnmapEvent& e)
 	{
 		XUnmapWindow(fl_display, curr_frame->fdata->window);
 		XUnmapWindow(fl_display, fl_xid(curr_frame));
+		//curr_frame->set_option(FrameOptIgnoreUnmap);
 		curr_frame->set_state(FrameStateUnmapped);
 	}
 	return 1;
