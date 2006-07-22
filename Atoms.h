@@ -73,6 +73,10 @@ extern Atom _XA_NET_WM_STATE_BELOW;
 #define _NET_WM_STATE_ADD       1         // add/set property
 #define _NET_WM_STATE_TOGGLE    2         // toggle property
 
+// our messages
+extern Atom _XA_EDE_WM_STARTUP_NOTIFY;
+	extern Atom _XA_EDE_WM_APP_STARTING;
+
 // atoms for debugging (not implemented)
 extern Atom _XA_NET_VIRTUAL_ROOTS;
 extern Atom _XA_NET_DESKTOP_LAYOUT;
