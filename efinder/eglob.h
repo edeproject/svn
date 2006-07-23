@@ -3,10 +3,9 @@
  *
  * Efinder, file search tool
  * Part of Equinox Desktop Environment (EDE).
- * glob for xfce Copyright 2000-2001 Edscott Wilson Garcia.
- * Copyright (C) 2001-2002 Martin Pekar.
+ * Copyright (c) 2000-2006 EDE Authors.
  *
- * This program is licenced under terms of the 
+ * This program is licenced under terms of the
  * GNU General Public Licence version 2 or newer.
  * See COPYING for details.
  */
@@ -28,10 +27,27 @@
 #include <efltk/Fl_Locale.h>
 #include <efltk/Fl_Util.h>
 
+#define FILE_TYPES_NR 9
+
+static char *ftypes[FILE_TYPES_NR] =
+{
+    _("Any kind"),
+    _("Regular file"),
+    _("Directory"),
+    _("Symbolic link"),
+    _("Socket"),
+    _("Block device"),
+    _("Character device"),
+    _("FIFO"),
+    NULL
+};
+
+
 int  process_find_messages();
 void jam(char *file, Fl_Menu_ *);
 void findCB();
 void stopSearch();
+void pauseSearch();
 void toggle_permission(long);
 
 #endif
