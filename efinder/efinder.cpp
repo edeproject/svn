@@ -49,8 +49,8 @@ o->layout_align(FL_ALIGN_CLIENT);
         }
          //TODO: this feature needs to be implemented
          /*{Fl_Check_Button* o = outputCountCheck = new Fl_Check_Button(9, 74, 270, 23, _("Output count of matching lines"));
-          o->value(1);*/
-        }
+          o->value(1);
+        }*/
          {Fl_Button* o = new Fl_Button(204, 142, 75, 25, _("&Close"));
           o->callback((Fl_Callback*)cb_Close2);
         }
