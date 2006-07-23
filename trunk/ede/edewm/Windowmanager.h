@@ -137,8 +137,6 @@ class WindowManager : public Fl_Window
 		const CursorHandler* cursor_handler(void);
 		void  set_cursor(Frame* f, CursorType t);
 
-		bool validate_drawable(Drawable d);
-
 		//FrameList<Frame*> window_list;
 		//FrameList<Frame*> remove_list;
 

@@ -100,29 +100,35 @@ int xerror_handler(Display* d, XErrorEvent* e)
 	{
 		// force cleaning data
 		WindowManager::shutdown();
-
 		Fl::fatal(_("Another window manager is running.  You must exit it before running edewm."));
 	}
 
-/*
-	if (e->error_code == BadWindow) 
-	{
-		char buff[128];
-        XGetErrorDatabaseText(fl_display, "XlibMessage", "XError", "", buff, 128);
-		ELOG("Got BadWindow (%s)", buff);
-		return 0;
-	}
+	char buff[128];
 
-	if (e->error_code == BadColor) 
-	{
-		ELOG("Got BadColor");
-		return 0;
-	}
-*/
-	char buf1[128], buf2[128];
-	sprintf(buf1, "XRequest.%d", e->request_code);
-	XGetErrorDatabaseText(d,"",buf1,buf1,buf2,128);
-	XGetErrorText(d, e->error_code, buf1, 128);
+	EPRINTF("\n");
+
+	XGetErrorDatabaseText(fl_display, "XlibMessage", "XError", "", buff, 128);
+	EPRINTF("%s: ", buff);
+	XGetErrorText(fl_display, e->error_code, buff, 128);
+	EPRINTF("%s \n", buff);
+
+	XGetErrorDatabaseText(fl_display, "XlibMessage", "MajorCode", "%d", buff, 128);
+	EPRINTF("  ");
+	EPRINTF(buff, e->request_code);
+
+	sprintf(buff, "%d", e->request_code);
+	XGetErrorDatabaseText(fl_display, "XRequest", buff, "%d", buff, 128);
+	EPRINTF(" (%s)\n", buff);
+
+	XGetErrorDatabaseText(fl_display, "XlibMessage", "MinorCode", "%d", buff, 128);
+	EPRINTF("  ");
+	EPRINTF(buff, e->minor_code);
+	EPRINTF("  ");
+	XGetErrorDatabaseText(fl_display, "XlibMessage", "ResourceID", "%d", buff, 128);
+	EPRINTF(buff, e->resourceid);
+
+	EPRINTF("\n");
+	EPRINTF("\n");
 
 	return 0;
 }
@@ -649,17 +655,6 @@ void WindowManager::play_sound(short event)
 	sound_system->play(event);
 }
 
-bool WindowManager::validate_drawable(Drawable d)
-{
-	int val;
-	unsigned int uval;
-	Window win;
-	int ret = XGetGeometry(fl_display, d, &win, &val, &val, &uval, &uval, &uval, &uval);
-	if(ret == BadDrawable)
-		return false;
-	else
-		return true;
-}
 
 #ifdef _DEBUG
 void WindowManager::register_events(void)

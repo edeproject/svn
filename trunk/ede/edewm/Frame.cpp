@@ -220,11 +220,11 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	feed_data(attrs);
 		
 	// do this asap so we don't miss any events...
-	CHECK_RET1(XSelectInput(fl_display, fdata->window, 
+	XSelectInput(fl_display, fdata->window, 
 			VisibilityChangeMask | ColormapChangeMask | 
-			PropertyChangeMask | FocusChangeMask /*| StructureNotifyMask*/), BadWindow);
+			PropertyChangeMask | FocusChangeMask /*| StructureNotifyMask*/);
 
-	CHECK_RET2(XGetTransientForHint(fl_display, fdata->window, &fdata->transient_win), BadWindow, BadAlloc);
+	XGetTransientForHint(fl_display, fdata->window, &fdata->transient_win);
 	if(fdata->transient_win != None)
 	{
 		fdata->type = FrameTypeDialog;
@@ -234,8 +234,8 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	init_sizes();
 	setup_borders();
 
-	CHECK_RET3(XMoveResizeWindow(fl_display, fdata->window, fdata->plain.x, fdata->plain.y,
-			fdata->plain.w, fdata->plain.h), BadWindow, BadValue, BadMatch);
+	XMoveResizeWindow(fl_display, fdata->window, fdata->plain.x, fdata->plain.y, 
+			fdata->plain.w, fdata->plain.h);
 
 	begin();
 	Fl_Color szc = borders.sizers_color(FOCUSED);
@@ -329,12 +329,11 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	configure_notify();
 
 	// rest is in content_click()
-	CHECK_RET3(XGrabButton(fl_display, AnyButton, AnyModifier, fdata->window, 
-			False, ButtonPressMask, GrabModeSync, GrabModeAsync, None, None),
-			BadCursor, BadValue, BadWindow);
+	XGrabButton(fl_display, AnyButton, AnyModifier, fdata->window, 
+			False, ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
 
 	// show our creation
-	CHECK_RET1(XMapWindow(fl_display, fdata->window), BadWindow);
+	XMapWindow(fl_display, fdata->window);
 	show();
 	
 	if(borders.shaped())
@@ -342,7 +341,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 
 	//shape_edges();
 
-	CHECK_RET3(XAddToSaveSet(fl_display, fdata->window), BadWindow, BadMatch, BadValue);
+	XAddToSaveSet(fl_display, fdata->window);
 
 	// TODO: this handling should be in WindowManager
 	WindowManager::instance()->window_list.push_back(this);
@@ -461,7 +460,7 @@ void Frame::load_wm_hints(void)
 	switch(wm_hints->initial_state)
 	{
 		case WithdrawnState:
-			CHECK_RET3(XRemoveFromSaveSet(fl_display, fdata->window), BadWindow, BadMatch, BadValue);
+			XRemoveFromSaveSet(fl_display, fdata->window);
 			break;
 		case IconicState:
 			fdata->state = FrameStateIconized;
@@ -507,11 +506,11 @@ void Frame::destroy(void)
 
 	if(shown())
 	{
-		CHECK_RET1(XUnmapWindow(fl_display, fl_xid(this)), BadWindow);
-		CHECK_RET1(XUnmapWindow(fl_display, fdata->window), BadWindow);
+		XUnmapWindow(fl_display, fl_xid(this));
+		XUnmapWindow(fl_display, fdata->window);
 	}
 
-	CHECK_RET3(XRemoveFromSaveSet(fl_display, fdata->window), BadWindow, BadMatch, BadValue);
+	XRemoveFromSaveSet(fl_display, fdata->window);
 	set_state(FrameStateDestroyed);
 	WindowManager::instance()->update_client_list();
 	Fl::awake();
@@ -531,7 +530,7 @@ void Frame::load_colormap(Colormap col)
 	else
 		ELOG("Loading default colormap");
 
-	CHECK_RET2(XInstallColormap(fl_display, fdata->colormap), BadWindow, BadColor);
+	XInstallColormap(fl_display, fdata->colormap);
 }
 
 // Recalculate framed based on plain.
@@ -579,8 +578,7 @@ void Frame::setup_borders(void)
 
 	// set fdata->window borders, althought fdata->plain.borders is
 	// always 0
-	CHECK_RET3(XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border), 
-			BadWindow, BadValue, BadMatch);
+	XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border);
 }
 
 /* Setup window sizes to minimal usable (MIN_W, MIN_H)
@@ -627,19 +625,18 @@ void Frame::reparent_window(void)
 	sattr.border_pixel = fl_xpixel(FL_BLACK);
 	sattr.override_redirect = 0;
 	sattr.background_pixel = fl_xpixel(FL_GRAY);
-	CHECK_RET3(XChangeWindowAttributes(fl_display, fl_xid(this), 
-			CWBitGravity | CWBorderPixel | CWColormap | CWEventMask | CWBackPixel | CWOverrideRedirect, &sattr),
-			BadWindow, BadAccess, BadMatch);
+	XChangeWindowAttributes(fl_display, fl_xid(this), 
+			CWBitGravity | CWBorderPixel | CWColormap | CWEventMask | CWBackPixel | CWOverrideRedirect, &sattr);
 
 	if(!show_titlebar)
 	{
-		CHECK_RET1(XReparentWindow(fl_display, fdata->window, fl_xid(this), 
-			borders.leftright(), borders.updown()), BadWindow);
+		XReparentWindow(fl_display, fdata->window, fl_xid(this), 
+			borders.leftright(), borders.updown());
 	}
 	else
 	{
-		CHECK_RET1(XReparentWindow(fl_display, fdata->window, fl_xid(this), 
-			borders.leftright(), borders.updown() + titlebar->h()), BadWindow);
+		XReparentWindow(fl_display, fdata->window, fl_xid(this), 
+			borders.leftright(), borders.updown() + titlebar->h());
 	}
 
 }
@@ -754,9 +751,9 @@ void Frame::set_size(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_pla
 	XGrabServer(fl_display);
 
 	place_sizers(x(), y(), w(), h());
-	CHECK_RET3(XMoveWindow(fl_display, fl_xid(this), x(), y()), BadWindow, BadMatch, BadValue);
-	CHECK_RET3(XResizeWindow(fl_display, fl_xid(this), w(), h()), BadWindow, BadMatch, BadValue);
-	CHECK_RET3(XResizeWindow(fl_display, fdata->window, fdata->plain.w, fdata->plain.h), BadWindow, BadMatch, BadValue);
+	XMoveWindow(fl_display, fl_xid(this), x(), y());
+	XResizeWindow(fl_display, fl_xid(this), w(), h());
+	XResizeWindow(fl_display, fdata->window, fdata->plain.w, fdata->plain.h);
 
 	if(borders.shaped())
 		shape_borders();
@@ -800,7 +797,7 @@ void Frame::move_window(int x_pos, int y_pos)
 	}
 
 	recalc_geometry(x_pos, y_pos, w(), h(), GeometryRecalcAllXY);
-	CHECK_RET3(XMoveWindow(fl_display, fl_xid(this), x(), y()), BadMatch, BadWindow, BadValue);
+	XMoveWindow(fl_display, fl_xid(this), x(), y());
 	configure_notify();
 }
 
@@ -1117,8 +1114,7 @@ void Frame::focus(void)
 	if(show_titlebar)
 		titlebar->focus();
 
-	CHECK_RET3(XSetInputFocus(fl_display, fdata->window, RevertToPointerRoot, fl_event_time),
-			BadMatch, BadValue, BadWindow);
+	XSetInputFocus(fl_display, fdata->window, RevertToPointerRoot, fl_event_time);
 
 	XInstallColormap(fl_display, fdata->colormap);
 
@@ -1237,8 +1233,7 @@ void Frame::shade(void)
 	restore_w = w();
 	restore_h = h();
 
-	CHECK_RET3(XResizeWindow(fl_display, fl_xid(this), w(), titlebar->h() + borders.updown()), 
-			BadWindow, BadMatch, BadValue);
+	XResizeWindow(fl_display, fl_xid(this), w(), titlebar->h() + borders.updown());
 
 	set_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
@@ -1259,7 +1254,7 @@ void Frame::unshade(void)
 		return;
 	}
 
-	CHECK_RET3(XResizeWindow(fl_display, fl_xid(this), w(), restore_h), BadWindow, BadMatch, BadValue);
+	XResizeWindow(fl_display, fl_xid(this), w(), restore_h);
 
 	clear_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
@@ -1327,8 +1322,7 @@ void Frame::change_window_type(short type)
 
 	// set fdata->window borders, althought fdata->plain.borders is
 	// always 0
-	CHECK_RET3(XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border), 
-			BadWindow, BadValue, BadMatch);
+	XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border);
 
 	fdata->type = type;
 
@@ -1412,7 +1406,7 @@ void Frame::content_click(void)
 	if(fl_xevent.xbutton.button == 1) 
 		raise();
 
-	CHECK_RET1(XAllowEvents(fl_display, ReplayPointer, CurrentTime), BadValue);
+	XAllowEvents(fl_display, ReplayPointer, CurrentTime);
 }
 
 void Frame::show_coordinates_window(void)
