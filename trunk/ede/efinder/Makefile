@@ -8,7 +8,7 @@
 # GNU General Public Licence version 2 or newer.
 # See COPYING for details.
 
-CPPFILES = efinder.cpp eglob.cpp
+CPPFILES = efinder.cpp eglob.cpp VerticalTabs.cpp ../common/aboutdialog.cpp
 TARGET   = efinder
 
 POFILES = locale/ru.po\

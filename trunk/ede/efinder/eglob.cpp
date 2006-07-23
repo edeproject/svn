@@ -3,13 +3,13 @@
  *
  * Efinder, file search tool
  * Part of Equinox Desktop Environment (EDE).
- * glob for xfce Copyright 2000-2001 Edscott Wilson Garcia.
- * Copyright (C) 2001-2002 Martin Pekar.
+ * Copyright (c) 2000-2006 EDE Authors.
  *
- * This program is licenced under terms of the 
+ * This program is licenced under terms of the
  * GNU General Public Licence version 2 or newer.
  * See COPYING for details.
  */
+
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -45,16 +45,22 @@
 #include "icons/socket.xpm"
 
 #define GLOB "glob"
+
+#define SHELL "/bin/sh"
+// TODO: ensure that find and grep are GNU
+#define GREP "grep"
+#define FIND "find"
+
+
 #define TRUE 1
 #define FALSE 0
-#define MAX_ARG 50
+#define MAX_ARG 100
 
-static int considerTime = FALSE, considerSize = FALSE,
-considerUser = FALSE, considerPerm = FALSE,  cancelled = FALSE;
+static int cancelled = FALSE;
 static int pfd[2];               /* the pipe */
 static pid_t Gpid;               /* glob pid, to be able to cancel search */
 static short int findCount;      /* how many files found */
-static short int fileLimit = 64;
+static short int fileLimit = 100;
 static int type=0x0;
 
 static Fl_Image block_dev_pix = *Fl_Image::read_xpm(0, (const char **)block_dev_xpm);
@@ -67,29 +73,18 @@ static Fl_Image page_pix      = *Fl_Image::read_xpm(0, (const char **)page_xpm);
 static Fl_Image page_lnk_pix  = *Fl_Image::read_xpm(0, (const char **)page_lnk_xpm);
 static Fl_Image socket_pix    = *Fl_Image::read_xpm(0, (const char **)socket_xpm);
 
-static char *ftypes[9] =
-{
-    "Any kind",
-    "Regular",
-    "Directory",
-    "Symlink",
-    "Socket",
-    "Block device",
-    "Character device",
-    "FIFO",
-    NULL
-};
 
-static char *ft[] =
+
+static char *ftypes_find[FILE_TYPES_NR] =
 {
-    "any",
-    "reg",
-    "dir",
-    "sym",
-    "sock",
-    "blk",
-    "chr",
-    "fifo",
+    "bcdpfls",
+    "f",
+    "d",
+    "l",
+    "s",
+    "b",
+    "c",
+    "p",
     NULL
 };
 
@@ -138,6 +133,7 @@ abort_glob()
     {
         kill (Gpid, SIGKILL);    //agressive
     }
+    // TODO: flush buffer (so we don't get continuation of previous results)
 }
 
 
@@ -162,6 +158,12 @@ GlobWait(void *data)
     if (WIFEXITED (status))
     {
         //fprintf(stderr,"waiting done\n");
+        char result[128];
+        snprintf(result,127,"Finished search. %d results found.",findCount);
+        statusLine->copy_label(result);
+        statusLine->redraw();
+        searchButton->activate();
+        stopButton->deactivate();
         return;
     }
     Fl::add_timeout(2, GlobWait, (void*)childPID);
@@ -169,126 +171,154 @@ GlobWait(void *data)
 }
 
 
-void
-findCB()
+void findCB()
 {
     char *argument[MAX_ARG];
-    char sizeG_s[64], sizeM_s[64], hours_s[64], permS[64];
-    char *path, *filter, *token, *s;
-    int i, j, sizeG, sizeM, hours;
+    char *filter, *s;
+    int sizeG, sizeM;
     int childPID;
 
     cancelled = FALSE;
 
+    // Kill any existing search process
     if (Gpid)
     {
         kill (Gpid, SIGHUP);
         Gpid = 0;
     }
 
+    // Clear the results pane
     searchList->clear();
+    statusLine->label(_("Searching..."));
+    statusLine->redraw();
+
+    // Disable the start button
+    searchButton->deactivate();
+    // Enable the stop button
+    stopButton->activate();
 
     findCount = 0;
-    fileLimit = (int) fileLimitValue->value();
-    path = (char*) pathInput->value();
+    fileLimit = (int) fileLimitValue->value();	// Max number of results
 
+
+    // The following code prepares parameters for find and grep
+    int i = 0;
+
+    // FIND comes first
+    argument[i++] = FIND;
+
+    // Path is always the first parameter
+    char* path = (char*) pathInput->value();		// Start directory for search
+    // This should only happen if user manually edits path field:
     if (strlen(path)==0)
-        path = "/";
-    if (path[strlen(path)-1]=='~')
-        path = "~/";             //tilde expansion
+        path = "/"; 
+    else if (path[0]!='/')
+        path = strcat("/",path); // blah...
 
-    if (path[0]=='$')            //environment variables
-    {
-        path=getenv(path+1);
-        if (path==NULL)
-            path="/";
+    argument[i++] = path;
+
+
+    // The following parameters must come before others
+
+    // Search subdirectories?
+    if (!recursiveCheck->value()) {
+        argument[i++] = "-maxdepth";
+	argument[i++] = "1";
     }
 
-    filter = (char*) filterInput->value();
-    token = (char*) containsInput->value();
-    considerTime = considerTimeValue->value();
-    considerSize = considerSizeValue->value();
-    considerUser = considerUserValue->value();
-    considerPerm = considerPermValue->value();
+    // Remain on same file system
+    if (stayOnSingleCheck->value())
+        argument[i++] = "-mount";
 
-    if (considerSize)
-    {
-        sizeG = (int)sizeGValue->value();
-        sizeM = (int)sizeMValue->value();
-        if ((sizeM <= sizeG)&&(sizeM > 0))
-        {
-            fl_alert("Incoherent size considerations!");
-            return;
-        }
+
+    // Filename and other parameters
+
+    filter = (char*) filterInput->value();	// File name definition
+    if (strlen(filter)!=0) {
+        argument[i++] = "-name";
+        char tmp[256];
+        snprintf(tmp,255,"*%s*",filter);
+        argument[i++] = tmp;
     }
-    else
-        sizeG = sizeM = 0;
 
-    if (considerTime)
-    {
-        hours = (int)timeValue->value();
+    // Show hidden files
+    if (!findHidden->value()) {
+        argument[i++] = "-not";
+        argument[i++] = "-path";
+        argument[i++] = "*/.*";
     }
-    else
-        hours = 0;
 
-    //s = (char*) fileTypeBrowser->text(fileTypeBrowser->value());
+    // File type match
     s = (char*) fileTypeBrowser->value();
-
-    for (j = -1, i = 0; ftypes[i] != NULL; i++)
+    // if j==0 (Any type) we don't need to do anything
+    for (int j = 1; j<FILE_TYPES_NR-1; j++)
     {
-        if (strcmp (s, ftypes[i]) == 0)
+        if (strcmp (s, ftypes[j]) == 0)
         {
-            j = i;
+            argument[i++] = "-type";
+            argument[i++] = ftypes_find[j];
             break;
         }
     }
 
-    if (j < 0)
-        s = ftypes[0];
-    i = 0;
-    argument[i++] = GLOB;
-
-    //argument[i++] = "-v"; (verbose output from glob for debugging)
-    argument[i++] = "-P";
-
-    if (doNotLookIntoBinaryCheck->value())
-        argument[i++] = "-I";
-
-    if (recursiveCheck->value())
-        argument[i++] = "-r";
-
-    if (considerPerm)
-    {
-        argument[i++] = "-o";
-        snprintf(permS, sizeof(permS)-1, "0%o",type&07777);
-        argument[i++] = permS;
+    // Permissions
+    if (considerPermValue->value()) {
+        // TODO: Permission handling in find is very weird so I'll skip it here
     }
 
-    if (caseSensitiveCheck->value())
-        argument[i++] = "-i";
-
-    if (outputCountCheck->value())
-        argument[i++] = "-c";
-
-    if (invertMatchRadio->value())
-        argument[i++] = "-L";
-
-    if (matchWordsRadio->value())
-        argument[i++] = "-w";
-    else
-    {
-        if (matchLinesRadio->value())
-            argument[i++] = "-x";
-    }
-    if (j > 0)
-    {
-        argument[i++] = "-t";
-        argument[i++] = ft[j];
+    // File ownership
+    if (considerUserValue->value()) {
+        if (userIdChoice->value() && (strcmp(userIdChoice->value(),"Anyone") != 0))
+        {
+            argument[i++] = "-user";
+            //argument[i++] = (char*)userIdChoice->text(userIdChoice->value());
+            argument[i++] = (char*)userIdChoice->value();
+        }
+        if (groupIdChoice->value() && (strcmp(groupIdChoice->value(),"Anyone") != 0))
+        {
+            argument[i++] = "-group";
+            //argument[i++] = (char*)groupIdChoice->text(groupIdChoice->value());
+            argument[i++] = (char*)groupIdChoice->value();
+        }
     }
 
-    if (considerTime)
+
+    // File size
+    if (considerSizeValue->value())
     {
-        if (modifiedRadio->value()) argument[i++] = "-M";
+        sizeG = (int)sizeGValue->value();
+        sizeM = (int)sizeMValue->value();
+
+        if ((sizeM <= sizeG)&&(sizeM > 0))
+        {
+            fl_alert(_("Size limits are impossible."));
+            return;
+        }
+
+        // This doesn't work with find (need to read man page)
+
+        /*char sizeG_s[64], sizeM_s[64];
+        if (sizeG > 0)
+        {
+            argument[i++] = "-size";
+            snprintf (sizeG_s, sizeof(sizeG_s)-1, "%d", sizeG);
+            argument[i++] = sizeG_s;
+        }
+        if (sizeM > 0)
+        {
+            argument[i++] = "-size";
+            snprintf (sizeM_s, sizeof(sizeM_s)-1,  "%d", sizeM);
+            argument[i++] = sizeM_s;
+        }*/
+    }
+
+
+    // File time (access, creation, change...)
+    if (considerTimeValue->value())
+    {
+        // find only works with days... need to fix this manually
+
+/*        if (modifiedRadio->value()) argument[i++] = "-M";
         if (accessedRadio->value()) argument[i++] = "-A";
         if (changedRadio->value()) argument[i++] = "-C";
         if (hours > 0)
@@ -300,82 +330,79 @@ findCB()
 
             snprintf (hours_s, sizeof(hours_s)-1, "%d", hours);
             argument[i++] = hours_s;
-        }
+        }*/
     }
 
-    if (considerSize)
-    {
-        if (sizeG > 0)
-        {
-            argument[i++] = "-s";
-            snprintf (sizeG_s, sizeof(sizeG_s)-1, "+%d", sizeG);
-            argument[i++] = sizeG_s;
-        }
-        if (sizeM > 0)
-        {
-            argument[i++] = "-s";
-            snprintf (sizeM_s, sizeof(sizeM_s)-1,  "-%d", sizeM);
-            argument[i++] = sizeM_s;
-        }
-    }
 
-    if (stayOnSingleCheck->value())
-        argument[i++] = "-a";
+    // We are now handling output control and counting
+        /*if (outputCountCheck->value())
+            argument[i++] = "-c";*/
 
-    if (considerUser)
-    {
-        if (userIdChoice->value())
-        {
-            argument[i++] = "-u";
-            //argument[i++] = (char*)userIdChoice->text(userIdChoice->value());
-            argument[i++] = (char*)userIdChoice->value();
-        }
-        if (groupIdChoice->value())
-        {
-            argument[i++] = "-g";
-            //argument[i++] = (char*)groupIdChoice->text(groupIdChoice->value());
-            argument[i++] = (char*)groupIdChoice->value();
-        }
-    }
 
-    if (strlen(filter) > 0)      //don't apply filter if not specified and path is absolute!!
-    {
-        argument[i++] = "-f";
-        argument[i++] = filter;
-    }
-    else
-    {
-        if (path[strlen (path) - 1] == '/')
-        {
-            argument[i++] = "-f";
-            argument[i++] = "*";
-        }
+
+    // now GREP - first lets see if its needed
+    char* token = (char*) containsInput->value();
+
+    if (strlen(token) > 0) {
+        argument[i++] = "-exec";
+        argument[i++] = GREP;
+
+        // All output is handled by find
+        argument[i++] = "-s";
+        argument[i++] = "-q";
+
+        // This we do if silly user wants to search directories or devices
+        argument[i++] = "-d";
+        argument[i++] = "skip";
+        argument[i++] = "-D";
+        argument[i++] = "skip";
+
+        // Should we search inside binary files? (usually not)
+        if (doNotLookIntoBinaryCheck->value())
+            argument[i++] = "-I";
         else
-        {
-            struct stat st;
-            if (stat (path, &st) == 0)
-            {
-                if (S_ISDIR (st.st_mode))
-                {
-                    argument[i++] = "-f";
-                    argument[i++] = "*";
-                }
-            }
-        }
-    }
+            argument[i++] = "-a";
 
-    if (strlen(token) > 0)       //search token in files
-    {
+        // Use Perl compatible regexp's
+        // TODO: check for proper escaping
         if (useRegexpCheck->value())
-            argument[i++] = "-E";
-        else
-            argument[i++] = "-e";
+            argument[i++] = "-P";
+
+        // Case sensitive search
+        if (caseSensitiveCheck->value())
+            argument[i++] = "-i";
+
+        // Match only whole words
+        if (wholeWordsOnly->value())
+            argument[i++] = "-w";
+
+        // What we search
         argument[i++] = token;
+
+        // This will be replaced with filenames
+        argument[i++] = "{}";
+
+        // This ends grep params list
+        argument[i++] = ";";
     }
 
-    argument[i++] = path;        // last argument must be the path
+
+
+    // Print the filename in format understood by process_find_messages()
+    argument[i++] = "-printf";
+    argument[i++] = "\%p:1\\n";
+
+    // End of arguments list... must be null
     argument[i] = (char *) 0;
-    //for (j=0;j<i;j++) printf ("%s ",argument[j]);printf ("\n");
+
+
+
+    //DEBUG 
+    for (int j=0;j<i;j++) fprintf (stderr, "%s ",argument[j]);fprintf (stderr,"\n");
+
+
+
+    // Great! Now lets fork the search process
 
     Gpid = 0;
     childPID=fork ();
@@ -384,16 +411,18 @@ findCB()
     {
         dup2 (pfd[1], 1);        /* assign child stdout to pipe */
         close (pfd[0]);          /* not used by child */
-        execvp (GLOB, argument);
+        execvp (FIND, argument);
         perror ("exec");
         _exit (127);             /* child never get here */
     }
+    Gpid = childPID;
     Fl::add_timeout(2, GlobWait, (void*)childPID);
 
-    char command[128];
+// This apparently do nothing!?
+/*    char command[128];
     char *textos[6];
     strcpy (command, argument[0]);
-    for (j = 1; j < i; j++)
+    for (int j = 1; j < i; j++)
     {
         strcat (command, " ");
         strcat (command, argument[j]);
@@ -402,7 +431,7 @@ findCB()
     if (strlen(token)) textos[0] = token;  else textos[0] = "";
     if (strlen(filter)) textos[1] = filter;  else textos[1] = "";
     if (strlen(path)) textos[2] = path;  else textos[2] = "";
-    textos[3] = textos[4] =  textos[5] = "";
+    textos[3] = textos[4] =  textos[5] = "";*/
 
     int *data;
     data=(int *)malloc(3*sizeof(int));
@@ -410,11 +439,21 @@ findCB()
 }
 
 
-void
-stopSearch()
+void stopSearch()
 {
     cancelled = TRUE;
-    abort_glob();
+    char result[128];
+    snprintf(result,127,_("Search stopped. %d results found"),findCount);
+    statusLine->copy_label(result);
+    statusLine->redraw();
+    searchButton->activate();
+    stopButton->deactivate();
+    abort_glob1();
+}
+
+void pauseSearch()
+{
+    // unimplemented
 }
 
 
@@ -431,8 +470,11 @@ process_find_messages(int, void*)
     {
         if (!read (pfd[0], buffer, 1))
             return;
+        if (cancelled)
+            return;
         if (buffer[0] == '\n')
         {
+		// TODO: this part of code isn't accessed anymore
             buffer[1] = (char) 0;
             if (strncmp(line, "GLOB DONE=", strlen ("GLOB DONE=")) == 0)
             {
@@ -459,14 +501,20 @@ process_find_messages(int, void*)
                 nothing_found = TRUE;
                 return;
             }
-            if (cancelled)
-                return;
+		// --------- until here
 
             if (line[0] == '/')  /* strstr for : and strtok and send to cuenta */
             {
-                if (findCount >= fileLimit)
+                if (fileLimit>0 && findCount >= fileLimit) {
+                    char result[128];
+                    snprintf(result,127,_("Finished search. More than %d results found (use Preferences to change this limit)."),fileLimit);
+                    statusLine->copy_label(result);
+                    statusLine->redraw();
+                    searchButton->activate();
+                    stopButton->deactivate();
+                    cancelled = TRUE;
                     abort_glob1();
-                else
+                } else
                 {
                     char *path, *linecount = NULL, *textos[6], cuenta[32],
                         sizeF[64], permF[16];
@@ -476,7 +524,10 @@ process_find_messages(int, void*)
                     path = line;
                     char *ptr = path;
                     while(*ptr) { if(*ptr=='\n') *ptr='\0'; ptr++; }
-                    statusLine->copy_label(fl_trim(path));
+//                    statusLine->copy_label(fl_trim(path));
+                    char result[128];
+                    snprintf(result,127,_("Searching... %d results found."),findCount+1);
+                    statusLine->copy_label(result);
                     statusLine->redraw();
 
                     if (strstr(path, ":"))
@@ -515,6 +566,7 @@ process_find_messages(int, void*)
                         snprintf (permF, sizeof(permF)-1,"0%o", st.st_mode & 07777);
                         textos[3] = sizeF;
                         textos[4] = ctime (&(st.st_ctime));
+                        textos[4] = strtok(textos[4],"\n");	// chop()
                         textos[5] = permF;
 
                         if (S_ISREG (st.st_mode))
@@ -559,27 +611,29 @@ process_find_messages(int, void*)
                     {
                         textos[2] = textos[3] = textos[4] = "-";
                     }
-                    {
+                    
                                  // leave just directory
                         *(strrchr(path,'/'))=0;
                         if (!strlen(path))
                             textos[2]="/";
-                        char output[FL_PATH_MAX];
-                        snprintf(output, sizeof(output)-1, "%s/%s", textos[2], textos[1]);
+//                        char output[FL_PATH_MAX];
+//                        snprintf(output, sizeof(output)-1, "%s/%s", textos[2], textos[1]);
                         searchList->begin();
                         Fl_ListView_Item *resultItem = new Fl_ListView_Item();
 
                         // Copy labels, so item destructor knows to de-allocate them
-                        resultItem->copy_label(0, output);
-                        resultItem->copy_label(1, textos[3]);
-                        resultItem->copy_label(2, textos[4]);
-                        resultItem->copy_label(3, textos[5]);
+                        resultItem->copy_label(0, textos[1]);
+                        resultItem->copy_label(1, textos[2]);
+                        resultItem->copy_label(2, textos[3]);
+                        resultItem->copy_label(3, textos[4]);
+                        resultItem->copy_label(4, textos[5]);
 
                         resultItem->image(resultImage);
+
                         searchList->end();
                         searchList->relayout();
                         searchList->redraw();
-                    }
+                    
                 }
             }
             //else {}
