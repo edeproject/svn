@@ -8,7 +8,7 @@
 # GNU General Public Licence version 2 or newer.
 # See COPYING for details.
 
-CPPFILES = emenueditor.cpp
+CPPFILES = emenueditor.cpp ../common/aboutdialog.cpp
 TARGET   = emenueditor
 
 POFILES = locale/ru.po\
