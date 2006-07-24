@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 			Fl_Item* o = new Fl_Item(_("&About"));
 			o->callback((Fl_Callback*)cb_About);
 		}
-		menubar->right_layout(o);
+		//menubar->right_layout(o);
 		o->end();
 
 	menubar->end();
