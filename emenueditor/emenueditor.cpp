@@ -20,6 +20,7 @@
 #include "icons/item.xpm"
 
 #include "emenueditor.h"
+#include "../common/aboutdialog.h"
 
 static Fl_Image item_pix = *Fl_Image::read_xpm(0, (const char**)item_xpm);
 static Fl_Image folder_pix = *Fl_Image::read_xpm(0, (const char**)folder_xpm);
@@ -44,64 +45,122 @@ int             SomethingInDir(char *);
 
 void cb_browse(Fl_Widget *, Fl_Input *input)
 {
-    char *file_types = _("Executables (*.*), *, All files (*.*), *");
-    const char *f = fl_select_file(input->value(), file_types, _("File selection ..."));
-    if (f) input->value(f);
+	char *file_types = _("Executables (*.*), *, All files (*.*), *");
+	const char *f = fl_select_file(input->value(), file_types, _("File selection ..."));
+	if (f) input->value(f);
 }
+
+
+void cb_userMenu(Fl_Widget *, void*)
+{
+	Fl_String m_programsdir = fl_homedir() + "/.ede/programs";
+	programs_browser->directory(m_programsdir);
+}
+
+void cb_systemMenu(Fl_Widget *, void*)
+{
+	fl_alert(_("You need to be root to edit the system menu!"));
+	Fl_String m_programsdir = PREFIX"/share/ede/programs";
+	programs_browser->directory(m_programsdir);
+}
+
+void cb_customMenu(Fl_Widget *, void*)
+{
+	Fl_String m_programsdir = fl_select_dir(0,  _("Select directory with menu"));
+	if (!m_programsdir.empty())
+		programs_browser->directory(m_programsdir);
+}
+
+static void cb_About(Fl_Item*, void*) {
+	AboutDialog("Menu Editor","1.1","");
+}
+
 
 
 int main(int argc, char **argv)
 {
-    Fl_String m_programsdir = fl_homedir() + "/.ede/programs";
-    fl_init_locale_support("emenueditor", PREFIX"/share/locale");
-    fl_init_images_lib();
+	Fl_String m_programsdir = fl_homedir() + "/.ede/programs";
+	fl_init_locale_support("emenueditor", PREFIX"/share/locale");
+	fl_init_images_lib();
+	
+	Fl_Main_Window *menu_edit_window = new Fl_Main_Window(480, 370, _("Menu editor"));
+	
+	Fl_Menu_Bar *menubar = new Fl_Menu_Bar(0, 0, 480, 25);
+	menubar->begin();
+		Fl_Item_Group *file = new Fl_Item_Group(_("&File"));
+		{
+			Fl_Item *o = new Fl_Item(_("&User menu"));
+			o->x_offset(18);
+			o->callback((Fl_Callback*) cb_userMenu );
+		}
+		{
+			Fl_Item *o = new Fl_Item(_("&System menu"));
+			o->x_offset(18);
+			o->callback((Fl_Callback*) cb_systemMenu );
+		}
+		{
+			Fl_Item *o = new Fl_Item(_("&Custom..."));
+			o->x_offset(18);
+			o->callback((Fl_Callback*) cb_customMenu );
+		}
+		new Fl_Divider();
+		{
+			Fl_Item *quit_item = new Fl_Item(_("&Quit"));
+			quit_item->shortcut(0x40071);
+			quit_item->x_offset(18);
+			quit_item->callback(Exit_Editor, menu_edit_window);
+		}
+		file->end();
 
-    Fl_Main_Window *menu_edit_window = new Fl_Main_Window(480, 370, _("Menu editor"));
-    
-    Fl_Menu_Bar *menubar = new Fl_Menu_Bar(0, 0, 480, 25);
-    menubar->begin();
-    Fl_Item_Group *file = new Fl_Item_Group(_("&File"));
-    Fl_Item *quit_item = new Fl_Item(_("&Quit"));
-    quit_item->shortcut(0x40071);
-    quit_item->x_offset(18);
-    quit_item->callback(Exit_Editor, menu_edit_window);
-    
-    file->end();
-    menubar->end();
+		Fl_Item_Group *o = new Fl_Item_Group(_("&Help"));
+		{
+			Fl_Item* o = new Fl_Item(_("&About"));
+			o->callback((Fl_Callback*)cb_About);
+		}
+		menubar->right_layout(o);
+		o->end();
 
-        programs_browser = new Fl_FileBrowser(5, 40, 275, 313, _("Programs:"));
-        programs_browser->align(FL_ALIGN_TOP | FL_ALIGN_LEFT);
-        programs_browser->tooltip(_("Click on the submenu or on the item you want"));
-        programs_browser->callback(cb_change_dir);
+	menubar->end();
+	
+	programs_browser = new Fl_FileBrowser(5, 40, 275, 313, _("Programs:"));
+	programs_browser->align(FL_ALIGN_TOP | FL_ALIGN_LEFT);
+	programs_browser->tooltip(_("Click on the submenu or on the item you want"));
+	programs_browser->callback(cb_change_dir);
 	programs_browser->end();
 	programs_browser->directory(m_programsdir);
+	menu_edit_window->resizable(programs_browser);
+	
+	// This group prevents resizing
+	{Fl_Group* o = new Fl_Group(310, 45, 135, 313);
+		Fl_Button *new_submenu = new Fl_Button(5, 5, 125, 23, _("New submenu"));
+		new_submenu->callback( (Fl_Callback*) cb_new_submenu );
+		
+		Fl_Button *del_submenu =  new Fl_Button(5, 35, 125, 23, _("Delete submenu"));
+		del_submenu->callback( (Fl_Callback*) cb_delete_submenu );
+		
+		Fl_Button *new_item = new Fl_Button(5, 65, 125, 23, _("New item"));
+		new_item->callback( (Fl_Callback*) cb_new_item );
+		
+		Fl_Button *edit_item = new Fl_Button(5, 95, 125, 23, _("Edit Item"));
+		edit_item->callback( (Fl_Callback*) cb_edit_item );
 
-        Fl_Button *new_submenu = new Fl_Button(315, 50, 125, 23, _("New submenu"));
-        new_submenu->callback( (Fl_Callback*) cb_new_submenu );
-
-        Fl_Button *del_submenu =  new Fl_Button(315, 80, 125, 23, _("Delete submenu"));
-        del_submenu->callback( (Fl_Callback*) cb_delete_submenu );
-
-        Fl_Button *new_item = new Fl_Button(315, 125, 125, 23, _("New item"));
-        new_item->callback( (Fl_Callback*) cb_new_item );
-
-        Fl_Button *del_item = new Fl_Button(315, 185, 125, 23, _("Delete item"));
-        del_item->callback( (Fl_Callback*) cb_delete_item );
-
-        Fl_Button *edit_item = new Fl_Button(315, 155, 125, 23, _("Edit Item"));
-        edit_item->callback( (Fl_Callback*) cb_edit_item );
-    
-    menu_edit_window->menu(menubar);
-    menu_edit_window->resizable(menu_edit_window);
-    menu_edit_window->end();
-    menu_edit_window->show();
-
-    Fl::run();
-
-    if(edit_window)
-        delete edit_window;
-
-    return 0;
+		Fl_Button *del_item = new Fl_Button(5, 125, 125, 23, _("Delete item"));
+		del_item->callback( (Fl_Callback*) cb_delete_item );
+		
+		o->end();
+	}
+	
+	menu_edit_window->menu(menubar);
+	//menu_edit_window->resizable(menu_edit_window);
+	menu_edit_window->end();
+	menu_edit_window->show();
+	
+	Fl::run();
+	
+	if(edit_window)
+		delete edit_window;
+	
+	return 0;
 }
 
 
