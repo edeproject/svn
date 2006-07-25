@@ -315,7 +315,7 @@ int FrameEventHandler::unmap_event(const XUnmapEvent& e)
 		curr_frame->clear_option(FrameOptIgnoreUnmap);
 	}
 	else
-		curr_frame->map();
+		curr_frame->unmap();
 
 	return 1;
 }
