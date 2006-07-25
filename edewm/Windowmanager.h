@@ -159,4 +159,7 @@ class WindowManager : public Fl_Window
 #endif
 };
 
+
+bool ValidateDrawable(Drawable d);
+
 #endif

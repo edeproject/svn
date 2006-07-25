@@ -289,6 +289,8 @@ class Frame : public Fl_Window
 		void borders_color(FrameBordersState s);
 		void change_window_type(short type);
 		void set_cursor(CursorType t);
+		void map(void);
+		void unmap(void);
 
 		void show_coordinates_window(void);
 		void update_coordinates_window(void);
