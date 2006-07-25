@@ -291,39 +291,9 @@ int FrameEventHandler::handle_x(XEvent* event)
 int FrameEventHandler::map_event(const XMapRequestEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::map_event(const XMapRequestEvent& e)");
+	assert(e.window == curr_frame->window());
 
-	// First check if I send map event to myself
-	if(e.window == curr_frame->window())
-	{
-		if(curr_frame->state(FrameStateUnmapped))
-		{
-			ELOG("Mapping me");
-
-			XMapWindow(fl_display, curr_frame->window());
-			XMapWindow(fl_display, fl_xid(curr_frame));
-			curr_frame->clear_state(FrameStateUnmapped);
-		}
-		return 1;
-	}
-
-	// then check if someone via us wan't to map some window
-	Frame* f = WindowManager::instance()->find_xid(e.window);
-	if(f && f->state(FrameStateUnmapped))
-	{
-		ELOG("Mapping some window in list");
-
-		XMapWindow(fl_display, f->window());
-		XMapWindow(fl_display, fl_xid(f));
-		f->clear_state(FrameStateUnmapped);
-		return 1;
-	}
-
-	// this should not ever happen
-	assert(e.window != f->window());
-
-	// And last, no one like us :( No problem, just create window.
-	ELOG("--- map inside frame ---");
-	new Frame(e.window);
+	curr_frame->map();
 
 	return 1;
 }
@@ -331,6 +301,9 @@ int FrameEventHandler::map_event(const XMapRequestEvent& e)
 int FrameEventHandler::unmap_event(const XUnmapEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::unmap_event(const XUnmapEvent& e)");
+	//assert(e.window == curr_frame->window());
+	if(e.window != curr_frame->window())
+		return 1;
 
 	ELOG("FrameEventHandler: UnmapNotify (%s)", FRAME_NAME(curr_frame->fdata));
 	if(e.from_configure)
@@ -340,16 +313,10 @@ int FrameEventHandler::unmap_event(const XUnmapEvent& e)
 	{
 		ELOG("Frame have FrameOptIgnoreUnmap, skiping this event");
 		curr_frame->clear_option(FrameOptIgnoreUnmap);
-		return 1;
 	}
-			
-	if(e.window == curr_frame->fdata->window)
-	{
-		XUnmapWindow(fl_display, curr_frame->fdata->window);
-		XUnmapWindow(fl_display, fl_xid(curr_frame));
-		//curr_frame->set_option(FrameOptIgnoreUnmap);
-		curr_frame->set_state(FrameStateUnmapped);
-	}
+	else
+		curr_frame->map();
+
 	return 1;
 }
 	
@@ -372,12 +339,14 @@ int FrameEventHandler::reparent_event(const XReparentEvent& e)
 
 	EWARNING("Destroy in ReparentNotify!");
 	curr_frame->destroy();
+
 	return 1;
 }
 
 int FrameEventHandler::destroy_event(const XDestroyWindowEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::destroy_event(const XDestroyWindowEvent& e)");
+
 	curr_frame->destroy();
 	return 1;
 }
@@ -385,6 +354,9 @@ int FrameEventHandler::destroy_event(const XDestroyWindowEvent& e)
 int FrameEventHandler::client_message(const XClientMessageEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::client_message(const XClientMessageEvent& e)");
+
+	if(!ValidateDrawable(e.window))
+		return 1;
 
 #ifdef _DEBUG
 	Atom a = e.message_type;
@@ -461,6 +433,8 @@ int FrameEventHandler::property_event(const XPropertyEvent& e)
 int FrameEventHandler::enter_leave_event(const XCrossingEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::enter_event(const XEnterWindowEvent& e)");
+	if(curr_frame->state(FrameStateUnmapped))
+		return 1;
 
 	if(e.type == LeaveNotify && !curr_frame->resizing())
 		curr_frame->set_cursor(CURSOR_DEFAULT);
@@ -481,15 +455,19 @@ int FrameEventHandler::configure_event(const XConfigureRequestEvent& e)
 {
 	TRACE_FUNCTION("int FrameEventHandler::configure_event(const XConfigureRequestEvent& e)");
 
-	Frame* f = WindowManager::instance()->find_xid(e.window);
-	if(f)
+	if(curr_frame->state(FrameStateUnmapped))
+		return 1;
+
+	if(curr_frame->window() == e.window)
 	{
 		ELOG("ConfigureRequest from frame");
+		if(!ValidateDrawable(curr_frame->window()))
+			return 1;
 
-		int x_pos = f->fdata->plain.x;
-		int y_pos = f->fdata->plain.y;
-		int w_sz  = f->fdata->plain.w;
-		int h_sz  = f->fdata->plain.h;
+		int x_pos = curr_frame->fdata->plain.x;
+		int y_pos = curr_frame->fdata->plain.y;
+		int w_sz  = curr_frame->fdata->plain.w;
+		int h_sz  = curr_frame->fdata->plain.h;
 
 		if(e.value_mask & CWX)
 			x_pos = e.x;
@@ -503,24 +481,27 @@ int FrameEventHandler::configure_event(const XConfigureRequestEvent& e)
 		if(e.value_mask & CWStackMode)
 		{
 			if(e.detail == Above)
-				f->raise();
+				curr_frame->raise();
 			if(e.detail == Below)
-				f->lower();
+				curr_frame->lower();
 		}
 
-		f->set_size(x_pos, y_pos, w_sz, h_sz, true);	
+		curr_frame->set_size(x_pos, y_pos, w_sz, h_sz, true);	
 	}
 	else
 	{
 		ELOG("ConfigureRequest from unhandled window");
 
-		XWindowChanges wc;
-		wc.x = e.x;
-		wc.y = e.y;
-		wc.width = e.width;
-		wc.height = e.height;
-		wc.stack_mode = e.detail;
-		XConfigureWindow(fl_display, e.window, e.value_mask, &wc);
+		if(ValidateDrawable(e.window))
+		{
+			XWindowChanges wc;
+			wc.x = e.x;
+			wc.y = e.y;
+			wc.width = e.width;
+			wc.height = e.height;
+			wc.stack_mode = e.detail;
+			XConfigureWindow(fl_display, e.window, e.value_mask, &wc);
+		}
 	}
 
 	return 1;

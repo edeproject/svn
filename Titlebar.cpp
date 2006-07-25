@@ -250,7 +250,8 @@ void Titlebar::focus(void)
 {
 	// TODO: add colors for label_box, buttons
 	color(focus_color);
-	Fl::redraw();
+	/*Fl::redraw();*/
+	redraw();
 }
 
 void Titlebar::unfocus(void)

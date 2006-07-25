@@ -361,6 +361,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	if(fdata->option & FrameOptTakeFocus)
 		focus();
 
+	ELOG("Window loaded, frame: 0x%x plain: 0x%x", fl_xid(this), fdata->window);
 	XFlush(fl_display);
 }
 
@@ -373,8 +374,8 @@ Frame::~Frame()
 	if(show_coordinates)
 		delete cview;
 
-	delete fdata;
 	delete events;
+	delete fdata;
 }
 
 void Frame::feed_data(XWindowAttributes* existing)
@@ -391,9 +392,13 @@ void Frame::feed_data(XWindowAttributes* existing)
 	// TODO: For testing only. Better solution will be.
 	fdata->type = wm->hints()->netwm_window_type(fdata);
 	setup_borders();
-	if(fdata->type == FrameTypeSplash || fdata->type == FrameTypeMenu || fdata->type == FrameTypeDesktop ||
-			fdata->type == FrameTypeDock)
+	if(fdata->type == FrameTypeSplash 
+			|| fdata->type == FrameTypeMenu 
+			|| fdata->type == FrameTypeDesktop 
+			|| fdata->type == FrameTypeDock)
+	{
 		show_titlebar = false;
+	}
 	// ------------------------------------------------
 
 	wm->hints()->netwm_window_state(fdata);
@@ -504,18 +509,47 @@ void Frame::destroy(void)
 	if(state(FrameStateDestroyed))
 		return;
 
-	if(shown())
+	if(!state(FrameStateUnmapped))
 	{
-		XUnmapWindow(fl_display, fl_xid(this));
-		XUnmapWindow(fl_display, fdata->window);
+		if(ValidateDrawable(fdata->window))
+		{
+			XRemoveFromSaveSet(fl_display, fdata->window);
+			XUnmapWindow(fl_display, fdata->window);
+			XUnmapWindow(fl_display, fl_xid(this));
+		}
 	}
 
-	XRemoveFromSaveSet(fl_display, fdata->window);
 	set_state(FrameStateDestroyed);
 	WindowManager::instance()->update_client_list();
 	Fl::awake();
 }
 
+void Frame::map(void)
+{
+	if(!state(FrameStateUnmapped))
+		return;
+
+	XAddToSaveSet(fl_display, fdata->window);
+	XMapWindow(fl_display, fdata->window);
+	XMapWindow(fl_display, fl_xid(this));
+
+	clear_state(FrameStateUnmapped);
+}
+
+void Frame::unmap(void)
+{
+	if(state(FrameStateUnmapped))
+		return;
+
+	if(ValidateDrawable(fdata->window))
+	{
+		XRemoveFromSaveSet(fl_display, fdata->window);
+		XUnmapWindow(fl_display, fdata->window);
+		XUnmapWindow(fl_display, fl_xid(this));
+	}
+
+	set_state(FrameStateUnmapped);
+}
 // Install custom or default colormap.
 // Default colormap is read only once, in Frame constructor.
 void Frame::load_colormap(Colormap col)
@@ -599,6 +633,9 @@ void Frame::init_sizes(void)
 void Frame::reparent_window(void)
 {
 	TRACE_FUNCTION("void Frame::reparent_window(void)");
+
+	if(!ValidateDrawable(fdata->window))
+		return;
 
 	const int XEventMask = 
 		ExposureMask | 
@@ -739,6 +776,9 @@ void Frame::recalc_geometry(int x_pos, int y_pos, int w_sz, int h_sz, short rtyp
 void Frame::set_size(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_plain)
 {
 	TRACE_FUNCTION("void Frame::set_size(int x_pos, int y_pos, int w_sz, int h_sz, bool apply_on_plain)");
+
+	if(!ValidateDrawable(fdata->window))
+		return;
 
 	short how;
 	if(apply_on_plain)
@@ -953,6 +993,8 @@ void Frame::resize_window(int mouse_x, int mouse_y, long direction)
 void Frame::configure_notify(void)
 {
 	TRACE_FUNCTION("void Frame::configure_notify(void)");
+	if(!ValidateDrawable(fdata->window))
+		return;
 
 	WindowManager::instance()->hints()->icccm_configure(fdata);
 }
@@ -1108,14 +1150,17 @@ void Frame::focus(void)
 	if(state(FrameStateFocused))
 		return;
 
+	if(!ValidateDrawable(fdata->window))
+		return;
+
 	WindowManager::instance()->clear_focus_windows();
 
 	borders_color(FOCUSED);
 	if(show_titlebar)
 		titlebar->focus();
 
-	XSetInputFocus(fl_display, fdata->window, RevertToPointerRoot, fl_event_time);
-
+	//XSetInputFocus(fl_display, fdata->window, RevertToPointerRoot, fl_event_time);
+	XSetInputFocus(fl_display, fdata->window, RevertToPointerRoot, CurrentTime);
 	XInstallColormap(fl_display, fdata->colormap);
 
 	/* DO NOT use this !
@@ -1143,8 +1188,8 @@ void Frame::unfocus(void)
 void Frame::raise(void)
 {
 	TRACE_FUNCTION("void Frame::raise(void)");
-	WindowManager* wm = WindowManager::instance();
 
+	WindowManager* wm = WindowManager::instance();
 	if(wm->stack_list.size() <= 1)
 	{
 		ELOG("Only one window, restacking skipped");
