@@ -29,6 +29,7 @@
 
 
 WindowManager* WindowManager::pinstance = NULL;
+int x_errors;
 
 /* This is one of the most important part of wm and reflects
  * current design. Wm will try to send all messages to frame itself,
@@ -103,10 +104,11 @@ int xerror_handler(Display* d, XErrorEvent* e)
 		Fl::fatal(_("Another window manager is running.  You must exit it before running edewm."));
 	}
 
+	x_errors++;
+
 	char buff[128];
 
 	EPRINTF("\n");
-
 	XGetErrorDatabaseText(fl_display, "XlibMessage", "XError", "", buff, 128);
 	EPRINTF("%s: ", buff);
 	XGetErrorText(fl_display, e->error_code, buff, 128);
@@ -132,7 +134,32 @@ int xerror_handler(Display* d, XErrorEvent* e)
 
 	return 0;
 }
-	
+
+bool ValidateDrawable(Drawable d)
+{
+	Window w;
+	int dummy;
+	unsigned int dummy_ui;
+
+	XSync(fl_display, False);
+	x_errors = 0;
+	XGetGeometry(fl_display, d, &w, &dummy, &dummy, &dummy_ui, &dummy_ui, &dummy_ui, &dummy_ui);
+	XSync(fl_display, False);
+
+	bool ret = (x_errors == 0 ? true : false);
+	x_errors = 0;
+
+/*
+	if(ret != true)
+	{
+		WindowManager::shutdown();
+		assert(ret == true);
+	}
+*/
+
+	return ret;
+}
+
 WindowManager::WindowManager() : Fl_Window(0, 0, Fl::w(), Fl::h()), is_running(false)
 {
 	box(FL_NO_BOX);
@@ -209,7 +236,7 @@ void WindowManager::init_internals(void)
 	read_configuration();
 	read_xset_configuration();
 
-	register_protocols();
+	//register_protocols();
 #ifdef _DEBUG
 	InitAtoms(fl_display, atom_map);
 	register_events();
@@ -235,6 +262,7 @@ void WindowManager::init_internals(void)
 
 	// the world is starting here
 	show();
+	register_protocols();
 
 	hint_stuff = new Hints;
 	hint_stuff->icccm_set_iconsizes(this);
@@ -267,7 +295,9 @@ void WindowManager::init_clients(void)
 				ELOG("Screen not as window, skiping...");
 				continue;
 			}
-			frame = new Frame(wins[i], &attr);
+
+			if(ValidateDrawable(wins[i]))
+				frame = new Frame(wins[i], &attr);
 		}
 		else
 			ELOG("Skipping override_redirect window");
