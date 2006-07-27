@@ -449,7 +449,7 @@ void Hints::mwm_load_hints(FrameData* fd)
 	if(status == Success && items_read >= PropMotifHintsElements)
 	{
 		ELOG("MWM: got hints !!!");
-		if((mwm->flags & MwmHintsDecorations) && !(mwm->flags & MwmDecorAll))
+		if((mwm->flags & MwmHintsDecorations) && !(mwm->decorations & MwmDecorAll))
 		{
 			if(mwm->flags & MwmDecorTitle)
 				ELOG("MwmHintsDecorTitle");
@@ -458,8 +458,6 @@ void Hints::mwm_load_hints(FrameData* fd)
 			if(mwm->flags & MwmDecorHandle)
 				ELOG("MwmHintsDecorHandle");
 		}
-		else if(mwm->flags & MwmDecorAll)
-			ELOG("MwmDecorAll");
 		else
 			ELOG("Mwm says: no decor at all");
 	}
