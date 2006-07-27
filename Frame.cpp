@@ -25,7 +25,7 @@
 #include <stdio.h>    // snprintf
 
 #ifdef SHAPE
-#include <X11/extensions/shape.h>
+	#include <X11/extensions/shape.h>
 #endif // SHAPE
 
 
@@ -41,11 +41,6 @@
 #define SIZER_W 15
 #define SIZER_H 15
 
-/*
-#define MIN_W 300
-#define MIN_H 255
-*/
-
 #define MIN_W 0
 #define MIN_H 0
 
@@ -53,67 +48,46 @@
 
 #define EDGE_SNAP 10
 
-void FrameBorders::border_color(Fl_Color c, FrameBordersState s)
+
+void FrameBorders::item_color(Fl_Color c, FrameBordersState s, bool is_border)
 {
 	switch(s)
 	{
 		case FOCUSED:
-			focused = c;
+			(is_border) ? (focused = c) : (sizers_focused = c);
 			break;
 		case UNFOCUSED:
-			unfocused = c;
+			(is_border) ? (unfocused = c) : (sizers_unfocused = c);
 			break;
 		case CLICKED:
-			clicked = c;
+			(is_border) ? (clicked = c) : (sizers_clicked = c);
 			break;
 	}
 }
 
-Fl_Color FrameBorders::border_color(FrameBordersState s)
+Fl_Color FrameBorders::item_color(FrameBordersState s, bool is_border)
 {
 	switch(s)
 	{
 		case FOCUSED:
-			return focused;
+			if(is_border) 
+				return focused;
+			else
+				return sizers_focused;
 		case UNFOCUSED:
-			return unfocused;
+			if(is_border)
+				return unfocused;
+			else
+				return sizers_unfocused;
 		case CLICKED:
-			return clicked;
+			if(is_border)
+				return clicked;
+			else 
+				return sizers_clicked;
 	}
-	return FL_CYAN;	// XXX
+
+	return FL_GRAY;
 }
-
-
-void FrameBorders::sizers_color(Fl_Color c, FrameBordersState s)
-{
-	switch(s)
-	{
-		case FOCUSED:
-			sizers_focused = c;
-			break;
-		case UNFOCUSED:
-			sizers_unfocused = c;
-			break;
-		case CLICKED:
-			sizers_clicked = c;
-			break;
-	}
-}
-
-Fl_Color FrameBorders::sizers_color(FrameBordersState s)
-{
-	switch(s)
-	{
-		case FOCUSED:
-			return sizers_focused;
-		case UNFOCUSED:
-			return sizers_unfocused;
-		case CLICKED:
-			return sizers_clicked;
-	}
-	return FL_CYAN; // XXX
-}
-
 
 void FrameBorders::updown(int s)
 {
@@ -550,6 +524,7 @@ void Frame::unmap(void)
 
 	set_state(FrameStateUnmapped);
 }
+
 // Install custom or default colormap.
 // Default colormap is read only once, in Frame constructor.
 void Frame::load_colormap(Colormap col)

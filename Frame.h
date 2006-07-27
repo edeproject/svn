@@ -59,6 +59,13 @@
 #define FrameOptTakeFocus        (1 << 10)
 #define FrameOptKeepAspect       (1 << 11)
 
+// TODO replace above with this:
+/*
+#define FrameOptBorder          // have borders
+#define FrameOptTitlebar        // have titlebar
+#define FrameOptHandle          // manageable
+*/
+
 /* some events echo UnmapNotify, like ReparentNotify, and if we
  * start wm on existing X session with open windows, this flag will
  * prevent they be unmapped
@@ -149,16 +156,19 @@ class FrameBorders
 		int leftright_h;
 		int leftright2x_h;
 		bool is_shaped;
+		bool is_border;
+		void item_color(Fl_Color c, FrameBordersState s, bool is_border);
+		Fl_Color item_color(FrameBordersState s, bool is_border);
 
 	public:
-		void border_color(Fl_Color c, FrameBordersState s);
-		void sizers_color(Fl_Color c, FrameBordersState s);
+		void border_color(Fl_Color c, FrameBordersState s) { item_color(c, s, true); }
+		void sizers_color(Fl_Color c, FrameBordersState s) { item_color(c, s, false); }
 		void updown(int s);
 		void leftright(int s);
 		void shaped(bool s);
 
-		Fl_Color border_color(FrameBordersState s);
-		Fl_Color sizers_color(FrameBordersState s);
+		Fl_Color border_color(FrameBordersState s) { return item_color(s, true); }
+		Fl_Color sizers_color(FrameBordersState s) { return item_color(s, false); }
 		int updown(void)      { return updown_w; }
 		int updown2x(void)    { return updown2x_w; }
 		int leftright(void)   { return leftright_h; }
