@@ -106,6 +106,7 @@
 struct WindowGeometry 
 {
 	int x, y, w, h;
+	int offset_x, offset_y;
 	int min_w, min_h;
 	int max_w, max_h;
 	int inc_w, inc_h;
@@ -133,6 +134,12 @@ struct FrameData
 	bool     have_transient;
 
 //	Icon* icon;
+};
+
+struct Overlay
+{
+	int x, y, w, h;
+	GC inverted_gc;
 };
 
 enum FrameBordersState
@@ -225,6 +232,8 @@ class Frame : public Fl_Window
 
 		CoordinatesView* cview;
 
+		Overlay overlay;
+
 		// private loaders
 		void feed_data(XWindowAttributes* attrs);
 		void load_wm_hints(void);
@@ -233,7 +242,8 @@ class Frame : public Fl_Window
 
 		// preparers
 		void setup_borders(void);
-		void init_sizes(void);
+		// void init_sizes(void);
+		void init_overlay(int border_size);
 		void reparent_window(void);
 		void place_sizers(int x, int y, int w, int h);
 		long resize_type(int x, int y);
@@ -247,6 +257,7 @@ class Frame : public Fl_Window
 		void hide_sizers(void);
 
 		void draw_overlay(int x, int y, int w, int h);
+		void clear_overlay(void);
 
 		// this is here so FrameEventHandler can access Fl_Window
 		int handle_parent(int event);
@@ -297,8 +308,8 @@ class Frame : public Fl_Window
 		void raise(void);
 		void lower(void);
 		void borders_color(FrameBordersState s);
-		void change_window_type(short type);
 		void set_cursor(CursorType t);
+		// void change_window_type(short t);
 		void map(void);
 		void unmap(void);
 

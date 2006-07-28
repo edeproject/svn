@@ -167,9 +167,12 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 
 	fdata->plain.x  = fdata->plain.y = 0;
 	fdata->plain.w  = fdata->plain.h = 0;
+	fdata->plain.offset_x = fdata->plain.offset_y = 0;
 	fdata->plain.inc_w = fdata->plain.inc_h = 0;
 	fdata->plain.max_w = fdata->plain.max_h = 0;
 	fdata->plain.min_w = fdata->plain.min_h = 0;
+
+	overlay.x = overlay.y = overlay.w = overlay.h = 0;
 
 	borders.border_color(fl_darker(FL_GRAY), FOCUSED);
 	borders.border_color(FL_WHITE, UNFOCUSED);
@@ -186,6 +189,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	// we does not use window specific borders
 	fdata->plain.border = 0;
 
+	// overlay
 	// small check if we are in X session
 	if(attrs)
 		set_option(FrameOptIgnoreUnmap);
@@ -207,6 +211,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 
 	init_sizes();
 	setup_borders();
+	init_overlay(borders.updown());
 
 	XMoveResizeWindow(fl_display, fdata->window, fdata->plain.x, fdata->plain.y, 
 			fdata->plain.w, fdata->plain.h);
@@ -237,7 +242,18 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 
 		if(fdata->label)
 			titlebar->label(fdata->label);
+
+		/* Offset for fdata->window in our frame.
+		 * Used in reparenting.
+		 */
+		fdata->plain.offset_x = borders.leftright();
+		fdata->plain.offset_y = borders.updown() + titlebar->h();
 	}		
+	else
+	{
+		fdata->plain.offset_x = borders.leftright();
+		fdata->plain.offset_y = borders.updown();
+	}
 
 	end();
 
@@ -344,6 +360,8 @@ Frame::~Frame()
 	ELOG("Frame::~Frame");
 	if(fdata->label_alocated)
 		free(fdata->label);
+
+	XFreeGC(fl_display, overlay.inverted_gc);
 
 	if(show_coordinates)
 		delete cview;
@@ -589,7 +607,7 @@ void Frame::setup_borders(void)
 	// always 0
 	XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border);
 }
-
+#if 0
 /* Setup window sizes to minimal usable (MIN_W, MIN_H)
  * but only for normal windows. Transient should set
  * their size internally.
@@ -603,6 +621,19 @@ void Frame::init_sizes(void)
 		fdata->plain.w = MIN_W;
 	if(fdata->plain.h < MIN_H)
 		fdata->plain.h = MIN_H;
+}
+#endif 
+void Frame::init_overlay(int border_size)
+{
+	XGCValues v;
+	v.subwindow_mode     = IncludeInferiors;
+	v.foreground         = 0xffffffff;
+	v.function           = GXxor;
+	v.line_width         = border_size;
+	v.graphics_exposures = False;
+	int mask = GCForeground | GCSubwindowMode | GCFunction | GCLineWidth | GCGraphicsExposures;
+	overlay.inverted_gc = XCreateGC(fl_display, 
+			WindowManager::instance()->root_window(), mask, &v);
 }
 
 void Frame::reparent_window(void)
@@ -640,6 +671,8 @@ void Frame::reparent_window(void)
 	XChangeWindowAttributes(fl_display, fl_xid(this), 
 			CWBitGravity | CWBorderPixel | CWColormap | CWEventMask | CWBackPixel | CWOverrideRedirect, &sattr);
 
+	XReparentWindow(fl_display, fdata->window, fl_xid(this), fdata->plain.offset_x, fdata->plain.offset_y);
+/*
 	if(!show_titlebar)
 	{
 		XReparentWindow(fl_display, fdata->window, fl_xid(this), 
@@ -650,6 +683,7 @@ void Frame::reparent_window(void)
 		XReparentWindow(fl_display, fdata->window, fl_xid(this), 
 			borders.leftright(), borders.updown() + titlebar->h());
 	}
+*/
 
 }
 
@@ -783,11 +817,8 @@ void Frame::move_window(int x_pos, int y_pos)
 {
 	TRACE_FUNCTION("void Frame::move_window(int x_pos, int y_pos)");
 
-	/*
-	draw_overlay(x_pos, y_pos, w(), h());
-	draw_overlay(x_pos, y_pos, w(), h());
-	return;
-	*/
+	//draw_overlay(x_pos, y_pos, w(), h());
+	//return;
 
 	// very dummy snapping with screen edges
 	// TODO: what about other window(s) edges ?
@@ -819,6 +850,7 @@ void Frame::move_window(int x_pos, int y_pos)
 void Frame::draw_overlay(int x, int y, int w, int h)
 {
 	TRACE_FUNCTION("void Frame::draw_overlay(int x, int y, int w, int h)");
+/*
 	XGCValues v;
 	v.subwindow_mode = IncludeInferiors;
 	v.foreground = 0xffffffff;
@@ -827,13 +859,37 @@ void Frame::draw_overlay(int x, int y, int w, int h)
 	v.graphics_exposures = False;
 	int mask = GCForeground|GCSubwindowMode|GCFunction|GCLineWidth|GCGraphicsExposures;
 	GC invertGc = XCreateGC(fl_display, RootWindow(fl_display, fl_screen), mask, &v);
+*/
 
 	if (w < 0) {x += w; w = -w;}
 	else if (!w) w = 1;
 	if (h < 0) {y += h; h = -h;}
 	else if (!h) h = 1;
+	Window root = WindowManager::instance()->root_window();
 
-	XDrawRectangle(fl_display, RootWindow(fl_display, fl_screen), invertGc, x, y, w, h); 
+	if(overlay.w > 0)
+	{
+		if(x == overlay.x && y == overlay.y && w == overlay.w && h == overlay.h)
+			return;
+		XDrawRectangle(fl_display, root, overlay.inverted_gc, overlay.x, overlay.y, overlay.w, overlay.h); 
+	}
+	
+	overlay.x = x;
+	overlay.y = y;
+	overlay.w = w;
+	overlay.h = h;
+
+	XDrawRectangle(fl_display, root, overlay.inverted_gc, overlay.x, overlay.y, overlay.w, overlay.h); 
+}
+
+void Frame::clear_overlay(void)
+{
+	if(overlay.w > 0)
+	{
+		Window root = WindowManager::instance()->root_window();
+		XDrawRectangle(fl_display, root, overlay.inverted_gc, overlay.x, overlay.y, overlay.w, overlay.h); 
+		overlay.w = 0;
+	}
 }
 
 void Frame::place_sizers(int x, int y, int w, int h)
@@ -1245,6 +1301,9 @@ void Frame::shade(void)
 {
 	TRACE_FUNCTION("void Frame::shade(void)");
 
+	if(!show_titlebar)
+		return;
+
 	if(state(FrameStateShaded))
 		return;
 
@@ -1253,7 +1312,12 @@ void Frame::shade(void)
 	restore_w = w();
 	restore_h = h();
 
-	XResizeWindow(fl_display, fl_xid(this), w(), titlebar->h() + borders.updown());
+	// place it to outside frame
+	int px = -(fdata->plain.offset_x + fdata->plain.w);
+	int py = -(fdata->plain.offset_y + fdata->plain.h);
+
+	XMoveWindow(fl_display, fdata->window, px, py);
+	XResizeWindow(fl_display, fl_xid(this), w(), titlebar->h() + borders.updown2x());
 
 	set_state(FrameStateShaded);
 	WindowManager::instance()->hints()->netwm_set_window_state(fdata);
@@ -1268,12 +1332,17 @@ void Frame::unshade(void)
 {
 	TRACE_FUNCTION("void Frame::unshade(void)");
 
+	if(!show_titlebar)
+		return;
+
 	if(!state(FrameStateShaded))
 	{
 		ELOG("Unshade not shaded window ???");
 		return;
 	}
 
+	XMoveResizeWindow(fl_display, fdata->window, fdata->plain.offset_x, fdata->plain.offset_y, 
+			fdata->plain.w, fdata->plain.h);
 	XResizeWindow(fl_display, fl_xid(this), w(), restore_h);
 
 	clear_state(FrameStateShaded);
@@ -1324,6 +1393,7 @@ void Frame::set_cursor(CursorType t)
 	WindowManager::instance()->set_cursor(this, t);
 }
 
+#if 0
 /* This function will change window type, to some of
  * netwm types. Note, this function should _not_ be used
  * anywhere except from toolbar menu, where window can
@@ -1406,7 +1476,7 @@ void Frame::change_window_type(short type)
 
 	WindowManager::instance()->hints()->netwm_set_window_type(fdata);
 }
-
+#endif 
 /* After XGrabButton, WindowManager will FL_PUSH events
  * redirect here. We must make sure after processing them
  * redirect events further to fdata->window.
