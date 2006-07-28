@@ -440,27 +440,32 @@ void Hints::mwm_load_hints(FrameData* fd)
 	Atom real_type;
 	int  real_format;
 	unsigned long items_read, items_left;
-	MwmHints* mwm = new MwmHints;
+	MwmHints* mwm;
 
 	int status = XGetWindowProperty(fl_display, fd->window, _XA_MOTIF_HINTS,
 			0L, 20L, false, _XA_MOTIF_HINTS, &real_type, &real_format, &items_read, &items_left,
 			(unsigned char**)&mwm);
 
-	if(status == Success && items_read >= PropMotifHintsElements)
+	if(status == Success && items_read /*>= PropMotifHintsElements*/)
 	{
 		ELOG("MWM: got hints !!!");
-		if((mwm->flags & MwmHintsDecorations) && !(mwm->decorations & MwmDecorAll))
+		if((mwm->flags & MwmHintsDecorations))
 		{
-			if(mwm->flags & MwmDecorTitle)
-				ELOG("MwmHintsDecorTitle");
-			if(mwm->flags & MwmDecorBorder)
-				ELOG("MwmHintsDecorBorder");
-			if(mwm->flags & MwmDecorHandle)
-				ELOG("MwmHintsDecorHandle");
+			if(mwm->decorations & MwmDecorAll)
+				ELOG("MwmDecorAll");
+			else
+			{
+				if(mwm->decorations & MwmDecorTitle)
+					ELOG("MwmHintsDecorTitle");
+				if(mwm->decorations & MwmDecorBorder)
+					ELOG("MwmHintsDecorBorder");
+				if(mwm->decorations & MwmDecorHandle)
+					ELOG("MwmHintsDecorHandle");
+			}
 		}
 		else
-			ELOG("Mwm says: no decor at all");
+			ELOG("mwm: no decor at all");
 	}
 
-	delete mwm;
+	XFree(mwm);
 }
