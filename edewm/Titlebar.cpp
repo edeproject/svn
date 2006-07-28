@@ -15,8 +15,12 @@
 #include "debug.h"
 #include <efltk/fl_draw.h>
 #include <efltk/Fl.h>
+#include <efltk/Fl_Image.h>
 #include <efltk/fl_ask.h>
 #include <assert.h>
+
+#include "app.xpm"
+Fl_Image app_img((const char**)app_xpm);
 
 #define MAX_OF 0.6f
 #define MIN_OF 0.5f
@@ -154,6 +158,7 @@ Titlebar::Titlebar(Frame* f, int x, int y, int w, int h, const char* l) :
 	maxb(TITLEBAR_MAX_UP),
 	closeb(TITLEBAR_CLOSE_UP),
 	label_box(new Fl_Box(0, 0, 0, 0)),
+	icon_box(new Fl_Box(0, 0, 0, 0)),
 	focus_color(FL_GRAY),
 	unfocus_color(FL_WHITE)
 {
@@ -170,11 +175,10 @@ Titlebar::Titlebar(Frame* f, int x, int y, int w, int h, const char* l) :
 	//label_box->color(fl_darker(FL_WHITE));
 	label_box->color(FL_GRAY);
 
+	icon_box->image(app_img);
+
 	//closeb.place(PLACE_LEFT);
-
 	end();
-
-
 
 	closeb.callback(close_cb, curr_frame);
 	minb.callback(minimize_cb, curr_frame);
@@ -228,15 +232,24 @@ void Titlebar::layout(void)
 	int lx = X + offset;        // left x
 	int rx = W - sz - offset;   // right x
 
+
 	PLACE_BUTTON(closeb, lx, rx, mid, offset, sz)
 	PLACE_BUTTON(maxb, lx, rx, mid, offset, sz)
 	PLACE_BUTTON(minb, lx, rx, mid, offset, sz)
 
 	//rx -= sz + offset;
 	//lx += sz + offset;
+
+	if(icon_box->visible())
+	{
+		icon_box->resize(lx, mid, sz, sz);
+		lx += sz + offset;
+	}
+
 	lx += offset;
 	rx -= lx;
 	label_box->resize(lx, mid, rx, sz);
+
 
 	fl_font(label_font(), label_size());
 	// take a label from titlebar object
@@ -250,7 +263,6 @@ void Titlebar::focus(void)
 {
 	// TODO: add colors for label_box, buttons
 	color(focus_color);
-	/*Fl::redraw();*/
 	redraw();
 }
 
@@ -297,7 +309,7 @@ int Titlebar::handle(int event)
 
 			if(Fl::event_state(FL_BUTTON2))
 			{
-				curr_frame->change_window_type(FrameTypeSplash);
+				// curr_frame->change_window_type(FrameTypeSplash);
 				return 1;
 			}
 
