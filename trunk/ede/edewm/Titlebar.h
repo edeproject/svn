@@ -49,9 +49,11 @@ class Titlebar : public Fl_Group
 		TitlebarButton maxb;
 		TitlebarButton closeb;
 		Fl_Box* label_box;
+		Fl_Box* icon_box;
 
 		Fl_Color focus_color;
 		Fl_Color unfocus_color;
+
 
 	public:
 		Titlebar(Frame* f, int x, int y, int w, int h, const char* l);
