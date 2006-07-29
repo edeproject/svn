@@ -16,7 +16,7 @@
 #include <efltk/fl_draw.h>
 #include <efltk/Fl.h>
 #include <efltk/Fl_Image.h>
-#include <efltk/fl_ask.h>
+#include <efltk/Fl_Locale.h>
 #include <assert.h>
 
 #include "app.xpm"
@@ -74,40 +74,39 @@ void draw_min(Fl_Color col)
 	fl_fill();
 }
 
-void close_cb(Fl_Widget*, void* f)
+void close_cb(Fl_Widget*, void* t)
 {
-	Frame* our_frame = (Frame*)f;
-	assert(our_frame != 0);
-	our_frame->close_kill();
+	Titlebar* tb = (Titlebar*)t;
+	assert(tb != NULL);
+	tb->on_close();
 }
 
-void maximize_cb(Fl_Button* b, void* f)
+void maximize_cb(Fl_Widget* b, void* t)
 {
-	Frame* our_frame = (Frame*)f;
-	assert(our_frame != 0);
-	assert(b != 0);
-
-	if(our_frame->state(FrameStateMaximized))
-	{
-		our_frame->restore();
-		b->label("@mx");
-	}
-	else
-	{
-		our_frame->maximize();
-		b->label("@mz");
-	}
+	Titlebar* tb = (Titlebar*)t;
+	assert(tb != NULL);
+	tb->on_maximize();
 }
 
-void minimize_cb(Fl_Widget*, void* f)
+void shade_cb(Fl_Widget*, void* t)
 {
-	Frame* our_frame = (Frame*)f;
-	assert(our_frame != 0);
+	Titlebar* tb = (Titlebar*)t;
+	assert(tb != NULL);
+	tb->on_shade();
+}
 
-	if(our_frame->state(FrameStateShaded))
-		our_frame->unshade();
-	else
-		our_frame->shade();
+void minimize_cb(Fl_Widget*, void* t)
+{
+	Titlebar* tb = (Titlebar*)t;
+	assert(tb != NULL);
+	tb->on_minimize();
+}
+
+void lower_cb(Fl_Widget*, void* t)
+{
+	Titlebar* tb = (Titlebar*)t;
+	assert(tb != NULL);
+	tb->on_lower();
 }
 
 TitlebarButton::TitlebarButton(int type) :
@@ -137,8 +136,9 @@ TitlebarButton::~TitlebarButton()
 {
 }
 
-// Place buttons on titlebar. The can be either
-// PLACE_RIGHT (standard in many wm-s) or PLACE_RIGHT
+/* Place buttons on titlebar. The can be either
+ * PLACE_RIGHT (standard in many wm-s) or PLACE_RIGHT
+ */
 void TitlebarButton::place(int p)
 {
 	if(p != PLACE_LEFT && p != PLACE_RIGHT)
@@ -162,7 +162,7 @@ Titlebar::Titlebar(Frame* f, int x, int y, int w, int h, const char* l) :
 	focus_color(FL_GRAY),
 	unfocus_color(FL_WHITE)
 {
-	assert(curr_frame != 0);
+	assert(curr_frame != NULL);
 
 	box(FL_FLAT_BOX);
 
@@ -172,17 +172,30 @@ Titlebar::Titlebar(Frame* f, int x, int y, int w, int h, const char* l) :
 	fl_add_symbol("ii", draw_min, 1);
 	label_box->box(FL_FLAT_BOX);
 	label_box->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-	//label_box->color(fl_darker(FL_WHITE));
 	label_box->color(FL_GRAY);
 
 	icon_box->image(app_img);
 
+	title_menu = new Fl_Menu_();
+
+	/* XXX: any way this can be better ?
+	 * When we change label of existing menu item, menu width will not be
+	 * recalculated honoring size of that item. So we must initially fill
+	 * them with blanks, which will keep longer labels fully visible.
+	 */
+	menu_max   = title_menu->add(_("Maximize        "), 0, maximize_cb, this);
+	menu_shade = title_menu->add(_("Shade        "), 0, shade_cb, this);
+	menu_lower = title_menu->add(_("Lower        "), 0, lower_cb, this);
+	menu_min   = title_menu->add(_("Minimize        "), 0, minimize_cb, this, FL_MENU_DIVIDER);
+	menu_close = title_menu->add(_("Close        "), 0, close_cb, this);
+
 	//closeb.place(PLACE_LEFT);
 	end();
 
-	closeb.callback(close_cb, curr_frame);
-	minb.callback(minimize_cb, curr_frame);
-	maxb.callback((Fl_Callback*)maximize_cb, curr_frame);
+	closeb.callback(close_cb, this);
+	//minb.callback(minimize_cb, this);
+	minb.callback(shade_cb, this);
+	maxb.callback(maximize_cb, this);
 	
 	color(FL_GRAY);
 	//align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -197,7 +210,6 @@ Titlebar::~Titlebar()
 {
 }
 
-// shorthand
 #define PLACE_BUTTON(btn, leftx, rightx, mid, offset, sz) \
 	if(btn.place() == PLACE_LEFT) \
 	{\
@@ -232,7 +244,6 @@ void Titlebar::layout(void)
 	int lx = X + offset;        // left x
 	int rx = W - sz - offset;   // right x
 
-
 	PLACE_BUTTON(closeb, lx, rx, mid, offset, sz)
 	PLACE_BUTTON(maxb, lx, rx, mid, offset, sz)
 	PLACE_BUTTON(minb, lx, rx, mid, offset, sz)
@@ -249,7 +260,6 @@ void Titlebar::layout(void)
 	lx += offset;
 	rx -= lx;
 	label_box->resize(lx, mid, rx, sz);
-
 
 	fl_font(label_font(), label_size());
 	// take a label from titlebar object
@@ -271,6 +281,57 @@ void Titlebar::unfocus(void)
 	// TODO: add colors for label_box, buttons
 	color(unfocus_color);
 	redraw();
+}
+
+void Titlebar::on_close(void)
+{
+	assert(curr_frame != NULL);
+	curr_frame->close_kill();
+}
+
+void Titlebar::on_maximize(void)
+{
+	assert(curr_frame != NULL);
+
+	if(curr_frame->state(FrameStateMaximized))
+	{
+		curr_frame->restore();
+		maxb.label("@mx");
+		menu_max->label(_("Maximize"));
+	}
+	else
+	{
+		curr_frame->maximize();
+		maxb.label("@mz");
+		menu_max->label(_("UnMaximize"));
+	}
+}
+
+void Titlebar::on_minimize(void)
+{
+	assert(curr_frame != NULL);
+	// TODO: not implemented
+}
+
+void Titlebar::on_shade(void)
+{
+	assert(curr_frame != NULL);
+
+	if(curr_frame->state(FrameStateShaded))
+	{
+		curr_frame->unshade();
+		menu_shade->label(_("Shade"));
+	}
+	else
+	{
+		curr_frame->shade();
+		menu_shade->label(_("UnShade"));
+	}
+}
+
+void Titlebar::on_lower(void)
+{
+	curr_frame->lower();
 }
 
 int Titlebar::handle(int event)
@@ -303,13 +364,8 @@ int Titlebar::handle(int event)
 
 			if(Fl::event_state(FL_BUTTON3))
 			{
-				curr_frame->lower();
-				return 1;
-			}
-
-			if(Fl::event_state(FL_BUTTON2))
-			{
-				// curr_frame->change_window_type(FrameTypeSplash);
+				title_menu->popup(Fl::event_x_root(), Fl::event_y_root());
+				title_menu->redraw();
 				return 1;
 			}
 
@@ -371,4 +427,3 @@ int Titlebar::handle(int event)
 	}
 	return 0;
 }
-	

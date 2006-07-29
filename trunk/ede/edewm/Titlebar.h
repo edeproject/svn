@@ -17,6 +17,7 @@
 #include <efltk/Fl_Window.h>
 #include <efltk/Fl_Box.h>
 #include <efltk/Fl_Group.h>
+#include <efltk/Fl_Menu_.h>
 
 // TODO: remove this after themes are added
 #define TITLEBAR_MAX_UP 1
@@ -25,8 +26,6 @@
 
 #define PLACE_RIGHT 1
 #define PLACE_LEFT  2
-
-class Frame;
 
 class TitlebarButton : public Fl_Button
 {
@@ -40,6 +39,8 @@ class TitlebarButton : public Fl_Button
 		int place(void)    { return pos; }
 };
 
+class Frame;
+
 class Titlebar : public Fl_Group
 {
 	private:
@@ -50,10 +51,15 @@ class Titlebar : public Fl_Group
 		TitlebarButton closeb;
 		Fl_Box* label_box;
 		Fl_Box* icon_box;
-
 		Fl_Color focus_color;
 		Fl_Color unfocus_color;
 
+		Fl_Menu_* title_menu;
+		Fl_Widget* menu_max;
+		Fl_Widget* menu_min;
+		Fl_Widget* menu_close;
+		Fl_Widget* menu_shade;
+		Fl_Widget* menu_lower;
 
 	public:
 		Titlebar(Frame* f, int x, int y, int w, int h, const char* l);
@@ -62,6 +68,12 @@ class Titlebar : public Fl_Group
 		int handle(int event);
 		void focus(void);
 		void unfocus(void);
+
+		void on_close(void);
+		void on_maximize(void);
+		void on_minimize(void);
+		void on_shade(void);
+		void on_lower(void);
 };
 
 #endif
