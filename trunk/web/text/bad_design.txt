@@ -1,0 +1,17 @@
+{h2: "bad_design" is...}
+
+...stupid name for ede team, as you could see from tooltip. Nothing smart, really.
+Anyway, the reason for existance of this page is to say what is behind pages and why.
+
+So, the page is done in pure css + xhtml combination, as many web developers around the net,
+promote it as "the next future web". The reasons for that will be explained on more web development
+oriented pages as {link: simplebits | http://www.simplebits.com} or excelent 
+{link: dzinelabs| http://www.dzinelabs.com}.
+
+The page is done in {i: vim - python - css - xhtml - [kill-my-ordinary-life]} combination; just to
+prove that proprietary software can be replaced. Also to prove that php (perl) is not the only language
+that can be utilized with css.
+
+That is it for now.
+
+<dev class="revision">$Revision 1.1.2$</dev>

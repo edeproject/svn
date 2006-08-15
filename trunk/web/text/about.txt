@@ -1,0 +1,41 @@
+{h2: What is Equinox Desktop Environment ?}
+Equinox Desktop Environment (shortly EDE) is small desktop environment, built to be simple
+and fast. It is based on modified FLTK library (called extended FLTK or just eFLTK). 
+
+Comparing to other desktop environments, EDE is much faster and smaller in memory space 
+(EDE's window manager use less memory than xterm). 
+
+The word {i:"equinox"} comes from the Latin for {i:"equal night"}.
+The equinoxes in March and September are the two
+occasions each year when the day and the night are of equal duration. For measuring the length of a day, sunrise is
+the moment when the sun is half-above the horizon and sunset is the moment when the sun is half-under the horizon.
+Using this definition, the length of the day (and the night) is precisely 12 hours at an equinox.
+{link:more...|http://en.wikipedia.org/wiki/Equinox}
+
+
+
+{h2: Features and support:}
+xxxxxxxxxxx
+	* desktop with icons and wallpaper;
+	* Xft font anti-aliasing;
+	* taskbar with configurable menu, cpu status, easy keyboard switching;
+	* theming;
+	* localization;
+xxxxxxxxxxx
+
+{i:Graphical front-end for: }
+xxxxxxxxxxx
+	* xscreensaver configuration;
+	* software installation (.rpm, .deb, .tgz);
+	* time and time-zone configuration;
+	* fast file and directory search utility;
+xxxxxxxxxxx
+
+
+{h2: Requirements:}
+xxxxxxxxxxx
+	* usual build tools (gcc, automake, autoconf, etc... - you should not worry about this, this comes with your distribution);
+	* <a href="http://sourceforge.net/projects/ede">eFLTK</a>, a modified FLTK version;
+	* small amount of your nerves;
+	* coffee and cigars for enjoying :);
+xxxxxxxxxxx

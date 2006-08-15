@@ -1,0 +1,48 @@
+{title: OSX Panther-like skin}
+
+Ed B. filled themes section with new {i:EDE-Linther} theme. 
+{i: It's like OSX Panther, originally a Fluxbox theme} like he said. Excelent
+job and refreshing look is our comment.
+
+
+
+{title: A new distro using EDE}
+
+STX (pronounced: sticks) is a LiveCD distro based on Debian/Mepis that has 
+chosen Equinox Desktop Environment as its default and only graphical 
+environment. This distro in our opinion has a very solid implementation of 
+EDE and it's a good way to try out EDE without installing it on your 
+computer.
+
+Please remember that this is a very early version and it's still under 
+development.
+
+Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
+
+
+
+{title: New theme}
+
+Thanks to STIBS, we have new original theme called {i: stx}. This is default
+theme for upcoming new version of STX linux ditribution. You can find it on 
+{link: themes|http://ede.sourceforge.net/page/themes} for download.
+
+
+
+{title: 1.0.4 is released}
+
+New version is ready for download. The most important feature is full FreeBSD
+support. Among other changes are many fixes for reported bugs and inclusion of 
+key configuration tool (ekeyconf). {br:.}
+
+Also it is worth to mention that Vedran did a grunt work to bring this
+release,
+so all appreciations should go to him. Here is his note: {br:.}{br:.}
+<i>"I would like to thank Google Summer of Code for funding my work on 
+(among else) EDE 1.0.4. Thanks guys! You rock :) "</i> {br:.}
+{i:Vedran}
+
+Currently only source archive is uploaded, but soon should be done the same for
+distribution specific packages. Changelog is placed on
+{link: this|https://sourceforge.net/project/shownotes.php?release_id=353280}
+link.

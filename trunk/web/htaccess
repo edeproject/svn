@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# rule
+RewriteRule ^(.*)page/(.*)$ /cgi-bin/page.py?$2
+RewriteRule ^(.*)page /cgi-bin/page.py
+
+RewriteRule ^(.*)sanel/(.*)$ /cgi-bin/pyblosxom.cgi/$2
+RewriteRule ^(.*)sanel(.*)$ /cgi-bin/pyblosxom.cgi?$2
+
+#--------------
+#RewriteRule ^(.*)page/(.*)$ $1cgi-bin/page.py?$2
