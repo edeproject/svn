@@ -1,7 +1,6 @@
 Something to read...
 
 First: 
- - cvs checkout _must_ be done as anonymous (in web space only)
  - all updates should be handled via updatepage.sh
 
 Second:
