@@ -9,7 +9,7 @@ xxxxxxxxxxxxxxxxx
 {lname:Installation how-to|installation}
 
 There is three ways to build Equinox Desktop Environment. First is to download binary packages for
-your distribution, second is to download source tarballs and third is to download it from CVS and
+your distribution, second is to download source tarballs and third is to download it from repository and
 compile it. For first option, please consult your's distribution installation system and for other
 two, compilation is the same.
 
