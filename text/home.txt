@@ -32,23 +32,3 @@ Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
 Thanks to STIBS, we have new original theme called {i: stx}. This is default
 theme for upcoming new version of STX linux distribution. You can find it on 
 {link: themes|http://ede.sourceforge.net/page/themes} for download.
-
-
-
-{title: 1.0.4 is released}
-
-New version is ready for download. The most important feature is full FreeBSD
-support. Among other changes are many fixes for reported bugs and inclusion of 
-key configuration tool (ekeyconf). {br:.}
-
-Also it is worth to mention that Vedran did a grunt work to bring this
-release,
-so all appreciations should go to him. Here is his note: {br:.}{br:.}
-<i>"I would like to thank Google Summer of Code for funding my work on 
-(among else) EDE 1.0.4. Thanks guys! You rock :) "</i> {br:.}
-{i:Vedran}
-
-Currently only source archive is uploaded, but soon should be done the same for
-distribution specific packages. Changelog is placed on
-{link: this|https://sourceforge.net/project/shownotes.php?release_id=353280}
-link.
