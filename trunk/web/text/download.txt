@@ -2,12 +2,12 @@
 
 Latest releases are:
 
-{b: EDE 1.0.4} {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
+EDE 1.0.4 {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
 {br:.}
-{b: eFLTK 2.0.4} {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}
+eFLTK 2.0.4 {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}
 
-----------
-
+{br:.}
+{br:.}
 {h2: Repository source}
 
 From August, 15 2006, we started to use {link:Subversion|http://subversion.tigris.org/} (or svn) as 
