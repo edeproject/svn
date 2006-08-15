@@ -2,7 +2,7 @@
 
 Time to refresh news section :). We switched to 
 {link:Subversion|http://subversion.tigris.org} as repository management tool
-giving us what we needed at cvs and most important, less nagging of sourceforge staff for
+giving us what we missed in cvs and most important, less nagging of sourceforge staff for
 repository fixes and cleanups. All cvs history is preserved so if you
 need something done before, feel free to look at it. Details about usage,
 browsing, etc. can be found at {link:download | http://ede.sourceforge.net/page/download} page.
