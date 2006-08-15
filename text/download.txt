@@ -1,12 +1,37 @@
-Source and binary files can be downloaded from SourceForge's project page.
+{h2: Official releases}
+
+Latest releases are:
+
+{b: EDE 1.0.4} {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
 {br:.}
+{b: eFLTK 2.0.4} {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}
 
-Direct links:
+----------
 
+{h2: Repository source}
 
-{b: EDE}{br:.}
-{link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
+From August, 15 2006, we started to use {link:Subversion|http://subversion.tigris.org/} (or svn) as 
+main repository tool. All previous code is still on {link:cvs|http://ede.cvs.sourceforge.net/ede} 
+and will be eventually removed. Please, do not use it any more.
 
-{br:.}
-{b: eFLTK} {br:.}
-{link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}
+To download latest source code from repository, you will need 
+{link:subversion|http://subversion.tigris.org/} tool. Documentation about usage you can be found on
+their page.
+
+Here is how to checkout each component:
+
+ede:
+[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/ede]]]
+
+efltk:
+[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/efltk]]]
+
+themes:
+[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/themes]]]
+
+or {link: directly browse | http://svn.sourceforge.net/viewvc/ede/} it to see what is there.
+
+If you find problems about repository items downloading, fill out 
+{link:bug report|http://sourceforge.net/tracker/?group_id=49891&amp;atid=457858}. Please,
+{i: do not} report issues related to subversion (like possible bugs or wrong usage).
+They should be directed to subversion {link:developers|http://subversion.tigris.org/}.
