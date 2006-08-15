@@ -1,0 +1,7 @@
+Here is development log for each developer, where you can find all kind of stuff, ede related or not. {br:.}
+Watch these files, since in it you will often find future ede's directions and decisions.
+
+---------------
+
+Sanel's {link: log | http://ede.sourceforge.net/sanel} {br:.}
+Vedran's {link: log| http://blog.linux.org.ba/index.php?blogId=2}

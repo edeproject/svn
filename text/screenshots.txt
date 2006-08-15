@@ -1,0 +1,28 @@
+<div class="gallery">
+{b: New 1.0.2 screenshots with xft support (thumbnails):}
+
+{imglink: ../screens/th_102shot_xft.png | ../screens/102shot_xft.png}	
+{imglink: ../screens/th_102shot_xft1.png | ../screens/102shot_xft1.png}
+{imglink: ../screens/th_102shot_xft2.png | ../screens/102shot_xft2.png}
+{imglink: ../screens/th_102shot_xft3.png | ../screens/102shot_xft3.png}
+
+
+{b: 1.0.2 version shots without xft (thumbnails): }
+
+{imglink: ../screens/th_102shot.png | ../screens/102shot.png}	
+{imglink: ../screens/th_102shot1.png | ../screens/102shot1.png}
+
+
+{b: Shots from 1.0.1 version (thumbnails):}
+
+{imglink: ../screens/th_101shot.png | ../screens/101shot.png}	
+{imglink: ../screens/th_101shot1.png | ../screens/101shot1.png}
+{imglink: ../screens/th_101shot2.png | ../screens/101shot2.png}	
+{imglink: ../screens/th_101shot3.png | ../screens/101shot3.png}
+
+
+{b: Here are some screenshots from old version 1.0 (thumbnails):}
+
+{imglink: ../screens/th_10shot.png | ../screens/10shot.png}	
+{imglink: ../screens/th_10shot1.png | ../screens/10shot1.png}
+</div>

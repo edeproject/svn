@@ -1,0 +1,43 @@
+{title: Themes update}
+
+EddieX refreshed themes section with five excelent new themes: {i:EdeAirlock},
+{i:EdeDetroit}, {i:EdeOpus3}, {i:EdeOpusBlue} and {i:EdeSmoke}. Make sure to
+check them.
+
+
+
+{title: Themes}
+
+Themes section is added. This is the latest theme list pulled from cvs module {i:themes}.
+If you have proposals or want to make new entry, mail us and we will happily include it.
+
+
+
+{title:New page}
+
+Well as you can see new page is uploaded. After messing with css compatibility in various browsers (almost two weeks!)
+and testing xhtml 1.0 support, here is the final work. If you have reasonably browser it should look fine. For those
+{i: un-reasonably} pieces of code, nothing can be done. Next in TODO lists is to check and update content. 
+
+If you see something that should not be seen or something broken, please mail us or leave message on forum.
+
+
+
+
+{title:Package fix}
+
+EDE source package was uploaded with little bug in configure script - it couldn't recognize efltk 2.0.5.
+Thanks to Bowman for notice, this is fixed and source package is replaced.
+
+
+
+
+{title:Release 1.0.3}
+
+Today, Friday, April 29, 2005, is nice and sunny day; a perfect day for release. This is mostly bugfix version, and we are 
+hoping that you will encounter less crashes and odd behaviors. So, the summary is 1.0.3 version for EDE following 2.0.5
+version for efltk. Changelogs are located at {link: link|https://sourceforge.net/project/shownotes.php?release_id=324135}
+for EDE and at {link:link|https://sourceforge.net/project/shownotes.php?release_id=324136} for efltk. 
+
+Sources can be obtained from usual download section. Binary packages for distributions should be available during
+the next week.

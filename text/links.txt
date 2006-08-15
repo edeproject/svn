@@ -1,0 +1,8 @@
+
+xxxxxxxxxxxxx
+	* {link: EDE sourceforge project| http://sourceforge.net/projects/ede} - main project site;
+	* {link: FLTK| http://www.fltk.org} - EDE's toolkit;
+	* {link: FLTK.net| http://www.fltk.net} - fltk's alternative page;
+	* {link: EDE newsgroup| http://www.fltk.org/newsgroups.php?gfltk.equinox+Gfltk} - EDE's newsgroup on FLTK page;
+	* {link: GNU FSF| http://www.gnu.org} - needed information about GNU philosophy;
+xxxxxxxxxxxxx

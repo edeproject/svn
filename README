@@ -1,0 +1,19 @@
+Something to read...
+
+First: 
+ - cvs checkout _must_ be done as anonymous (in web space only)
+ - all updates should be handled via updatepage.sh
+
+Second:
+ - page.py - main script; should be placed in cgi-bin
+ - index.html - just redirect to cgi-bin/page.py; should be in root dir
+ - htaccess - rewrite rules for page; in root dir too
+
+Third:
+ - all stuff use relative positions, so if something is not working
+ check relativities in those directories
+ - themes archives and screenshots are not on cvs; i'm too lazy to update
+ them
+
+See, wasn't too complicated.
+Sanel

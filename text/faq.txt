@@ -1,0 +1,130 @@
+{h2: Frequently Asked Questions} 
+
+
+
+{b: EDE related}
+xxxxxxxxxxxxxxxxxxx
+	* {link: What is Equinox Desktop Environment| #ede1}
+	* {link: EDE looks like win9x| #ede2}
+	* {link: I would install it if it does not look like win9x| #ede3}
+	* {link: Why another desktop environment| #ede4}
+	* {link: I downloaded FLTK, but EDE won't compile| #ede5}
+	* {link: How do I add EDE to my GDM/KDM | #ede6}
+	* {link: I am getting make errors on BSD's | #ede7}
+xxxxxxxxxxxxxxxxxxx
+
+{b: efltk related}
+xxxxxxxxxxxxxxxxxxx
+	* {link: What is efltk| #efltk1}
+	* {link: What is difference between fltk and efltk| #efltk2}
+	* {link: Is there any documentation for it| #efltk3}
+	* {link: Project is dead or alive| #efltk4}
+xxxxxxxxxxxxxxxxxxx
+---------------------------
+{br:.}
+
+
+{lname: What is Equinox Desktop Environment| ede1}
+
+See {link: about | /page/about} link.
+
+
+
+{lname: EDE looks like win9x | ede2}
+
+Many desktop environments look like Win9x. The reason for that is easier user transition from win platform
+to linux. As you probably noticed there is "two popular standards" in desktop environment look: Win9x
+and MacOS (do we count NeXT ??). Configurability is the only solution to change that.
+
+
+
+{lname: I would install it if it does not look like win9x | ede3}
+
+We often find posts like this or something like {i: no invention}. People who sais this have no idea how much 
+companies spend time and money on research for usable and good UI design. If users want invention, let as know
+for your ideas, and they will be implemented. {i:No invention} is only content-less phrase. Give us content.
+
+
+
+{lname: Why another desktop environment| ede4}
+
+Why not. The magic of OSG (open source community) is to provide variety of products in the same field. Users
+later can choose what they like, and starts to use it. Second reason is in simplicity and
+{i:create-less-dependencies} approach. As you could notice, today many modern desktop environments require tons of
+additional libraries to be installed, increasing disk space and chance to destroy brain nerves to get it work.
+So with our simple approach, at least second issue should be minimal.
+
+
+
+{lname: I downloaded FLTK, but EDE won't compile| ede5}
+
+You can't compile ede from FLTK. Use efltk since it is modified FLTK.
+
+
+
+{lname: How do I add EDE to my GDM/KDM | ede6}
+
+This differs among various Linux distributions. Here are instruction for some
+most popular distros:
+
+Debian (and derivations): In directory /usr/share/xsessions/ create a new file
+named ede.desktop with the following contents:
+
+ [Desktop Entry] {br: }
+ Encoding=UTF-8 {br: }
+ Name=EDE {br: }
+ Comment=This session logs you into Equinox Desktop Environment {br: } 
+ Exec=startede {br: }
+ TryExec=startede {br: }
+ Type=Application {br: }
+
+RedHat (and derivations): In directory /usr/share/apps/kdm/sessions/ (replace
+kdm with gdm if necessary) create the file named 99EDE.desktop with the same
+contents as above.
+
+Mandrake (and derivations): In /etc/X11/wmsession.d/ create a file named 99EDE
+with the following contents:
+
+ NAME=EDE {br: }
+ ICON= {br: }
+ DESC=Equinox Desktop Environment {br: }
+ EXEC=/usr/bin/startede {br: }
+ SCRIPT: {br: }
+ exec /usr/bin/startede {br: }
+
+Suse: Do the same as for RedHat. Then edit file named --- - you will notice  a
+list of window managers. Add "startede" to this list.
+
+
+
+{lname: I am getting make errors on BSD's | ede7}
+
+Make sure you have GNU make installed first. EDE can't be built with BSDs default make.
+
+
+
+{lname: What is efltk| efltk1}
+
+efltk is cvs fork of "never-released" fltk 2.0 version started by Mikko Lahteenmaki. This fork is very modified
+and extended fltk with xml, net etc. support. 
+
+
+
+{lname: What is difference between fltk and efltk| efltk2}
+
+In short, many. See above. 
+
+
+
+{lname: Is there any documentation for it| efltk3}
+
+Currently no. The only documentation that can be useful is from fltk 2.0.
+
+
+
+{lname: Project is dead or alive| efltk4}
+
+On some sites this topic can be found. None of this is true and efltk is much alive. We use it as base for EDE,
+but it's portability to other platforms, especially non unix-like can't be promised.
+
+{rev: $Revision: 1.3 $ ($Date: 2006/06/16 14:50:05 $)}

@@ -1,0 +1,12 @@
+Source and binary files can be downloaded from SourceForge's project page.
+{br:.}
+
+Direct links:
+
+
+{b: EDE}{br:.}
+{link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
+
+{br:.}
+{b: eFLTK} {br:.}
+{link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}

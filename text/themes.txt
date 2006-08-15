@@ -1,0 +1,224 @@
+
+<div class="themes">
+{h1: brux}
+	{imglink: ../themes/brux/brux-small.png | ../themes/brux/brux.png}
+	Author: karijes
+
+	{h2: About:}
+	brux is... (b)roken c(rux), "little" modified crux theme.
+
+	{h2:Download:}
+{link: brux.tar.bz2 | ../themes/brux/brux.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: classic}
+	{imglink: ../themes/classic/classic-small.png | ../themes/classic/classic.png}
+	Author: karijes
+
+	{h2: About:}
+	Small mod of Gnome's {i: Classic Theme}. Author of Gnome part is JOhn.
+
+	{h2:Download:}
+{link: classic.tar.bz2 | ../themes/classic/classic.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: classic2}
+	{imglink: ../themes/classic2/classic2-small.png | ../themes/classic2/classic2.png}
+	Author: karijes
+	
+	{h2: About:}
+	Little mod of classic theme. Original idea by patri0z and his NCL Classic.
+	Nothing spectacular.
+
+	{h2:Download:}
+{link: classic2.tar.bz2 | ../themes/classic2/classic2.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeAirLock}
+	{imglink: ../themes/EdeAirlock/EdeAirlock-small.png | ../themes/EdeAirlock/EdeAirlock.png}
+	Author: EddieX
+
+	{h2: About:}
+	p0ng made this theme available on pekwm by porting it from WindowsBlinds.
+	And i have ported it to EDE :)
+
+	{h2:Download:}
+{link: EdeAirlock.tar.bz2 | ../themes/EdeAirlock/EdeAirlock.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeBox}
+	{imglink: ../themes/EdeBox/EdeBox-small.png | ../themes/EdeBox/EdeBox.png}
+	Author: Johan Wistrom
+
+	{h2: About:}
+	---
+
+	{h2:Download:}
+{link: classic2.tar.bz2 | ../themes/classic2/classic2.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeDetroit}
+	{imglink: ../themes/EdeDetroit/EdeDetroit-small.png | ../themes/EdeDetroit/EdeDetroit.png}
+	Author: EddieX
+
+	{h2: About:}
+	Port of stonedbeaver's Detroit theme for pekwm.
+
+	{h2:Download:}
+{link: EdeDetroit.tar.bz2 | ../themes/EdeDetroit/EdeDetroit.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EDE-Linther}
+	{imglink: ../themes/EDE-Linther/EDE-Linther-small.png | ../themes/EDE-Linther/EDE-Linther.png}
+	Author: Ed B.
+
+	{h2: About:}
+	OSX Panther-like theme, originally from Fluxbox.
+
+	{h2:Download:}
+{link: EDE-Linther.tar.bz2 | ../themes/EDE-Linther/EDE-Linther.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: eflat}
+	{imglink: ../themes/eflat/eflat-small.png | ../themes/eflat/eflat.png}
+	Author: karijes
+
+	{h2: About:}
+	Flat world !?
+
+	{h2:Download:}
+{link: eflat.tar.bz2 | ../themes/eflat/eflat.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: eflat-dark}
+	{imglink: ../themes/eflat-dark/eflat-dark-small.png | ../themes/eflat-dark/eflat-dark.png}
+	Author: karijes
+
+	{h2: About:}
+	Flat world in black cloth.
+
+	{h2:Download:}
+{link: eflat-dark.tar.bz2 | ../themes/eflat-dark/eflat-dark.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeOpus3}
+	{imglink: ../themes/EdeOpus3/EdeOpus3-small.png | ../themes/EdeOpus3/EdeOpus3.png}
+	Author: EddieX
+
+	{h2: About:}
+	Port of the Opus3 pekwm style, original author: Ross 'b0se' Harvey.
+
+	{h2:Download:}
+{link: EdeOpus3.tar.bz2 | ../themes/EdeOpus3/EdeOpus3.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeOpusBlue}
+	{imglink: ../themes/EdeOpusBlue/EdeOpusBlue-small.png | ../themes/EdeOpusBlue/EdeOpusBlue.png}
+	Author: EddieX
+
+	{h2: About:}
+	Original author of Opus Blue: Ross 'b0se' Harvey.
+
+	{h2:Download:}
+{link: EdeOpusBlue.tar.bz2 | ../themes/EdeOpusBlue/EdeOpusBlue.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: EdeSmoke}
+	{imglink: ../themes/EdeSmoke/EdeSmoke-small.png | ../themes/EdeSmoke/EdeSmoke.png}
+	Author: EddieX
+
+	{h2: About:}
+	Port of the OpenBox style Smoke, made by GaMMa.
+
+	{h2:Download:}
+{link: EdeSmoke.tar.bz2 | ../themes/EdeSmoke/EdeSmoke.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: microGUI}
+	{imglink: ../themes/microGUI/microGUI-small.png | ../themes/microGUI/microGUI.png}
+	Author: ???
+
+	{h2: About:}
+	Micro, micro, micro GUI!
+
+	{h2:Download:}
+{link: microGUI.tar.bz2 | ../themes/microGUI/microGUI.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: oOX}
+	{imglink: ../themes/oOX/oOX-small.png | ../themes/oOX/oOX.png}
+	Author: Johan Wistrom
+
+	{h2: About:}
+	---
+
+	{h2:Download:}
+{link: oOX.tar.bz2 | ../themes/oOX/oOX.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: stx}
+	{imglink: ../themes/stx/stx-small.png | ../themes/stx/stx.png}
+	Author: STIBS
+
+	{h2: About:}
+	Theme for STX linux distribution.
+
+	{h2:Download:}
+{link: stx.tar.bz2 | ../themes/stx/stx.tar.bz2}
+</div>
+
+
+<div class="themes">
+{h1: WrongCrack}
+	{imglink: ../themes/WrongCrack/WrongCrack-small.png | ../themes/WrongCrack/WrongCrack.png}
+	Author: karijes
+
+	{h2: About:}
+	Based on my favorite IceCrack2 theme for icewm. Credits goes to IceCrack2 author(s).
+	Just to note that you must place titlebar height at 17px. More or less than that will create garbage.
+
+	{h2:Download:}
+{link: WrongCrack.tar.bz2 | ../themes/WrongCrack/WrongCrack.tar.bz2}
+</div>
+
+
+
+<div class="themes">
+{h1: xp}
+	{imglink: ../themes/xp/xp-small.png | ../themes/xp/xp.png}
+	Author: ???
+
+	{h2: About:}
+	To bring XP in EDE.
+
+	{h2:Download:}
+{link: xp.tar.bz2 | ../themes/xp/xp.tar.bz2}
+</div>
