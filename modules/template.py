@@ -52,10 +52,9 @@ More:
    <li><a href="http://sourceforge.net/forum/forum.php?forum_id=249614">efltk</a></li>
    <li><a href="http://sourceforge.net/forum/forum.php?forum_id=164319">general help</a></li>
 </ul>
-<h3>CVS</h3>
+<h3>Source code</h3>
 <ul>
-   <li><a href="http://ede.cvs.sourceforge.net/ede">browse</a></li>
-   <li><a href="http://sourceforge.net/cvs/?group_id=49891">help page</a></li>
+   <li><a href="http://svn.sourceforge.net/viewvc/ede/">browse</a></li>
 </ul>
 <h3>Tracker</h3>
 <ul>
