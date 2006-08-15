@@ -1,8 +1,14 @@
-{title: OSX Panther-like skin}
+{title: Small update, repository switch, etc.}
 
-Ed B. filled themes section with new {i:EDE-Linther} theme. 
-{i: It's like OSX Panther, originally a Fluxbox theme} like he said. Excelent
-job and refreshing look is our comment.
+Time to refresh news section :). We switched to 
+{link:Subversion|http://subversion.tigris.org} as repository management tool
+enabling us it's benefits and most important, less nagging of sourceforge staff for
+repository fixes. Is someone interests, all cvs history is preserved so if you
+need something done before, feel free to look at it. Details about usage,
+browsing etc. can be found at {link:/page/download | download} page.
+
+There has been small changes to site too with possible continuity. So if you
+find some odd behaviors on some of pages, it means someone is working on it :).
 
 
 
@@ -24,7 +30,7 @@ Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
 {title: New theme}
 
 Thanks to STIBS, we have new original theme called {i: stx}. This is default
-theme for upcoming new version of STX linux ditribution. You can find it on 
+theme for upcoming new version of STX linux distribution. You can find it on 
 {link: themes|http://ede.sourceforge.net/page/themes} for download.
 
 
