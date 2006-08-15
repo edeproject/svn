@@ -89,7 +89,7 @@ def footer():
 <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=49891&amp;type=1" width="88"
  height="31" border="0" alt="SourceForge.net Logo" /></a>
 <br /><br />
-   Copyright &copy; <a href="/page/bad_design" title="aka. ede team">bad design</a> 2002-2006 |
+   Copyright &copy; ede team 2002-2006 |
    <a href="http://jigsaw.w3.org/css-validator/validator?uri=http://ede.sourceforge.net/web/css/style.css"
    title="check css validity">css</a> | 
    <a href="http://validator.w3.org/check/referer" title="check xhtml 1.0 validity">xhtml</a>
