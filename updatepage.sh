@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cvs update
+svn update
 
 echo ""
 echo "Remember:"
