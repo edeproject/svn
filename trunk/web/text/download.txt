@@ -14,9 +14,9 @@ From August, 15 2006, we started to use {link:Subversion|http://subversion.tigri
 main repository tool. All previous code is still on {link:cvs|http://ede.cvs.sourceforge.net/ede} 
 and will be eventually removed. Please, do not use it any more.
 
-To download latest source code from repository, you will need 
-{link:subversion|http://subversion.tigris.org/} tool. Documentation about usage you can be found on
-their page.
+To download latest source code from repository, you will need a
+{link:subversion|http://subversion.tigris.org/} installed. Most today distributions already ship it
+as package, so this should save you from compiling. Documentation about usage can be found on subversion page.
 
 Here is how to checkout each component:
 
