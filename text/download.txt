@@ -1,12 +1,20 @@
 {h2: Official releases}
-
-Latest releases are:
-
-EDE 1.0.4 {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312}
-{br:.}
-eFLTK 2.0.4 {link: download | https://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021}
-
-{br:.}
+<table style="width: 30%; text-align: left" border="0" cellpadding="2" cellspacing="1">
+   <tbody>
+      <tr>
+         <td style="vertical-align: top;">EDE</td>
+         <td style="vertical-align: top;">1.0.4</td>
+                 <td style="vertical-align: top;"><a href="https://sourceforge.net/project/showfiles.php?group_i
+d=49891&amp;package_id=43312">download</a></td>
+      </tr>
+      <tr>
+         <td style="vertical-align: top;">eFLTK</td>
+         <td style="vertical-align: top;">2.0.4</td>
+                 <td style="vertical-align: top;"><a href="https://sourceforge.net/project/showfiles.php?group_i
+d=49891&amp;package_id=58021">download</a></td>
+      </tr>
+   </tbody>
+</table>
 {br:.}
 {h2: Repository source}
 
