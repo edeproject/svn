@@ -5,7 +5,7 @@ Time to refresh news section :). We switched to
 giving us what we missed in cvs and most important, less nagging of sourceforge staff for
 repository fixes and cleanups. All cvs history is preserved so if you
 need something done before, feel free to look at it. Details about usage,
-browsing, etc. can be found at {link:download | http://ede.sourceforge.net/page/download} page.
+browsing, etc. can be found at {link:download | /page/download} page.
 
 There has been small changes to this site too, with possibility to be continued. So if you
 find some odd behaviors on some of pages, it means someone is working on it :).
@@ -31,4 +31,4 @@ Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
 
 Thanks to STIBS, we have new original theme called {i: stx}. This is default
 theme for upcoming new version of STX linux distribution. You can find it on 
-{link: themes|http://ede.sourceforge.net/page/themes} for download.
+{link: themes|/page/themes} for download.
