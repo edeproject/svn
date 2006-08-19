@@ -89,8 +89,8 @@ void Hints::icccm_size(FrameData* f)
 
 	f->plain.max_w = sh->max_width;
 	f->plain.max_h = sh->max_height;
-	f->plain.w     = sh->base_width;
-	f->plain.h     = sh->base_height;
+	//f->plain.w     = sh->base_width;
+	//f->plain.h     = sh->base_height;
 	f->plain.min_w = sh->min_width;
 	f->plain.min_h = sh->min_height;
 	f->win_gravity = sh->win_gravity;
@@ -102,6 +102,47 @@ void Hints::icccm_size(FrameData* f)
 	f->autoplace = (!(sh->flags & (USPosition|PPosition)));
 
 	XFree(sh);
+}
+
+void Hints::icccm_wm_hints(FrameData* f)
+{
+	TRACE_FUNCTION("void Hints::icccm_wm_hints(FrameData* f)");
+	assert(f != NULL);
+
+	XWMHints* wm_hints = XAllocWMHints();
+	wm_hints = XGetWMHints(fl_display, f->window);
+	if(!wm_hints)
+	{
+		ELOG("XGetWMHints failed!");
+		return;
+	}
+
+	if((wm_hints->flags & IconPixmapHint) && wm_hints->icon_pixmap)
+		f->icon_pixmap = wm_hints->icon_pixmap;
+	if((wm_hints->flags & IconMaskHint) &&wm_hints->icon_mask)
+		f->icon_mask   = wm_hints->icon_mask;
+
+	switch(wm_hints->initial_state)
+	{
+		case WithdrawnState:
+			XRemoveFromSaveSet(fl_display, f->window);
+			break;
+		case IconicState:
+			f->state = FrameStateIconized;
+			break;
+		case NormalState:
+		default:
+			f->state = FrameStateNormal;
+			break;
+	}
+
+	// check for focus
+	if((wm_hints->flags & InputHint) && !wm_hints->input)
+			f->option &= ~FrameOptTakeFocus; // window does not want focus
+	else
+			f->option |= FrameOptTakeFocus;  // window want focus;
+
+	XFree(wm_hints);
 }
 
 char* Hints::icccm_label(Window win, bool* allocated)
@@ -197,7 +238,7 @@ char* Hints::netwm_label(Window win, bool* allocated)
 	return (char*)title;
 }
 
-short Hints::netwm_window_type(FrameData* fd) const
+void Hints::netwm_window_type(FrameData* fd)
 {
 	TRACE_FUNCTION("short Hints::netwm_window_type(FrameData* fd) const");
 
@@ -214,7 +255,7 @@ short Hints::netwm_window_type(FrameData* fd) const
 	if(status != Success || !items_read)
 	{
 		ELOG("Netwm say: unknown window type, using FrameTypeNormal");
-		return type;
+		type = FrameTypeNormal;
 	}
 
 	for(unsigned int i = 0; i < items_read; i++)
@@ -278,7 +319,7 @@ short Hints::netwm_window_type(FrameData* fd) const
 	}
 
 	XFree(data);
-	return type;
+	fd->type = type;
 }
 
 void Hints::netwm_set_window_type(FrameData* fd)
