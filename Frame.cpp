@@ -189,13 +189,44 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	// we does not use window specific borders
 	fdata->plain.border = 0;
 
-	// overlay
-	// small check if we are in X session
-	if(attrs)
-		set_option(FrameOptIgnoreUnmap);
+	// collect data
+	WindowManager* wm = WindowManager::instance();
+	
+	screen_x = wm->x();
+	screen_y = wm->y();
+	screen_w = wm->w();
+	screen_h = wm->h();
 
-	// collect needed data
-	feed_data(attrs);
+	XWindowAttributes init_attrs;
+	if(attrs)
+	{
+		init_attrs = *attrs;
+		set_option(FrameOptIgnoreUnmap);
+	}
+	else
+		XGetWindowAttributes(fl_display, fdata->window, &init_attrs);
+
+	fdata->plain.x = init_attrs.x;
+	fdata->plain.y = init_attrs.y;
+	fdata->plain.w = init_attrs.width;
+	fdata->plain.h = init_attrs.height;
+	
+	load_colormap(init_attrs.colormap);	
+
+	if(init_attrs.map_state == IsViewable)
+		set_state(FrameStateNormal);
+	else if(init_attrs.map_state == IsUnmapped)
+		set_state(FrameStateIconized);
+	else if(init_attrs.map_state == IsUnviewable)
+		ELOG("Got IsUnviewable map_state, skiping for now...");
+
+	wm->hints()->icccm_size(fdata);
+	wm->hints()->icccm_wm_hints(fdata);
+	wm->hints()->netwm_window_type(fdata);
+	wm->hints()->netwm_window_state(fdata);
+	wm->hints()->mwm_load_hints(fdata);
+
+	load_label();
 		
 	// do this asap so we don't miss any events...
 	XSelectInput(fl_display, fdata->window, 
@@ -209,13 +240,29 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 		ELOG("Got transient_win");
 	}
 
-	init_sizes();
-	setup_borders();
+	if(fdata->type == FrameTypeNormal || fdata->type == FrameTypeDialog)
+	{
+		set_option(FrameOptHaveTitlebar | FrameOptHaveBorder | FrameOptCloseable | FrameOptMoveable);
+		if(fdata->type == FrameTypeNormal)
+			set_option(FrameOptResizeable | FrameOptHideable);
+
+		borders.leftright(BORDER_LEFTRIGHT);
+		borders.updown(BORDER_UPDOWN);
+	}
+
 	init_overlay(borders.updown());
+
+	x(fdata->plain.x);
+	y(fdata->plain.y); 
+
+	w(fdata->plain.w + borders.leftright2x());
+	h(fdata->plain.h + borders.updown2x());
+	XSetWindowBorderWidth(fl_display, fdata->window, fdata->plain.border);
 
 	XMoveResizeWindow(fl_display, fdata->window, fdata->plain.x, fdata->plain.y, 
 			fdata->plain.w, fdata->plain.h);
 
+	ELOG("XWindowAttributes: %i %i %i %i", fdata->plain.x, fdata->plain.y, fdata->plain.w, fdata->plain.h);
 	begin();
 	Fl_Color szc = borders.sizers_color(FOCUSED);
 	sizer_top_left = new Fl_Box(1,1,SIZER_W,SIZER_H);
@@ -268,7 +315,7 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	 */
 	int pos_x;
 	int pos_y;
-	if(fdata->autoplace && WindowManager::instance()->query_best_position(&pos_x, &pos_y, w(), h()))
+	if(fdata->autoplace && wm->query_best_position(&pos_x, &pos_y, w(), h()))
 	{
 		if(pos_x <= 2)
 			pos_x = x();
@@ -277,13 +324,6 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 
 		ELOG("This window does use autoplace");
 	}
-	/*
-	else
-	{
-		pos_x = x();
-		pos_y = y();
-	}
-	*/
 	else
 	{
 		// recorrect positions made up in setup_borders() ?@#@! including
@@ -301,15 +341,16 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 			pos_y = y();
 	}
 
-
 	if(show_titlebar)
 		resize(pos_x, pos_y, w(), h() + titlebar->h());
 	else
 		resize(pos_x, pos_y, w(), h());
 
+	place_sizers(x(), y(), w(), h());
+
 	// only normal windows can be resized
-	if(fdata->type == FrameTypeNormal)
-		place_sizers(x(), y(), w(), h());
+	if(fdata->type != FrameTypeNormal)
+		hide_sizers();
 
 	set_override();
 	// color of main window background, aka borders
@@ -334,18 +375,18 @@ Frame::Frame(Window win, XWindowAttributes* attrs) :
 	XAddToSaveSet(fl_display, fdata->window);
 
 	// TODO: this handling should be in WindowManager
-	WindowManager::instance()->window_list.push_back(this);
+	wm->window_list.push_back(this);
 
 	if(fdata->transient_win != None)
 	{
 		ELOG("Added to aot_list");
 		// latest mapped windows will be _before_ others iff they are transient
-		WindowManager::instance()->aot_list.push_front(this);
+		wm->aot_list.push_front(this);
 	}
 	else
 	{
 		ELOG("Added to stack_list");
-		WindowManager::instance()->stack_list.push_front(this);
+		wm->stack_list.push_front(this);
 	}
 
 	if(fdata->option & FrameOptTakeFocus)
@@ -369,7 +410,7 @@ Frame::~Frame()
 	delete events;
 	delete fdata;
 }
-
+#if 0
 void Frame::feed_data(XWindowAttributes* existing)
 {
 	WindowManager* wm = WindowManager::instance();
@@ -383,7 +424,9 @@ void Frame::feed_data(XWindowAttributes* existing)
 
 	// TODO: For testing only. Better solution will be.
 	fdata->type = wm->hints()->netwm_window_type(fdata);
+
 	setup_borders();
+
 	if(fdata->type == FrameTypeSplash 
 			|| fdata->type == FrameTypeMenu 
 			|| fdata->type == FrameTypeDesktop 
@@ -434,11 +477,12 @@ void Frame::feed_data(XWindowAttributes* existing)
 			break;
 	}
 }
-
+#endif
 /* load WM_HINTS property, finding if window
  * have icons and in what state is in
  * TODO: place this as Hint::icccm_load_wm_hints()
  */
+#if 0
 void Frame::load_wm_hints(void)
 {
 	XWMHints* wm_hints = XAllocWMHints();
@@ -476,7 +520,7 @@ void Frame::load_wm_hints(void)
 
 	XFree(wm_hints);
 }
-
+#endif
 // guess title
 void Frame::load_label(void)
 {
@@ -576,8 +620,10 @@ void Frame::setup_borders(void)
 			break;
 		case FrameTypeDialog:
 			/*border = BORDER_THIN; */
-			borders.leftright(BORDER_THIN_LEFTRIGHT);
-			borders.updown(BORDER_THIN_UPDOWN);
+			//borders.leftright(BORDER_THIN_LEFTRIGHT);
+			//borders.updown(BORDER_THIN_UPDOWN);
+			borders.leftright(BORDER_LEFTRIGHT);
+			borders.updown(BORDER_UPDOWN);
 			break;
 		case FrameTypeSplash:
 		case FrameTypeDesktop:

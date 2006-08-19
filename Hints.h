@@ -21,12 +21,13 @@ class WindowManager;
 struct Hints
 {
 	void  icccm_size(FrameData* f);
+	void  icccm_wm_hints(FrameData* f);
 	char* icccm_label(Window win, bool* allocated);
 	void  icccm_set_iconsizes(WindowManager* wm);
 	void  icccm_configure(FrameData* f) const;
 
 	char* netwm_label(Window win, bool* allocated);
-	short netwm_window_type(FrameData* fd) const;
+	void  netwm_window_type(FrameData* fd);
 	void  netwm_set_window_type(FrameData* fd);
 	long  netwm_window_state(FrameData* fd) const;
 	void  netwm_set_window_state(FrameData* fd);
