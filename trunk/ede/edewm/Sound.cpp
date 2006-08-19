@@ -78,6 +78,7 @@ void SoundSystem::shutdown(void)
 
 void SoundSystem::add(short event, const char* file)
 {
+#ifdef SOUND
 	assert(event < KNOWN_SOUNDS);
 
 	if(event_sound[event].allocated)
@@ -86,16 +87,18 @@ void SoundSystem::add(short event, const char* file)
 	event_sound[event].file_to_play = strdup(file);
 	event_sound[event].allocated = true;
 	event_sound[event].loaded = true;
+#endif
 }
 
 int SoundSystem::play(short event)
 {
+#ifdef SOUND
 	assert(event < KNOWN_SOUNDS);
 	if(event_sound[event].loaded)
 		play(event_sound[event].file_to_play);
 	else
 		ELOG("Skipping this sound, no file for it");
-
+#endif
 	return 1;
 }
 
