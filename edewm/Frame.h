@@ -46,6 +46,7 @@
 #define FrameStateMaximized      (FrameStateMaximizedHorz | FrameStateMaximizedVert)
 
 // some options frame can have (or their combinations)
+/*
 #define FrameOptSkipList         (1 << 0)    // some reason why not in list
 #define FrameOptBorder           (1 << 1)
 #define FrameOptThinBorder       (1 << 2)
@@ -58,13 +59,17 @@
 #define FrameOptMove             (1 << 9)
 #define FrameOptTakeFocus        (1 << 10)
 #define FrameOptKeepAspect       (1 << 11)
-
-// TODO replace above with this:
-/*
-#define FrameOptBorder          // have borders
-#define FrameOptTitlebar        // have titlebar
-#define FrameOptHandle          // manageable
 */
+
+#define FrameOptSkipList         (1 << 0)
+#define FrameOptHaveBorder       (1 << 1)
+#define FrameOptHaveTitlebar     (1 << 2)
+#define FrameOptResizeable       (1 << 3)
+#define FrameOptMoveable         (1 << 4)
+#define FrameOptCloseable        (1 << 5)
+#define FrameOptHideable         (1 << 6)
+#define FrameOptTakeFocus        (1 << 7)
+#define FrameOptKeepAspect       (1 << 8)
 
 /* some events echo UnmapNotify, like ReparentNotify, and if we
  * start wm on existing X session with open windows, this flag will
@@ -236,7 +241,7 @@ class Frame : public Fl_Window
 
 		// private loaders
 		void feed_data(XWindowAttributes* attrs);
-		void load_wm_hints(void);
+		//void load_wm_hints(void);
 		/* void load_size_hints(void); */
 		void load_label(void);
 
