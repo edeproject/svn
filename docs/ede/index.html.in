@@ -77,13 +77,14 @@ You can get EDE from:
 	<li><i>source code packages (tar.gz)</i> - you should be able to compile them on any *nix 
 	system, including FreeBSD and Solaris; just unpack and use commands 
 	<b>./configure; make; make install</b></li>
-	<li><i>anonymous CVS access</i> - use the following commands to download the latest development
-	version of EDE from our CVS server:</li>
+	<li><i>anonymous SVN access</i> - use the following commands to download the latest development
+	version of EDE from our SVN server:</li>
 </ol>
-<ul><code>cvs -z3 -d :pserver:anonymous@ede.cvs.sourceforge.net:/cvsroot/ede login<br>
-Password: <b>&lt;just press enter&gt;</b><br>
-cvs -z3 -d :pserver:anonymous@ede.cvs.sourceforge.net:/cvsroot/ede co efltk<br>
-cvs -z3 -d :pserver:anonymous@ede.cvs.sourceforge.net:/cvsroot/ede co ede</code></ul>
+<ul>
+<pre>
+svn co https://svn.sourceforge.net/svnroot/ede/trunk/efltk
+svn co https://svn.sourceforge.net/svnroot/ede/trunk/ede
+</pre>
 After these commands compile first efltk then ede. Use "autoconf" to produce the configure script, then proceed as usual.<br>
 <br>
 When you are updating EDE be sure to use the matching version of eFLTK! eFLTK is developing together 
