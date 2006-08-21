@@ -1,0 +1,25 @@
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2.0003 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+Function {make_window()} {open
+} {
+  Fl_Window {} {open
+    xywh {72 158 195 95} resizable color 0xeadd7d00 visible
+  } {
+    Fl_Box {} {selected
+      xywh {130 5 60 60} image {/home/sanelz/programs/EDE/ede/datas/icons-48/printer.png}
+    }
+    Fl_Box {} {
+      label {My Printer} selected
+      xywh {5 25 125 25} label_font 1
+    }
+    Fl_Box {} {
+      label {cmd: /usr/bin/printer} selected
+      xywh {5 65 185 25} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+    }
+  }
+} 
