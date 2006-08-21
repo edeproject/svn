@@ -221,7 +221,7 @@ MovableIcon::MovableIcon(Icon* i) : Fl_Window(i->x(), i->y(), i->w(), i->h()), i
 	Fl_Image* img = icon->icon_image();
 	if(img)
 	{
-#if SHAPE
+#ifdef SHAPE
 		Pixmap mask = img->create_mask(img->width(), img->height());
 		XShapeCombineMask(fl_display, fl_xid(this), ShapeBounding, 0, 0, mask, ShapeSet);
 #endif
