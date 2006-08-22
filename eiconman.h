@@ -63,6 +63,9 @@ class Desktop : public Fl_Double_Window
 		int bg_mode;
 		bool bg_use;
 
+		int selection_x;
+		int selection_y;
+
 		std::vector<Icon*> selectionbuff;
 		std::vector<Icon*> icons;
 
