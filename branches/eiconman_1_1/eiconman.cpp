@@ -327,14 +327,22 @@ void Desktop::move_selection(int x, int y)
 {
 	if(selectionbuff.empty())
 		return;
-	int prev_x, prev_y;
 
+	int prev_x, prev_y, tmp_x, tmp_y;
 	for(uint i = 0; i < selectionbuff.size(); i++)
 	{
 		prev_x = selectionbuff[i]->x();
 		prev_y = selectionbuff[i]->y();
-		selectionbuff[i]->position(prev_x + x, prev_y + y);
+
+		tmp_x = x - selection_x;
+		tmp_y = y - selection_y;
+
+		selectionbuff[i]->position(prev_x+tmp_x, prev_y+tmp_y);
+		selectionbuff[i]->redraw();
 	}
+
+	selection_x = x;
+	selection_y = y;
 }
 
 void Desktop::unfocus_all(void)
@@ -411,13 +419,16 @@ int Desktop::handle(int event)
 			if(Fl::event_button() == 3)
 				popup->Fl_Menu_::popup(Fl::event_x_root(), Fl::event_y_root());
 
+			selection_x = Fl::event_x_root();
+			selection_y = Fl::event_y_root();
 			return 1;
 		case FL_RELEASE:
+			selectionbuff.clear();
 			return 1;
 		case FL_DRAG:
 			puts("DRAGGGG");
 			if(!selectionbuff.empty())
-				move_selection(Fl::event_x(), Fl::event_y());
+				move_selection(Fl::event_x_root(), Fl::event_y_root());
 			return 1;
 		case FL_FOCUS:
 		case FL_UNFOCUS:
