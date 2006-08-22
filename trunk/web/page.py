@@ -23,11 +23,11 @@ def main():
 	title = "EDE - "
 	title_alt = "Equinox Desktop Environment"
 	txt_dir = "../htdocs/web/text/"
-    intro_txt = "/web/images/intro_txt.png"
-    intro_sample = "/web/images/intro_sample.png"
-    #txt_dir = "../web/text/"
-    #intro_txt = "../web/images/intro_txt.png"
-    #intro_sample = "../web/images/intro_sample.png"
+	intro_txt = "/web/images/intro_txt.png"
+	intro_sample = "/web/images/intro_sample.png"
+	#txt_dir = "../web/text/"
+	#intro_txt = "../web/images/intro_txt.png"
+	#intro_sample = "../web/images/intro_sample.png"
 	txt_ext = ".txt"
 
 	if len(sys.argv) == 2:
