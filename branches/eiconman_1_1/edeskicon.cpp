@@ -34,6 +34,7 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	globals = gs;
 	settings = s;
 	lwidth = lheight = 0;
+	infocus = false;
 
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	// ?@?
@@ -71,6 +72,7 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 
 Icon::~Icon()
 {
+	puts("Icon::~Icon()");
 }
 
 void Icon::update_label_size(const char* ll, int maxwidth)
@@ -87,7 +89,7 @@ void Icon::update_label_size(const char* ll, int maxwidth)
 void Icon::draw(void)
 {
 	Fl_Flags f = 0;
-    if(focused()) 
+    if(is_focused()) 
 		f = FL_SELECTED;
 
 	if(icon_img)
@@ -114,10 +116,8 @@ void Icon::draw(void)
 			fl_rectf(X,Y,lwidth+4,lheight+2);
 		}
 
-    	if(focused())
-		{
+    	if(is_focused())
 			focus_box()->draw(X, Y, lwidth+4, lheight+2, color(), 0);
-		}
 
     	fl_font(label_font(), label_size());
 		fl_color(label_color());
@@ -147,9 +147,28 @@ void Icon::update_all(void)
 {
 }
 
+void Icon::do_focus(void)
+{
+	if(is_focused())
+		return;
+	if(!accept_focus())
+		return;
+	if(!takesevents()) 
+		return;
+
+	printf("%s focused\n", label().c_str());
+	infocus = true;
+}
+void Icon::do_unfocus(void)
+{
+	printf("%s ufocused\n", label().c_str());
+	infocus = false;
+}
+
 // one big TODO: move this to apropriate place
 bool button1 = false;
 bool moving = false;
+int tx, ty;
 MovableIcon* micon = 0;
 
 int Icon::handle(int event)
@@ -162,7 +181,7 @@ int Icon::handle(int event)
 		switch(event)
 		{
 			case FL_PUSH:
-				take_focus();
+				do_focus();
 				redraw();
 				return 1;
 
@@ -173,7 +192,7 @@ int Icon::handle(int event)
 					micon = new MovableIcon(this);
 					micon->show();
 				}
-				micon->position(Fl::event_x_root(), Fl::event_y_root());
+				micon->position(Fl::event_x_root() - micon->w()/2, Fl::event_y_root() - micon->h()/2);
 				return 1;
 
 			case FL_RELEASE:
@@ -202,9 +221,14 @@ int Icon::handle(int event)
 		case FL_LEAVE:
 			Fl_Tooltip::exit();
 			return 1;
+/*
 		case FL_FOCUS:
-		case FL_UNFOCUS:
+			printf("%s focused\n", label().c_str());
 			return 1;
+		case FL_UNFOCUS:
+			printf("%s unfocused\n", label().c_str());
+			return 1;
+*/
 		default:
 			return Fl_Widget::handle(event);
 	}
