@@ -18,6 +18,8 @@
 #include <efltk/Fl_String.h>
 #include <efltk/Fl_Config.h>
 
+#include <vector>
+
 struct GlobalIconSettings
 {
 	Fl_Color label_background;
@@ -47,6 +49,8 @@ struct IconSelector
 	bool visible;
 };
 
+class Icon;
+
 class Desktop : public Fl_Double_Window
 {
 	private:
@@ -59,9 +63,14 @@ class Desktop : public Fl_Double_Window
 		int bg_mode;
 		bool bg_use;
 
+		std::vector<Icon*> selectionbuff;
+		std::vector<Icon*> icons;
+
 		bool load_icon_file(const char* path, IconSettings& isett);
 		void read_icons_conf(Fl_Config& conf);
 		void read_bg_conf(Fl_Config& conf);
+		void sort_internals(void);
+		void move_selection(int x, int y);
 
 	public:
 		Desktop();
@@ -74,6 +83,8 @@ class Desktop : public Fl_Double_Window
 		void auto_arrange(void);
 		void update_bg(void);
 		void load_icons(void);
+		void add_icon(Icon* ic);
+		void unfocus_all(void);
 };
 
 #endif

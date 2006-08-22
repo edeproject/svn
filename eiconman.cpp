@@ -30,6 +30,11 @@
 #include <locale.h> // setlocale
 #include <assert.h>
 
+//#include <vector>
+#include <algorithm> // sort
+using std::sort;
+using std::vector;
+
 #define CONFIG_FILE         "ede.conf"
 #define ICONS_DIR           "/.ede/desktop/"
 #define DEFAULT_ICONS_DIR   PREFIX"/share/ede/icons/48x48/"
@@ -44,6 +49,14 @@ void exit_signal(int signum)
 {
     printf("Exiting (got signal %d)\n", signum);
     running = false;
+}
+
+bool icons_sorter(Fl_Widget* w1, Fl_Widget* w2)
+{
+	if(w1->x() == w2->x() || w1->x() < (w2->x() + w2->w()))
+		return w1->y() < w2->y();
+	else 
+		return w1->y() > w2->y();
 }
 
 Fl_String localized_string(void)
@@ -144,6 +157,11 @@ Desktop::Desktop() : Fl_Double_Window(0, 0, Fl::w(), Fl::h(), "")
 
 Desktop::~Desktop()
 {
+	/* icons member deleting is not needed, since add_icon will
+	 * append to icons and to Fl_Group array. Desktop at the end
+	 * will cleanup Fl_Group array.
+	 */
+	icons.clear();
 }
 
 void Desktop::update_workarea(void)
@@ -231,10 +249,12 @@ bool Desktop::load_icon_file(const char* path, IconSettings& isett)
 			isett.icon_path = "";
 	}
 
+#if 0
 	printf("Name: %s\n", local_name.c_str());
 	printf("Exec: %s\n", exec.c_str());
 	printf("Icon: %s\n", isett.icon_path.c_str());
 	printf("X: %i Y: %i\n", x,y);
+#endif
 }
 
 void Desktop::load_icons(void)
@@ -265,9 +285,64 @@ void Desktop::load_icons(void)
 
 				// now create icon and add it to our Fl_Group
 				Icon* ic = new Icon(&gisett, &s);
-				add(ic);
+				add_icon(ic);
 			}
 		}
+	}
+
+	sort_internals();
+}
+
+void Desktop::add_icon(Icon* ic)
+{
+	assert(ic != NULL);
+	icons.push_back(ic);
+	add(ic);
+}
+
+/* Sort Fl_Group's array, according to x,y.
+ * Used for easier navigation in FL_Up/FL_Down keys.
+ */
+void Desktop::sort_internals(void)
+{
+/*
+	vector<Fl_Widget*> vs;
+	vs.reserve(children());
+	for(int i = children(); i--;)
+	{
+		vs.push_back(child(i));
+		remove(child(i));
+	}
+
+	sort(vs.begin(), vs.end(), icons_sorter);
+	for(int i = 0; i < vs.size(); i++)
+	{
+		add(vs[i]);
+		printf("x:%i y: %i l: %s\n", vs[i]->x(), vs[i]->y(), vs[i]->label().c_str());
+	}
+*/
+}
+
+void Desktop::move_selection(int x, int y)
+{
+	if(selectionbuff.empty())
+		return;
+	int prev_x, prev_y;
+
+	for(uint i = 0; i < selectionbuff.size(); i++)
+	{
+		prev_x = selectionbuff[i]->x();
+		prev_y = selectionbuff[i]->y();
+		selectionbuff[i]->position(prev_x + x, prev_y + y);
+	}
+}
+
+void Desktop::unfocus_all(void)
+{
+	for(uint i = 0; i < icons.size(); i++)
+	{
+		icons[i]->do_unfocus();
+		icons[i]->redraw();
 	}
 }
 
@@ -276,16 +351,16 @@ void Desktop::draw(void)
 	fl_color(bg_color);
 	fl_rectf(0,0,w(),h());
 
-	for(int n = children(); n--;) 
+	for(uint n = icons.size(); n--;) 
 	{
-		Fl_Widget &w = *child(n);
-		if(fl_not_clipped(w.x(), w.y(), w.w(), w.h()))
+		Icon* ic = icons[n];
+		if(fl_not_clipped(ic->x(), ic->y(), ic->w(), ic->h()))
 		{
 			fl_push_matrix();
-			fl_translate(w.x(), w.y());
-			w.set_damage(FL_DAMAGE_ALL|FL_DAMAGE_EXPOSE);
-			w.draw();
-			w.set_damage(0);
+			fl_translate(ic->x(), ic->y());
+			ic->set_damage(FL_DAMAGE_ALL|FL_DAMAGE_EXPOSE);
+			ic->draw();
+			ic->set_damage(0);
 			fl_pop_matrix();
 		}
     }
@@ -293,19 +368,56 @@ void Desktop::draw(void)
 
 int Desktop::handle(int event)
 {
+	// up/down keys are not sent to children
 	if(event == FL_KEY)
 	{
-		return 1;		
+		return 1;
 	}
 	
-	// set events to children
+	// handle other events or send them to children
 	int ret = Fl_Double_Window::handle(event);
 
 	switch(event)
 	{
 		case FL_PUSH:
+			if(Fl::event_button() == 1 && (Fl::get_key_state(FL_Shift_L) || Fl::get_key_state(FL_Shift_R)))
+			{
+				/* Check is event inside one of children.
+				 * Means, on desktop we can click either on
+				 * icon or desktop. If we do not click
+				 * on desktop, then we certainly clicked on icon.
+				 */
+				Fl_Widget* clicked = Fl::belowmouse();
+				if(clicked != this)
+				{
+					for(uint i = 0; i < icons.size(); i++)
+						if(icons[i] == clicked)
+						{
+							icons[i]->do_focus();
+							icons[i]->redraw();
+							selectionbuff.push_back(icons[i]);
+							puts("ADDED");
+						}
+				}
+				return 1;
+			}
+
+			unfocus_all();
+
+			// send events to children
+			if(Fl::belowmouse() != this)
+				return Fl_Double_Window::handle(event);
+
 			if(Fl::event_button() == 3)
 				popup->Fl_Menu_::popup(Fl::event_x_root(), Fl::event_y_root());
+
+			return 1;
+		case FL_RELEASE:
+			return 1;
+		case FL_DRAG:
+			puts("DRAGGGG");
+			if(!selectionbuff.empty())
+				move_selection(Fl::event_x(), Fl::event_y());
 			return 1;
 		case FL_FOCUS:
 		case FL_UNFOCUS:
@@ -314,6 +426,7 @@ int Desktop::handle(int event)
 			break;
 	}
 	return ret;
+	//return Fl_Double_Window::handle(event);
 }
 
 int main(int argc, char** argv)

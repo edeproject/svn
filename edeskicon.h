@@ -31,6 +31,7 @@ class Icon : public Fl_Widget
 		const GlobalIconSettings* globals;
 		int lwidth;
 		int lheight;
+		bool infocus;
 
 		void update_label_size(const char* ll, int maxwidth);
 
@@ -43,6 +44,11 @@ class Icon : public Fl_Widget
 		int handle(int event);
 		void delete_icon(void);
 		void update_all(void);
+
+		// efltk focus is too limited. With this we go little bit further.
+		void do_focus(void);
+		void do_unfocus(void);
+		bool is_focused(void) { return infocus; }
 };
 
 class MovableIcon : public Fl_Window
