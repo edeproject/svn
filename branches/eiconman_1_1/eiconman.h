@@ -62,6 +62,7 @@ class Desktop : public Fl_Double_Window
 		int bg_opacity;
 		int bg_mode;
 		bool bg_use;
+		bool moving;
 
 		int selection_x;
 		int selection_y;

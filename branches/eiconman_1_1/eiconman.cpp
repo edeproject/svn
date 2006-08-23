@@ -109,6 +109,8 @@ Desktop::Desktop() : Fl_Double_Window(0, 0, Fl::w(), Fl::h(), "")
 	bg_mode = 0;
 	bg_use = false;
 
+	moving = false;
+
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	popup->type(Fl_Menu_Button::POPUP3);
 	popup->begin();
@@ -364,8 +366,12 @@ bool Desktop::in_selection(const Icon* ic)
 {
 	for(uint i = 0; i < selectionbuff.size(); i++)
 	{
+		printf("comparing %p & %p\n", selectionbuff[i], ic);
 		if(ic == selectionbuff[i] && ic->is_focused())
+		{
+			printf("FOUND %s\n", selectionbuff[i]->label().c_str());
 			return true;
+		}
 	}
 	printf("Buff state:\n");
 	for(uint i = 0; i < selectionbuff.size(); i++)
@@ -419,7 +425,7 @@ int Desktop::handle(int event)
 			if(clicked == this)
 			{
 				unfocus_all();
-
+				puts("DESKTOP CLICK!!!");
 				if(!selectionbuff.empty())
 					selectionbuff.clear();
 
@@ -456,8 +462,6 @@ int Desktop::handle(int event)
 
 			/* We are still here ?
 			 * This means we clicked on one icon only.
-			 * From this point, selectionbuff can handle
-			 * only one icon.
 			 */
 			unfocus_all();
 			if(!curr->is_focused())
@@ -466,13 +470,15 @@ int Desktop::handle(int event)
 				curr->redraw();
 			}
 			curr->handle(FL_PUSH);
-			selectionbuff.push_back(curr);
+			if(!in_selection(curr))
+				selectionbuff.push_back(curr);
 
 			selection_x = Fl::event_x_root();
 			selection_y = Fl::event_y_root();
 			return 1;
 		}	
 		case FL_DRAG:
+			moving = true;
 			if(!selectionbuff.empty())
 			{
 				puts("DRAGGGG from desktop");
@@ -481,11 +487,13 @@ int Desktop::handle(int event)
 			return 1;
 
 		case FL_RELEASE:
-			if(!selectionbuff.empty())
+			if(!selectionbuff.empty() && moving)
 			{
+				puts("CLEARING BUFFER");
 				move_selection(Fl::event_x_root(), Fl::event_y_root(), true);
 				selectionbuff.clear();
 			}
+			moving = false;
 			return 1;
 		case FL_FOCUS:
 		case FL_UNFOCUS:
