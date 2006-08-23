@@ -124,16 +124,14 @@ Desktop::Desktop() : Fl_Double_Window(0, 0, Fl::w(), Fl::h(), "")
 
 	new Fl_Menu_Divider();
 
-	menuit = new Fl_Item(_("Line up vertical"));
+	menuit = new Fl_Item(_("&Line up vertical"));
     menuit->x_offset(off);
-	menuit = new Fl_Item(_("Line up horizontal"));
+	menuit = new Fl_Item(_("L&ine up horizontal"));
     menuit->x_offset(off);
 
-	new Fl_Menu_Divider();
-
-	menuit = new Fl_Item(_("Arrange"));
+	menuit = new Fl_Item(_("&Arrange"));
     menuit->x_offset(off);
-	menuit = new Fl_Item(_("Reverse arrange"));
+	menuit = new Fl_Item(_("A&rrange reverse"));
     menuit->x_offset(off);
 
 	new Fl_Menu_Divider();
@@ -323,7 +321,7 @@ void Desktop::sort_internals(void)
 */
 }
 
-void Desktop::move_selection(int x, int y)
+void Desktop::move_selection(int x, int y, bool apply)
 {
 	if(selectionbuff.empty())
 		return;
@@ -331,13 +329,18 @@ void Desktop::move_selection(int x, int y)
 	int prev_x, prev_y, tmp_x, tmp_y;
 	for(uint i = 0; i < selectionbuff.size(); i++)
 	{
-		prev_x = selectionbuff[i]->x();
-		prev_y = selectionbuff[i]->y();
+		//prev_x = selectionbuff[i]->x();
+		//prev_y = selectionbuff[i]->y();
+		prev_x = selectionbuff[i]->drag_icon_x();
+		prev_y = selectionbuff[i]->drag_icon_y();
 
 		tmp_x = x - selection_x;
 		tmp_y = y - selection_y;
 
-		selectionbuff[i]->position(prev_x+tmp_x, prev_y+tmp_y);
+		//selectionbuff[i]->position(prev_x+tmp_x, prev_y+tmp_y);
+		//printf("%s px: %i py: %i\n", selectionbuff[i]->label().c_str(), prev_x, prev_y);
+		//printf("%s cx: %i cy: %i\n", selectionbuff[i]->label().c_str(), prev_x+tmp_x, prev_y+tmp_y);
+		selectionbuff[i]->drag(prev_x+tmp_x, prev_y+tmp_y, apply);
 		selectionbuff[i]->redraw();
 	}
 
@@ -352,6 +355,17 @@ void Desktop::unfocus_all(void)
 		icons[i]->do_unfocus();
 		icons[i]->redraw();
 	}
+}
+
+bool Desktop::in_selection(const Icon* ic)
+{
+	for(uint i = 0; i < selectionbuff.size(); i++)
+	{
+		if(ic == selectionbuff[i])
+			return true;
+	}
+
+	return false;
 }
 
 void Desktop::draw(void)
@@ -384,7 +398,6 @@ int Desktop::handle(int event)
 	
 	// handle other events or send them to children
 	int ret = Fl_Double_Window::handle(event);
-
 	switch(event)
 	{
 		case FL_PUSH:
@@ -399,13 +412,23 @@ int Desktop::handle(int event)
 				if(clicked != this)
 				{
 					for(uint i = 0; i < icons.size(); i++)
+					{
+						if(in_selection(icons[i]))
+							continue;
+
 						if(icons[i] == clicked)
 						{
 							icons[i]->do_focus();
 							icons[i]->redraw();
 							selectionbuff.push_back(icons[i]);
-							puts("ADDED");
+							printf("ADDED (%i)\n", selectionbuff.size());
 						}
+						else if(icons[i]->is_focused())
+						{
+							printf("ADDED focused (%i)\n", selectionbuff.size());
+							selectionbuff.push_back(icons[i]);
+						}
+					}
 				}
 				return 1;
 			}
@@ -422,13 +445,20 @@ int Desktop::handle(int event)
 			selection_x = Fl::event_x_root();
 			selection_y = Fl::event_y_root();
 			return 1;
-		case FL_RELEASE:
-			selectionbuff.clear();
-			return 1;
 		case FL_DRAG:
-			puts("DRAGGGG");
 			if(!selectionbuff.empty())
-				move_selection(Fl::event_x_root(), Fl::event_y_root());
+			{
+				puts("DRAGGGG from desktop");
+				move_selection(Fl::event_x_root(), Fl::event_y_root(), false);
+			}
+			return 1;
+
+		case FL_RELEASE:
+			if(!selectionbuff.empty())
+			{
+				move_selection(Fl::event_x_root(), Fl::event_y_root(), true);
+				selectionbuff.clear();
+			}
 			return 1;
 		case FL_FOCUS:
 		case FL_UNFOCUS:
