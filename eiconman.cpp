@@ -352,8 +352,11 @@ void Desktop::unfocus_all(void)
 {
 	for(uint i = 0; i < icons.size(); i++)
 	{
-		icons[i]->do_unfocus();
-		icons[i]->redraw();
+		if(icons[i]->is_focused())
+		{
+			icons[i]->do_unfocus();
+			icons[i]->redraw();
+		}
 	}
 }
 
@@ -361,10 +364,17 @@ bool Desktop::in_selection(const Icon* ic)
 {
 	for(uint i = 0; i < selectionbuff.size(); i++)
 	{
-		if(ic == selectionbuff[i])
+		if(ic == selectionbuff[i] && ic->is_focused())
 			return true;
 	}
+	printf("Buff state:\n");
+	for(uint i = 0; i < selectionbuff.size(); i++)
+	{
+		printf("%s\n", selectionbuff[i]->label().c_str());
+	}
 
+
+	printf("in_selection returned false\n");
 	return false;
 }
 
@@ -396,55 +406,72 @@ int Desktop::handle(int event)
 		return 1;
 	}
 	
-	// handle other events or send them to children
-	int ret = Fl_Double_Window::handle(event);
 	switch(event)
 	{
 		case FL_PUSH:
-			if(Fl::event_button() == 1 && (Fl::get_key_state(FL_Shift_L) || Fl::get_key_state(FL_Shift_R)))
+		{
+			/*
+			 * First check where we clicked. If we do it on desktop
+			 * unfocus any possible focused childs, and handle
+			 * specific clicks. Otherwise, do rest for childs.
+			 */
+			Fl_Widget* clicked = Fl::belowmouse();
+			if(clicked == this)
 			{
-				/* Check is event inside one of children.
-				 * Means, on desktop we can click either on
-				 * icon or desktop. If we do not click
-				 * on desktop, then we certainly clicked on icon.
-				 */
-				Fl_Widget* clicked = Fl::belowmouse();
-				if(clicked != this)
-				{
-					for(uint i = 0; i < icons.size(); i++)
-					{
-						if(in_selection(icons[i]))
-							continue;
+				unfocus_all();
 
-						if(icons[i] == clicked)
-						{
-							icons[i]->do_focus();
-							icons[i]->redraw();
-							selectionbuff.push_back(icons[i]);
-							printf("ADDED (%i)\n", selectionbuff.size());
-						}
-						else if(icons[i]->is_focused())
-						{
-							printf("ADDED focused (%i)\n", selectionbuff.size());
-							selectionbuff.push_back(icons[i]);
-						}
-					}
-				}
+				if(!selectionbuff.empty())
+					selectionbuff.clear();
+
+				if(Fl::event_button() == 3)
+					popup->Fl_Menu_::popup(Fl::event_x_root(), Fl::event_y_root());
 				return 1;
 			}
 
+			Icon* curr = (Icon*)clicked;
+			assert(curr != NULL);
+
+			printf("pb: %i %i\n", curr->x(), curr->y());
+			if(Fl::event_button() == 1 && (Fl::get_key_state(FL_Shift_L) || Fl::get_key_state(FL_Shift_R)))
+			{
+				if(!in_selection(curr))
+				{
+					if(!curr->is_focused())
+					{
+						printf("ADDED (%s)\n", curr->label().c_str());
+						curr->do_focus();
+						curr->redraw();
+					}
+					else
+						printf("ADDED focused (%s)\n", curr->label().c_str());
+
+					selectionbuff.push_back(curr);
+				}
+				printf("pa: %i %i\n", curr->x(), curr->y());
+				printf("(%i)\n", selectionbuff.size());
+				return 1;
+			}
+
+			printf("FL_PUSH in desktop (%i)\n", selectionbuff.size());
+
+			/* We are still here ?
+			 * This means we clicked on one icon only.
+			 * From this point, selectionbuff can handle
+			 * only one icon.
+			 */
 			unfocus_all();
-
-			// send events to children
-			if(Fl::belowmouse() != this)
-				return Fl_Double_Window::handle(event);
-
-			if(Fl::event_button() == 3)
-				popup->Fl_Menu_::popup(Fl::event_x_root(), Fl::event_y_root());
+			if(!curr->is_focused())
+			{
+				curr->do_focus();
+				curr->redraw();
+			}
+			curr->handle(FL_PUSH);
+			selectionbuff.push_back(curr);
 
 			selection_x = Fl::event_x_root();
 			selection_y = Fl::event_y_root();
 			return 1;
+		}	
 		case FL_DRAG:
 			if(!selectionbuff.empty())
 			{
@@ -466,8 +493,8 @@ int Desktop::handle(int event)
 		default:
 			break;
 	}
-	return ret;
-	//return Fl_Double_Window::handle(event);
+	//return ret;
+	return Fl_Double_Window::handle(event);
 }
 
 int main(int argc, char** argv)
