@@ -54,7 +54,7 @@ class Icon : public Fl_Widget
 		// efltk focus is too limited. With this we go little bit further.
 		void do_focus(void);
 		void do_unfocus(void);
-		bool is_focused(void) { return infocus; }
+		bool is_focused(void) const { return infocus; }
 };
 
 class MovableIcon : public Fl_Window

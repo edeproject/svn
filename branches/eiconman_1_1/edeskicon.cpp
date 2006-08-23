@@ -212,6 +212,24 @@ int tx, ty;
 
 int Icon::handle(int event)
 {
+	switch(event)
+	{
+		case FL_ENTER:
+			return 1;
+		case FL_LEAVE:
+			Fl_Tooltip::exit();
+			return 1;
+		case FL_PUSH:
+			printf("FL_PUSH on icon %s\n", label().c_str());
+			return 1;
+	}
+
+	return Fl_Widget::handle(event);
+}
+
+#if 0
+int Icon::handle(int event)
+{
 	if(event == FL_PUSH)
 		button1 = (Fl::event_button() == 1);
 
@@ -223,18 +241,18 @@ int Icon::handle(int event)
 				do_focus();
 				redraw();
 				return 1;
-
+/*
 			case FL_DRAG:
 				moving = true;
 				printf("DRAGG fron Icon\n");
 				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, false);
 				return 1;
-
 			case FL_RELEASE:
 				moving = false;
 				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, true);
 				redraw();
 				return 1;
+*/
 		}
 	}
 
@@ -267,7 +285,7 @@ int Icon::handle(int event)
 	}
 	return 0;
 }
-
+#endif
 
 MovableIcon::MovableIcon(Icon* i) : Fl_Window(i->x(), i->y(), i->w(), i->h()), icon(i)
 {
