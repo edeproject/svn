@@ -35,6 +35,7 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	settings = s;
 	lwidth = lheight = 0;
 	infocus = false;
+	micon = NULL;
 
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	// ?@?
@@ -73,6 +74,8 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 Icon::~Icon()
 {
 	puts("Icon::~Icon()");
+	if(micon != NULL)
+		delete micon;
 }
 
 void Icon::update_label_size(const char* ll, int maxwidth)
@@ -147,6 +150,43 @@ void Icon::update_all(void)
 {
 }
 
+void Icon::drag(int x, int y, bool apply)
+{
+	if(!micon)
+	{
+		micon = new MovableIcon(this);
+		micon->show();
+	}
+
+	assert(micon != NULL);
+	micon->position(x, y);
+
+	if(apply)
+	{
+		position(micon->x(), micon->y());
+		delete micon;
+		micon = 0;
+	}
+}
+
+// Used only in Desktop::move_selection
+int Icon::drag_icon_x(void)
+{
+	if(!micon)
+		return x();
+	else
+		return micon->x();
+}
+
+// Used only in Desktop::move_selection
+int Icon::drag_icon_y(void)
+{
+	if(!micon)
+		return y();
+	else
+		return micon->y();
+}
+
 void Icon::do_focus(void)
 {
 	if(is_focused())
@@ -169,7 +209,6 @@ void Icon::do_unfocus(void)
 bool button1 = false;
 bool moving = false;
 int tx, ty;
-MovableIcon* micon = 0;
 
 int Icon::handle(int event)
 {
@@ -187,25 +226,15 @@ int Icon::handle(int event)
 
 			case FL_DRAG:
 				moving = true;
-				if(!micon)
-				{
-					micon = new MovableIcon(this);
-					micon->show();
-				}
-				micon->position(Fl::event_x_root() - micon->w()/2, Fl::event_y_root() - micon->h()/2);
+				printf("DRAGG fron Icon\n");
+				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, false);
 				return 1;
 
 			case FL_RELEASE:
 				moving = false;
-				if(micon)
-				{
-					position(micon->x(), micon->y());
-					delete micon;
-					micon = 0;
-					redraw();
-				}
+				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, true);
+				redraw();
 				return 1;
-
 		}
 	}
 
@@ -214,7 +243,11 @@ int Icon::handle(int event)
 		case FL_PUSH:
 			// prevent click on any other mouse buttons during move
 			if(!moving && Fl::event_button() == 3)
+			{
+				do_focus();
+				redraw();
 				popup->popup();
+			}
 			return 1;
 		case FL_ENTER:
 			return 1;

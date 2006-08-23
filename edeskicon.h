@@ -21,6 +21,7 @@
 
 struct IconSettings;
 struct GlobalIconSettings;
+class MovableIcon;
 
 class Icon : public Fl_Widget
 {
@@ -32,6 +33,7 @@ class Icon : public Fl_Widget
 		int lwidth;
 		int lheight;
 		bool infocus;
+		MovableIcon* micon;
 
 		void update_label_size(const char* ll, int maxwidth);
 
@@ -44,6 +46,10 @@ class Icon : public Fl_Widget
 		int handle(int event);
 		void delete_icon(void);
 		void update_all(void);
+
+		void drag(int x, int y, bool apply);
+		int drag_icon_x(void);
+		int drag_icon_y(void);
 
 		// efltk focus is too limited. With this we go little bit further.
 		void do_focus(void);

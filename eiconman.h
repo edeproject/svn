@@ -73,7 +73,7 @@ class Desktop : public Fl_Double_Window
 		void read_icons_conf(Fl_Config& conf);
 		void read_bg_conf(Fl_Config& conf);
 		void sort_internals(void);
-		void move_selection(int x, int y);
+		void move_selection(int x, int y, bool apply);
 
 	public:
 		Desktop();
@@ -88,6 +88,7 @@ class Desktop : public Fl_Double_Window
 		void load_icons(void);
 		void add_icon(Icon* ic);
 		void unfocus_all(void);
+		bool in_selection(const Icon* ic);
 };
 
 #endif
