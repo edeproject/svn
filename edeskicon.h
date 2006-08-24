@@ -35,7 +35,7 @@ class Icon : public Fl_Widget
 		bool infocus;
 		MovableIcon* micon;
 
-		void update_label_size(const char* ll, int maxwidth);
+		void update_label_size(void);
 
 	public:
 		Icon(const GlobalIconSettings* gs, const IconSettings* s);
@@ -44,8 +44,7 @@ class Icon : public Fl_Widget
 		void draw(void);
 		void layout(void);
 		int handle(int event);
-		void delete_icon(void);
-		void update_all(void);
+		void update_label(const char* l);
 
 		void drag(int x, int y, bool apply);
 		int drag_icon_x(void);

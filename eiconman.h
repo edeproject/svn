@@ -62,7 +62,9 @@ class Desktop : public Fl_Double_Window
 		int bg_opacity;
 		int bg_mode;
 		bool bg_use;
+
 		bool moving;
+		int numclicks;
 
 		int selection_x;
 		int selection_y;
@@ -74,7 +76,11 @@ class Desktop : public Fl_Double_Window
 		void read_icons_conf(Fl_Config& conf);
 		void read_bg_conf(Fl_Config& conf);
 		void sort_internals(void);
+
 		void move_selection(int x, int y, bool apply);
+		void select(Icon* i);
+		void select_only(Icon* i);
+		Icon* icon_clicked(void);
 
 	public:
 		Desktop();

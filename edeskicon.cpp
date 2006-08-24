@@ -17,6 +17,7 @@
 #include <efltk/Fl_Divider.h>
 #include <efltk/Fl_Locale.h>
 #include <efltk/Fl_Tooltip.h>
+#include <efltk/fl_ask.h>
 #include <efltk/fl_draw.h>
 
 #ifdef SHAPE
@@ -26,6 +27,24 @@
 #include <assert.h>
 
 #define ICONSIZE 48
+
+void rename_cb(Fl_Widget*, void* ic)
+{
+	Icon* icon = (Icon*)ic;
+	assert(icon != NULL);
+	const char* val = fl_input(_("Rename icon:"), icon->label().c_str());
+
+	if(val)
+		icon->update_label(val);
+}
+
+void delete_cb(Fl_Widget*, void* ic)
+{
+	Icon* icon = (Icon*)ic;
+	assert(icon != NULL);
+
+	fl_ask(_("Delete %s ?"), icon->label().c_str());
+}
 
 Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x, s->y, ICONSIZE, ICONSIZE, "")
 {
@@ -49,8 +68,13 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	Fl_Item* openit = new Fl_Item(_("&Open"));
 	openit->x_offset(off);
 
+	Fl_Item* renameit = new Fl_Item(_("&Rename"));
+	renameit->x_offset(off);
+	renameit->callback(rename_cb, this);
+
 	Fl_Item* deleteit = new Fl_Item(_("&Delete"));
 	deleteit->x_offset(off);
+	deleteit->callback(delete_cb, this);
 
 	new Fl_Divider();
 
@@ -62,11 +86,12 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	box(FL_NO_BOX);
 
 	tooltip(settings->name);
-	label(settings->name);
+
+	copy_label(settings->name);
 	label_color(globals->label_foreground);
 	label_size(globals->label_fontsize);
-	align(FL_ALIGN_RIGHT|FL_ALIGN_WRAP);
-	update_label_size(settings->name.c_str(), globals->label_maxwidth);
+	align(FL_ALIGN_CENTER|FL_ALIGN_WRAP);
+	update_label_size();
 
 	icon_img = Fl_Image::read(settings->icon_path, 0);
 }
@@ -78,15 +103,24 @@ Icon::~Icon()
 		delete micon;
 }
 
-void Icon::update_label_size(const char* ll, int maxwidth)
+void Icon::update_label_size(void)
+{
+    lwidth = globals->label_maxwidth;
+    lheight= 0;
+    fl_font(label_font(), label_size());
+    fl_measure(label(), lwidth, lheight, FL_ALIGN_WRAP);
+
+    lwidth += 8;
+	lheight += 4;
+}
+
+void Icon::update_label(const char* ll)
 {
 	assert(ll != NULL);
 
-    lwidth = maxwidth;
-    lheight= 0;
-    fl_font(label_font(), label_size());
-    fl_measure(ll, lwidth, lheight, FL_ALIGN_WRAP);
-    lwidth += 4;
+	copy_label(ll);
+	update_label_size();
+	redraw();
 }
 
 void Icon::draw(void)
@@ -116,15 +150,15 @@ void Icon::draw(void)
 		if(!globals->label_transparent) 
 		{
         	fl_color(globals->label_background);
-			fl_rectf(X,Y,lwidth+4,lheight+2);
+			fl_rectf(X,Y,lwidth,lheight);
 		}
 
     	if(is_focused())
-			focus_box()->draw(X, Y, lwidth+4, lheight+2, color(), 0);
+			focus_box()->draw(X, Y, lwidth, lheight, color(), 0);
 
     	fl_font(label_font(), label_size());
 		fl_color(label_color());
-		fl_draw(label(), X, Y+1, lwidth, lheight, flags());
+		fl_draw(label(), X, Y, lwidth, lheight, flags());
     }
 }
 
@@ -140,14 +174,6 @@ void Icon::layout(void)
 	}
 
 	Fl_Widget::layout();
-}
-
-void Icon::delete_icon(void)
-{
-}
-
-void Icon::update_all(void)
-{
 }
 
 void Icon::drag(int x, int y, bool apply)
@@ -205,11 +231,6 @@ void Icon::do_unfocus(void)
 	infocus = false;
 }
 
-// one big TODO: move this to apropriate place
-bool button1 = false;
-bool moving = false;
-int tx, ty;
-
 int Icon::handle(int event)
 {
 	switch(event)
@@ -221,71 +242,13 @@ int Icon::handle(int event)
 			return 1;
 		case FL_PUSH:
 			printf("FL_PUSH on icon %s\n", label().c_str());
+			if(Fl::event_button() == 3)
+				popup->popup();
 			return 1;
 	}
 
 	return Fl_Widget::handle(event);
 }
-
-#if 0
-int Icon::handle(int event)
-{
-	if(event == FL_PUSH)
-		button1 = (Fl::event_button() == 1);
-
-	if(button1)
-	{
-		switch(event)
-		{
-			case FL_PUSH:
-				do_focus();
-				redraw();
-				return 1;
-/*
-			case FL_DRAG:
-				moving = true;
-				printf("DRAGG fron Icon\n");
-				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, false);
-				return 1;
-			case FL_RELEASE:
-				moving = false;
-				drag(Fl::event_x_root()-w()/2, Fl::event_y_root()-h()/2, true);
-				redraw();
-				return 1;
-*/
-		}
-	}
-
-	switch(event)
-	{
-		case FL_PUSH:
-			// prevent click on any other mouse buttons during move
-			if(!moving && Fl::event_button() == 3)
-			{
-				do_focus();
-				redraw();
-				popup->popup();
-			}
-			return 1;
-		case FL_ENTER:
-			return 1;
-		case FL_LEAVE:
-			Fl_Tooltip::exit();
-			return 1;
-/*
-		case FL_FOCUS:
-			printf("%s focused\n", label().c_str());
-			return 1;
-		case FL_UNFOCUS:
-			printf("%s unfocused\n", label().c_str());
-			return 1;
-*/
-		default:
-			return Fl_Widget::handle(event);
-	}
-	return 0;
-}
-#endif
 
 MovableIcon::MovableIcon(Icon* i) : Fl_Window(i->x(), i->y(), i->w(), i->h()), icon(i)
 {
