@@ -43,6 +43,10 @@ using std::vector;
 #define IS_READABLE(path)   (access(path, R_OK) == 0)
 #define IS_EXSIST(path)     fl_file_exists(path)
 
+#define SELECTION_SINGLE (Fl::event_button() == 1)
+#define SELECTION_MULTI  (Fl::event_button() == 1 && (Fl::get_key_state(FL_Shift_L) || Fl::get_key_state(FL_Shift_R)))
+
+static Icon* tmp_icon = 0;
 bool running = true;
 
 void exit_signal(int signum)
@@ -109,7 +113,9 @@ Desktop::Desktop() : Fl_Double_Window(0, 0, Fl::w(), Fl::h(), "")
 	bg_mode = 0;
 	bg_use = false;
 
+	// used in Desktop::handle()
 	moving = false;
+	numclicks = 0;
 
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	popup->type(Fl_Menu_Button::POPUP3);
@@ -221,6 +227,7 @@ bool Desktop::load_icon_file(const char* path, IconSettings& isett)
 	int x, y;
 
 	// TODO: add section check
+	// TODO: all values should be validated
 	conf.set_section("Desktop Entry");
 	conf.get("Desktop Entry", localized_string(), local_name, "None");
 	conf.read("X", x, 100);
@@ -325,25 +332,24 @@ void Desktop::sort_internals(void)
 
 void Desktop::move_selection(int x, int y, bool apply)
 {
-	if(selectionbuff.empty())
+	uint sz = selectionbuff.size();	
+	if(sz == 0)
 		return;
 
 	int prev_x, prev_y, tmp_x, tmp_y;
-	for(uint i = 0; i < selectionbuff.size(); i++)
+	for(uint i = 0; i < sz; i++)
 	{
-		//prev_x = selectionbuff[i]->x();
-		//prev_y = selectionbuff[i]->y();
 		prev_x = selectionbuff[i]->drag_icon_x();
 		prev_y = selectionbuff[i]->drag_icon_y();
 
 		tmp_x = x - selection_x;
 		tmp_y = y - selection_y;
 
-		//selectionbuff[i]->position(prev_x+tmp_x, prev_y+tmp_y);
-		//printf("%s px: %i py: %i\n", selectionbuff[i]->label().c_str(), prev_x, prev_y);
-		//printf("%s cx: %i cy: %i\n", selectionbuff[i]->label().c_str(), prev_x+tmp_x, prev_y+tmp_y);
 		selectionbuff[i]->drag(prev_x+tmp_x, prev_y+tmp_y, apply);
-		selectionbuff[i]->redraw();
+
+		// very slow if is not checked
+		if(apply == true)
+			selectionbuff[i]->redraw();
 	}
 
 	selection_x = x;
@@ -352,7 +358,8 @@ void Desktop::move_selection(int x, int y, bool apply)
 
 void Desktop::unfocus_all(void)
 {
-	for(uint i = 0; i < icons.size(); i++)
+	uint sz = icons.size();
+	for(uint i = 0; i < sz; i++)
 	{
 		if(icons[i]->is_focused())
 		{
@@ -364,24 +371,47 @@ void Desktop::unfocus_all(void)
 
 bool Desktop::in_selection(const Icon* ic)
 {
-	for(uint i = 0; i < selectionbuff.size(); i++)
+	uint sz = selectionbuff.size();
+	for(uint i = 0; i < sz; i++)
 	{
-		printf("comparing %p & %p\n", selectionbuff[i], ic);
-		if(ic == selectionbuff[i] && ic->is_focused())
-		{
-			printf("FOUND %s\n", selectionbuff[i]->label().c_str());
+		if(ic == selectionbuff[i])
 			return true;
-		}
-	}
-	printf("Buff state:\n");
-	for(uint i = 0; i < selectionbuff.size(); i++)
-	{
-		printf("%s\n", selectionbuff[i]->label().c_str());
 	}
 
-
-	printf("in_selection returned false\n");
 	return false;
+}
+
+Icon* Desktop::icon_clicked(void)
+{
+	for(uint i = 0; i < icons.size(); i++)
+		if(Fl::event_inside(icons[i]->x(), icons[i]->y(), icons[i]->w(), icons[i]->h()))
+			return icons[i];
+	return 0;
+}
+
+void Desktop::select(Icon* ic)
+{
+	assert(ic != NULL);
+	if(in_selection(ic))
+		return;
+
+	selectionbuff.push_back(ic);
+	if(!ic->is_focused())
+	{
+		ic->do_focus();
+		ic->redraw();
+	}
+}
+
+void Desktop::select_only(Icon* ic)
+{
+	assert(ic != NULL);
+
+	unfocus_all();
+	selectionbuff.clear();
+	selectionbuff.push_back(ic);
+	ic->do_focus();
+	ic->redraw();
 }
 
 void Desktop::draw(void)
@@ -421,6 +451,7 @@ int Desktop::handle(int event)
 			 * unfocus any possible focused childs, and handle
 			 * specific clicks. Otherwise, do rest for childs.
 			 */
+			Fl::flush();
 			Fl_Widget* clicked = Fl::belowmouse();
 			if(clicked == this)
 			{
@@ -434,54 +465,42 @@ int Desktop::handle(int event)
 				return 1;
 			}
 
-			Icon* curr = (Icon*)clicked;
-			assert(curr != NULL);
+			//Icon* tmp = icon_clicked();
 
-			printf("pb: %i %i\n", curr->x(), curr->y());
-			if(Fl::event_button() == 1 && (Fl::get_key_state(FL_Shift_L) || Fl::get_key_state(FL_Shift_R)))
+			// from here, all events are managed for icons
+			tmp_icon = (Icon*)clicked;
+			assert(tmp_icon != NULL);
+
+			if(SELECTION_MULTI)
 			{
-				if(!in_selection(curr))
-				{
-					if(!curr->is_focused())
-					{
-						printf("ADDED (%s)\n", curr->label().c_str());
-						curr->do_focus();
-						curr->redraw();
-					}
-					else
-						printf("ADDED focused (%s)\n", curr->label().c_str());
-
-					selectionbuff.push_back(curr);
-				}
-				printf("pa: %i %i\n", curr->x(), curr->y());
-				printf("(%i)\n", selectionbuff.size());
+				Fl::event_is_click(0);
+				select(tmp_icon);
 				return 1;
 			}
-
-			printf("FL_PUSH in desktop (%i)\n", selectionbuff.size());
-
-			/* We are still here ?
-			 * This means we clicked on one icon only.
-			 */
-			unfocus_all();
-			if(!curr->is_focused())
+			else if(SELECTION_SINGLE)
 			{
-				curr->do_focus();
-				curr->redraw();
+				select_only(tmp_icon);
 			}
-			curr->handle(FL_PUSH);
-			if(!in_selection(curr))
-				selectionbuff.push_back(curr);
+			else if(Fl::event_button() == 3)
+			{
+				unfocus_all();
+				tmp_icon->do_focus();
+				tmp_icon->redraw();
+			}
+
+			// let child handle the rest
+			tmp_icon->handle(FL_PUSH);
 
 			selection_x = Fl::event_x_root();
 			selection_y = Fl::event_y_root();
 			return 1;
 		}	
+
 		case FL_DRAG:
 			moving = true;
 			if(!selectionbuff.empty())
 			{
-				puts("DRAGGGG from desktop");
+				//puts("DRAGGGG from desktop");
 				move_selection(Fl::event_x_root(), Fl::event_y_root(), false);
 			}
 			return 1;
