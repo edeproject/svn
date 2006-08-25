@@ -19,6 +19,8 @@
 #include <efltk/Fl_Image.h>
 #include <efltk/Fl_String.h>
 
+#include "icontooltip.h"
+
 struct IconSettings;
 struct GlobalIconSettings;
 class MovableIcon;
@@ -34,6 +36,8 @@ class Icon : public Fl_Widget
 		int lheight;
 		bool infocus;
 		MovableIcon* micon;
+
+		//IconTooltip* icon_tooltip;
 
 		void update_label_size(void);
 
