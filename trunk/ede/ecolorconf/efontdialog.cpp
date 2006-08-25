@@ -57,7 +57,7 @@ void FontDisplay::draw() {
   box()->inset(ix, iy, iw, ih);
   fl_push_clip(ix, iy, iw, ih);
   const char* saved_encoding = fl_encoding();
-  fl_encoding(encoding);
+  if (encoding) fl_encoding(encoding);
   fl_font(font, size);
   fl_color(FL_BLACK);
   char buffer[32];
@@ -122,7 +122,8 @@ void font_cb(Fl_Widget *, long)
 
 	// Populate the encobj (browser for font encodings)
 	char saved[30];
-	strncpy(saved, textobj->encoding, 29);
+        if (textobj->encoding) strncpy(saved, textobj->encoding, 29);
+	else saved[0]='\0';
 	encobj->clear();
 
 	const char** encodings;
