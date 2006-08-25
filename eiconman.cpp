@@ -115,7 +115,6 @@ Desktop::Desktop() : Fl_Double_Window(0, 0, Fl::w(), Fl::h(), "")
 
 	// used in Desktop::handle()
 	moving = false;
-	numclicks = 0;
 
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	popup->type(Fl_Menu_Button::POPUP3);
@@ -216,7 +215,7 @@ void Desktop::update_bg(void)
 	redraw();
 }
 
-bool Desktop::load_icon_file(const char* path, IconSettings& isett)
+void Desktop::load_icon_file(const char* path, IconSettings& isett)
 {
 	assert(path != NULL);
 	Fl_Config conf(path, true, false);
@@ -346,7 +345,6 @@ void Desktop::move_selection(int x, int y, bool apply)
 		tmp_y = y - selection_y;
 
 		selectionbuff[i]->drag(prev_x+tmp_x, prev_y+tmp_y, apply);
-
 		// very slow if is not checked
 		if(apply == true)
 			selectionbuff[i]->redraw();
@@ -381,6 +379,7 @@ bool Desktop::in_selection(const Icon* ic)
 	return false;
 }
 
+/*
 Icon* Desktop::icon_clicked(void)
 {
 	for(uint i = 0; i < icons.size(); i++)
@@ -388,6 +387,7 @@ Icon* Desktop::icon_clicked(void)
 			return icons[i];
 	return 0;
 }
+*/
 
 void Desktop::select(Icon* ic)
 {
@@ -464,6 +464,7 @@ int Desktop::handle(int event)
 					popup->Fl_Menu_::popup(Fl::event_x_root(), Fl::event_y_root());
 				return 1;
 			}
+			printf("buff sz: %i\n", selectionbuff.size());
 
 			//Icon* tmp = icon_clicked();
 
@@ -479,20 +480,22 @@ int Desktop::handle(int event)
 			}
 			else if(SELECTION_SINGLE)
 			{
-				select_only(tmp_icon);
+
+				if(!in_selection(tmp_icon))
+					select_only(tmp_icon);
 			}
 			else if(Fl::event_button() == 3)
-			{
-				unfocus_all();
-				tmp_icon->do_focus();
-				tmp_icon->redraw();
-			}
+				select_only(tmp_icon);
 
-			// let child handle the rest
-			tmp_icon->handle(FL_PUSH);
+			/* Let child handle the rest.
+			 * Also prevent click on other mouse buttons during move.
+			 */
+			if(!moving)
+				tmp_icon->handle(FL_PUSH);
 
 			selection_x = Fl::event_x_root();
 			selection_y = Fl::event_y_root();
+			puts("FL_PUSH from desktop");
 			return 1;
 		}	
 
@@ -500,17 +503,19 @@ int Desktop::handle(int event)
 			moving = true;
 			if(!selectionbuff.empty())
 			{
-				//puts("DRAGGGG from desktop");
+				puts("FL_DRAG from desktop");
 				move_selection(Fl::event_x_root(), Fl::event_y_root(), false);
 			}
 			return 1;
 
 		case FL_RELEASE:
+			puts("FL_RELEASE from desktop");
+			printf("CLICKS: %i\n", Fl::event_is_click());
 			if(!selectionbuff.empty() && moving)
 			{
 				puts("CLEARING BUFFER");
 				move_selection(Fl::event_x_root(), Fl::event_y_root(), true);
-				selectionbuff.clear();
+				//selectionbuff.clear();
 			}
 			moving = false;
 			return 1;

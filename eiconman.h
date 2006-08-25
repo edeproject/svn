@@ -49,6 +49,7 @@ struct IconSelector
 	bool visible;
 };
 
+
 class Icon;
 
 class Desktop : public Fl_Double_Window
@@ -64,7 +65,6 @@ class Desktop : public Fl_Double_Window
 		bool bg_use;
 
 		bool moving;
-		int numclicks;
 
 		int selection_x;
 		int selection_y;
@@ -72,7 +72,7 @@ class Desktop : public Fl_Double_Window
 		std::vector<Icon*> selectionbuff;
 		std::vector<Icon*> icons;
 
-		bool load_icon_file(const char* path, IconSettings& isett);
+		void load_icon_file(const char* path, IconSettings& isett);
 		void read_icons_conf(Fl_Config& conf);
 		void read_bg_conf(Fl_Config& conf);
 		void sort_internals(void);
@@ -80,7 +80,7 @@ class Desktop : public Fl_Double_Window
 		void move_selection(int x, int y, bool apply);
 		void select(Icon* i);
 		void select_only(Icon* i);
-		Icon* icon_clicked(void);
+		//Icon* icon_clicked(void);
 
 	public:
 		Desktop();

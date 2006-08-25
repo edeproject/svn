@@ -20,11 +20,12 @@
 #include <efltk/fl_ask.h>
 #include <efltk/fl_draw.h>
 
+#include <assert.h>
+
 #ifdef SHAPE
 	#include <X11/extensions/shape.h>
 #endif
 
-#include <assert.h>
 
 #define ICONSIZE 48
 
@@ -56,6 +57,7 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	infocus = false;
 	micon = NULL;
 
+
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	// ?@?
 	if(popup->parent())
@@ -85,7 +87,7 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 
 	box(FL_NO_BOX);
 
-	tooltip(settings->name);
+	//tooltip(settings->name);
 
 	copy_label(settings->name);
 	label_color(globals->label_foreground);
@@ -94,6 +96,9 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	update_label_size();
 
 	icon_img = Fl_Image::read(settings->icon_path, 0);
+
+	//icon_tooltip = new IconTooltip();
+	//icon_tooltip->set_data(icon_img, label().c_str(), settings->cmd.c_str());
 }
 
 Icon::~Icon()
@@ -101,6 +106,8 @@ Icon::~Icon()
 	puts("Icon::~Icon()");
 	if(micon != NULL)
 		delete micon;
+
+	//delete icon_tooltip;
 }
 
 void Icon::update_label_size(void)
@@ -236,12 +243,24 @@ int Icon::handle(int event)
 	switch(event)
 	{
 		case FL_ENTER:
+			//if(!Fl::event_state())
+			//	icon_tooltip->show_tooltip(Fl::event_x_root(), Fl::event_y_root(), EXTENDED);
+			puts("ENTER");
 			return 1;
 		case FL_LEAVE:
-			Fl_Tooltip::exit();
+			puts("LEAVE");
+			//if(!(Fl::event_state() & FL_BUTTONS))
+			//	icon_tooltip->hide_tooltip();
+			return 1;
+		/* We have to handle FL_MOVE too, if
+		 * want to get only once FL_ENTER when
+		 * entered or FL_LEAVE when leaved.
+		 */
+		case FL_MOVE:
 			return 1;
 		case FL_PUSH:
 			printf("FL_PUSH on icon %s\n", label().c_str());
+			//icon_tooltip->hide_tooltip();
 			if(Fl::event_button() == 3)
 				popup->popup();
 			return 1;
