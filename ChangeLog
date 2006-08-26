@@ -20,6 +20,10 @@ impossible to use already defined shortcuts for something else)
 - Some improvements to UI
 * etip
 - Completely new etip
+* emenueditor
+- Ability to edit the system menu (you need to be root to do this)
+* ecolorconf
+- Fix crashes in font dialog (when Xft is used)
 
 
 1.0.4
