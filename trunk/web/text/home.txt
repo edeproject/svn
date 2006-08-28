@@ -1,3 +1,11 @@
+{title: RFC for 1.1 version}
+
+On {link:forum|http://sourceforge.net/forum/forum.php?thread_id=1561701&amp;forum_id=249616}
+is placed some sort of mini pool for the next version. See it and leave some comments.
+At least we will know in which part to focus most.
+
+
+
 {title: Small update, repository switch, etc.}
 
 Time to refresh news section :). We switched to 
