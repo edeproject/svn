@@ -1,5 +1,5 @@
 #
-# $Id$
+# $Id: Makefile,v 1.3 2006/06/07 19:35:30 karijes Exp $
 #
 # Part of Equinox Desktop Environment (EDE).
 # Copyright (c) 2000-2006 EDE Authors.
