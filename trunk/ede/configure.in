@@ -80,33 +80,33 @@ AC_ARG_ENABLE(debug, [  --enable-debug          compile with debug information],
 			   CXXFLAGS="$CXXFLAGS -g3 -D_DEBUG"
 		   	fi])
 
-AC_ARG_ENABLE(sounds, [  --enable-sounds         enable sounds in window manager],
-			[if eval "test x$enable_sounds = xyes"; then
-			   
-			   AC_CHECK_HEADER(ao/ao.h, [have_ao_h=yes], [have_ao_h=no])
-			   AC_CHECK_LIB(ao, ao_is_big_endian, [have_ao_lib=yes], [have_ao_lib=no])
-			   
-			   AC_CHECK_HEADER(vorbis/codec.h, [have_codec_h=yes], [have_codec_h=no])
-			   AC_CHECK_LIB(vorbis, vorbis_info_init, [have_vorbis_lib=yes], [have_vorbis_lib=no])
-
-			   AC_CHECK_HEADER(vorbis/vorbisfile.h, [have_vorbisfile_h=yes], [have_vorbisfile_h=no])
-			   AC_CHECK_LIB(vorbisfile, ov_clear, [have_vorbisfile_lib=yes], [have_vorbisfile_lib=no])
-
-			   AC_MSG_CHECKING(sound support)
-			   if eval "test x$have_ao_h = xyes" && \
-				  eval "test x$have_codec_h = xyes" && \
-				  eval "test x$have_vorbisfile_h = xyes"; then
-				  	AC_MSG_RESULT(ok)
-			   	 	CXXFLAGS="$CXXFLAGS -DSOUND"
-			   	 	LIBS="-lao -lvorbis -lvorbisfile"
-				else
-					AC_MSG_RESULT(disabled)
-				fi
-		   	fi])
-
-AC_ARG_ENABLE(stlport, [  --enable-stlport        enable STLport support (experimental)],,
-			  enable_stlport=no)
-	
+dnl AC_ARG_ENABLE(sounds, [  --enable-sounds         enable sounds in window manager],
+dnl			[if eval "test x$enable_sounds = xyes"; then
+dnl			   
+dnl			   AC_CHECK_HEADER(ao/ao.h, [have_ao_h=yes], [have_ao_h=no])
+dnl			   AC_CHECK_LIB(ao, ao_is_big_endian, [have_ao_lib=yes], [have_ao_lib=no])
+dnl			   
+dnl			   AC_CHECK_HEADER(vorbis/codec.h, [have_codec_h=yes], [have_codec_h=no])
+dnl			   AC_CHECK_LIB(vorbis, vorbis_info_init, [have_vorbis_lib=yes], [have_vorbis_lib=no])
+dnl
+dnl			   AC_CHECK_HEADER(vorbis/vorbisfile.h, [have_vorbisfile_h=yes], [have_vorbisfile_h=no])
+dnl			   AC_CHECK_LIB(vorbisfile, ov_clear, [have_vorbisfile_lib=yes], [have_vorbisfile_lib=no])
+dnl
+dnl			   AC_MSG_CHECKING(sound support)
+dnl			   if eval "test x$have_ao_h = xyes" && \
+dnl				  eval "test x$have_codec_h = xyes" && \
+dnl				  eval "test x$have_vorbisfile_h = xyes"; then
+dnl				  	AC_MSG_RESULT(ok)
+dnl			   	 	CXXFLAGS="$CXXFLAGS -DSOUND"
+dnl			   	 	LIBS="-lao -lvorbis -lvorbisfile"
+dnl				else
+dnl					AC_MSG_RESULT(disabled)
+dnl				fi
+dnl		   	fi])
+dnl
+dnl AC_ARG_ENABLE(stlport, [  --enable-stlport        enable STLport support (experimental)],,
+dnl			  enable_stlport=no)
+dnl	
 AC_ARG_ENABLE(silent, [  --disable-silent        show compiler output],
 			[
 			 if eval "test x$enable_silent = xno"; then
@@ -164,30 +164,30 @@ else
 fi
 
 dnl check for STLport if --enable-stlport is given
-if eval "test x$enable_stlport = xyes"; then
-	AC_MSG_CHECKING(STLport paths)
-	# find first where are include files (usually in stlport directory)
-	# and if found multiple, extract only first
-	# Note: it is searching for $STLPLIB so it can be replaced
-	# either with libstlportg (debug) or libstlport (release)
-	STLPLIB="libstlportg.so"
-	HDIRS="/usr/include /usr/local/include"
-	LDIRS="/usr/lib /usr/local/lib"
-	HFOUND=`find $HDIRS -type d -name stlport | awk '{print $1}'`
-	LFOUND=`find $LDIRS -name $STLPLIB | awk '{print $1}'`
-	if test -n "$HFOUND" && test -n "$LFOUND"; then
-		AC_MSG_RESULT(yes)
-		# strip lib and .so or .a from $STLPLIB
-		STLPLIB_STRIP=`echo $STLPLIB | sed -e 's/^lib//g' -e 's/\..*$//g'`
-		STLPLIB_DIR=`dirname $LFOUND`
-
-		# STLport requires pthreads support
-		CXXFLAGS="$CXXFLAGS -pthread -I$HFOUND"
-		LIBS="$LIBS -L$STLPLIB_DIR -l$STLPLIB_STRIP"
-	else
-		AC_MSG_RESULT(no)
-	fi
-fi
+dnl if eval "test x$enable_stlport = xyes"; then
+dnl	AC_MSG_CHECKING(STLport paths)
+dnl	# find first where are include files (usually in stlport directory)
+dnl	# and if found multiple, extract only first
+dnl	# Note: it is searching for $STLPLIB so it can be replaced
+dnl	# either with libstlportg (debug) or libstlport (release)
+dnl	STLPLIB="libstlportg.so"
+dnl	HDIRS="/usr/include /usr/local/include"
+dnl	LDIRS="/usr/lib /usr/local/lib"
+dnl	HFOUND=`find $HDIRS -type d -name stlport | awk '{print $1}'`
+dnl	LFOUND=`find $LDIRS -name $STLPLIB | awk '{print $1}'`
+dnl	if test -n "$HFOUND" && test -n "$LFOUND"; then
+dnl		AC_MSG_RESULT(yes)
+dnl		# strip lib and .so or .a from $STLPLIB
+dnl		STLPLIB_STRIP=`echo $STLPLIB | sed -e 's/^lib//g' -e 's/\..*$//g'`
+dnl		STLPLIB_DIR=`dirname $LFOUND`
+dnl
+dnl		# STLport requires pthreads support
+dnl		CXXFLAGS="$CXXFLAGS -pthread -I$HFOUND"
+dnl		LIBS="$LIBS -L$STLPLIB_DIR -l$STLPLIB_STRIP"
+dnl	else
+dnl		AC_MSG_RESULT(no)
+dnl	fi
+dnl fi
 
 AC_SUBST(CXXFLAGS)
 AC_SUBST(LIBS)
