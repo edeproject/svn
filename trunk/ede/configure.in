@@ -206,4 +206,5 @@ AC_OUTPUT([
  docs/ede/copying.html
  docs/ede/help.html
  ede.spec
+ Jamfile
  ])
