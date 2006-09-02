@@ -1,3 +1,15 @@
+{title: 1.1 is released}
+
+After a year from 1.0.4, version 1.1 comes with a lot of changes. Also with it we put efltk to
+2.0.6.
+
+Details about both can be found in their changelogs {link:ede | http://sourceforge.net/project/shownotes.php?group_id=49891&release_id=444320} and {link:efltk | http://sourceforge.net/project/shownotes.php?group_id=49891&release_id=444321}.
+
+All files can be downloaded from {link:our download section | http://sourceforge.net/project/showfiles.php?group_id=49891}.
+
+Enjoy!
+
+
 {title: RFC for 1.1 version}
 
 On {link:forum|http://sourceforge.net/forum/forum.php?thread_id=1561701&amp;forum_id=249616}
