@@ -1,0 +1,111 @@
+# data file for the FLTK User Interface Designer (FLUID)
+version 2,0003 
+images_dir ./ 
+i18n 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+
+decl {\#include <stdio.h>} {} 
+
+decl {\#include <string.h>} {} 
+
+decl {\#include <stdlib.h>} {} 
+
+decl {\#include <efltk/Fl_File_Dialog.h>} {} 
+
+decl {\#include <efltk/Fl_Locale.h>} {} 
+
+decl {\#include <efltk/Fl_Config.h>} {} 
+
+decl {\#include <efltk/Fl_Util.h>} {} 
+
+Function {} {open
+} {
+  code {fl_init_locale_support("erun", PREFIX"/share/locale");} {}
+  Fl_Window windowRunDialog {
+    label {Open...} open selected
+    xywh {168 159 350 160} when ENTER_KEY hide
+    extra_code {o->x(Fl::info().w/2 - (o->w()/2));
+o->y( (Fl::info().h/2) - (o->h()/2));}
+  } {
+    Fl_Input inputRunDialog {
+      label {Open:}
+      callback {char *cmd = (char*)inputRunDialog->value();
+run_resource(cmd);
+windowRunDialog->hide();}
+      xywh {60 77 200 23} align 132 when ENTER_KEY
+    }
+    Fl_Box {} {
+      private xywh {5 5 55 70} align 16 image {icons/run.xpm}
+    }
+    Fl_Box {} {
+      label {Type the location you want to open or the name of the program you want to run. (Possible prefixes are: http:, ftp:, gg:, av:, leo:)}
+      private xywh {60 5 285 70} align 148
+    }
+    Fl_Button {} {
+      label {&OK}
+      callback {char *cmd = (char*)inputRunDialog->value();
+run_resource(cmd);
+windowRunDialog->hide();}
+      private xywh {180 127 80 25}
+    }
+    Fl_Button {} {
+      label {&Cancel}
+      callback {windowRunDialog->hide();}
+      private xywh {265 127 80 25}
+    }
+    Fl_Button {} {
+      label {&Browse...}
+      callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
+char *fileName = fl_select_file(inputRunDialog->value(), file_types, _("File selection..."));          
+if (fileName) 
+{ 
+  inputRunDialog->value(fileName);
+}}
+      private xywh {265 77 80 25}
+    }
+  }
+} 
+
+Function {run_resource(char *cmd)} {return_type void
+} {
+  code {char pRun[256];
+        char browser[256];
+
+	Fl_Config pGlobalConfig(fl_find_config_file("ede.conf", 0));
+        pGlobalConfig.get("Web", "Browser", browser, 0, sizeof(browser));
+        if(pGlobalConfig.error() && !browser) {
+            strncpy(browser, "netscape", sizeof(browser));
+        }
+
+        char *location = strdup(cmd);
+        char *prefix = strstr(location, ":");
+        if(prefix) // it is internet resource
+        {
+            *prefix = '\\0';
+            if (!strcasecmp(location, "http") || !strcasecmp(location, "ftp") || !strcasecmp(location, "file"))
+            {	snprintf(pRun, sizeof(pRun)-1, "%s %s &", browser, cmd);
+            }
+	    else if (!strcasecmp(location, "gg"))
+	    {	snprintf(pRun, sizeof(pRun)-1, "%s http://www.google.com/search?q=\\"%s\\" &", browser, ++prefix);
+	    }
+	    else if (!strcasecmp(location, "leo"))
+	    {	snprintf(pRun, sizeof(pRun)-1, "%s http://dict.leo.org/?search=\\"%s\\" &", browser, ++prefix);
+	    }
+	    else if (!strcasecmp(location, "av"))
+	    {	snprintf(pRun, sizeof(pRun)-1, "%s http://www.altavista.com/sites/search/web?q=\\"%s\\" &", browser, ++prefix);
+	    }
+	    else  {
+                snprintf(pRun, sizeof(pRun)-1, "%s %s &", browser, cmd);
+	    }
+	}
+        else // local executable - parse the standard specification parameters to the executable if any exists in the *.desktop file.
+        {
+            snprintf(pRun, sizeof(pRun)-1, "%s &", cmd);
+	}
+	delete [] location; 
+        fl_start_child_process(pRun);} {}
+} 
