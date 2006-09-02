@@ -40,6 +40,7 @@ Frame* Frame::active_ = 0;
 
 // Resizes opaque (draws everything), if this set to true
 bool Frame::do_opaque = false;
+bool Frame::focus_follows_mouse = false;
 
 bool Frame::animate = true;
 int Frame::animate_speed = 15;
@@ -1404,22 +1405,6 @@ int Frame::handle(int e)
 {
 	static bool grabbed=false;
 	static int what, dx, dy, ix, iy, iw, ih;
-	static int focuspolicy = -1;
-
-	// First time through set our policy from
-	// wmanager.conf
-	if (focuspolicy == -1) {
-          Fl_Config conf(fl_find_config_file("wmanager.conf", false));
-          Fl_String str;
-	  conf.get("Misc","FocusFollowsMouse", str, "false");
-          if(str.empty())
-		// Default behaviour if not specified if click-to-focus
-                focuspolicy=0;
-	  else {
-	     if (!strcasecmp(str,"true")) focuspolicy=1;
-	     else focuspolicy = str.to_int();
-	     }
-	  }
 
 	switch (e) {
 
@@ -1429,7 +1414,7 @@ int Frame::handle(int e)
 
 	case FL_ENTER:
 		set_cursor(mouse_location());
-		if (focuspolicy == 1) activate(); // AEW
+		if (Frame::focus_follows_mouse == true) activate(); // AEW
 		return 1;
 
 	case FL_LEAVE:

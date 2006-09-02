@@ -185,6 +185,7 @@ void read_configuration()
     wmconf.read("Animate Speed", Frame::animate_speed, 15);
     
     wmconf.set_section("Misc");
+	wmconf.read("FocusFollowsMouse", Frame::focus_follows_mouse, false);
 
     bool theme = false;
     wmconf.read("Use theme", theme, false);
@@ -513,6 +514,14 @@ void WindowManager::idle()
         delete c;
     }
     remove_list.clear();
+}
+
+// Really really really quick fix, since this
+// solution sucks. Btw wm_shutdown is in main.cpp.
+extern bool wm_shutdown;
+void WindowManager::shutdown()
+{
+	wm_shutdown = true;
 }
 
 int WindowManager::handle(int e)

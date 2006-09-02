@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "debug.h"
 #include <edeconf.h>
 
 #include <signal.h>
@@ -47,11 +48,10 @@ int main(int argc, char ** argv)
         Frame *f = l[n];
         delete f;
     }
-
+	DBG("Going down");
     return 0;
 }
 
-#include "debug.h"
 void DBG(const char *str, ...)
 {
 #ifdef _DEBUG

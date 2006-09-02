@@ -153,8 +153,10 @@ extern Atom _XA_NET_WM_STATE_STAYS_ON_TOP;
 // KDE1 icon support, thats all of it :)
 extern Atom _XA_KWM_WIN_ICON;
 
-// EDE specific message for restoring sizes (not in specs)
-extern Atom _XA_NET_EDE_RESTORE_SIZE;
+// EDE specific message 
+extern Atom _XA_EDE_WM_ACTION;
+extern Atom _XA_EDE_WM_LOGOUT;
+extern Atom _XA_EDE_WM_RESTORE_SIZE;
 
 extern void init_atoms();
 extern void register_protocols(Window root);
