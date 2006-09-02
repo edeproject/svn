@@ -63,6 +63,7 @@ public:
     void draw();
 
     void update_workarea(bool send=true);
+	void shutdown();
 
     Frame *find_by_wid(Window wid);
     void restack_windows();

@@ -290,6 +290,7 @@ public:
     static Frame* activeFrame() {return active_;}
 
     static bool do_opaque;
+	static bool focus_follows_mouse;
 
     static bool animate;
     static int animate_speed;
