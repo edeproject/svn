@@ -3,15 +3,13 @@
    <tbody>
       <tr>
          <td style="vertical-align: top;">EDE</td>
-         <td style="vertical-align: top;">1.0.4</td>
-                 <td style="vertical-align: top;"><a href="https://sourceforge.net/project/showfiles.php?group_i
-d=49891&amp;package_id=43312">download</a></td>
+         <td style="vertical-align: top;">1.1</td>
+                 <td style="vertical-align: top;"><a href="http://sourceforge.net/project/showfiles.php?group_id=49891&package_id=43312&release_id=444320">download</a></td>
       </tr>
       <tr>
          <td style="vertical-align: top;">eFLTK</td>
-         <td style="vertical-align: top;">2.0.4</td>
-                 <td style="vertical-align: top;"><a href="https://sourceforge.net/project/showfiles.php?group_i
-d=49891&amp;package_id=58021">download</a></td>
+         <td style="vertical-align: top;">2.0.6</td>
+                 <td style="vertical-align: top;"><a href="http://sourceforge.net/project/showfiles.php?group_id=49891&package_id=58021&release_id=444321">download</a></td>
       </tr>
    </tbody>
 </table>
