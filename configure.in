@@ -137,12 +137,12 @@ fi
 
 dnl Check efltk's version.
 dnl Less than 2.0.4 is not supported
-dnl [45] will match 2.0.4 and 2.0.5 version
+dnl [456] will match 2.0.4, 2.0.5 and 2.0.6 version
 
 AC_MSG_CHECKING(efltk version >= 2.0.4)
 
 EFLTK_VERSION="`efltk-config --version`"
-case "$EFLTK_VERSION" in ["2.0."[45]])
+case "$EFLTK_VERSION" in ["2.0."[456]])
 	dnl Display 'yes' for efltk version check
 	AC_MSG_RESULT(yes)
 	;;
