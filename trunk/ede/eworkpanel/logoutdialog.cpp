@@ -142,13 +142,16 @@ void newLogoutFunction(Fl_Window* win)
 		fclose (fd);
 	}
 
-	/*XCloseDisplay(fl_display);
+	SendLogoutMsg(win);
+	XCloseDisplay(fl_display);
+	exit(0);
+
+	//XCloseDisplay(fl_display);
 	//XSetCloseDownMode(fl_display, DestroyAll);
-	XKillClient(fl_display, AllTemporary);
+	//XKillClient(fl_display, AllTemporary);
 	//XUngrabServer(fl_display);
 	//fl_close_display();
-	exit(0);*/
-	SendLogoutMsg(win);
+	//exit(0);
 }
 
 // "brute force" logout function
@@ -158,12 +161,13 @@ void oldLogoutFunction(Fl_Window* win)
 	if (logoutRadioItemLogoutDialog->value()==1)
 	{
 		SendLogoutMsg(win);
-		/*XCloseDisplay(fl_display);
-		//XSetCloseDownMode(fl_display, DestroyAll);
-		XKillClient(fl_display, AllTemporary);
+		XCloseDisplay(fl_display);
+		exit(0);
+		//XKillClient(fl_display, AllTemporary);
 		//XUngrabServer(fl_display);
 		//fl_close_display();
-		exit(0);*/
+		//XCloseDisplay(fl_display);
+		//exit(0);
 	}
 
 	if (restartRadioItemLogoutDialog->value()==1)
