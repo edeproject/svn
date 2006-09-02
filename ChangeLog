@@ -9,6 +9,8 @@ for proper unloading and some KDE support
 - Time Format (12h vs. 24h) patch by Elleo
 - Numerous layout and redraw issues with panel fixed
 - Implemented maximize and restore in taskbar context menu
+- Logout is now via edewm
+- Restore implemented
 * ekeyconf
 - Add support for custom shortcuts - now you can define any command you 
 want and assign a keyboard shortcut (patch to edewm by AW)
@@ -23,7 +25,11 @@ impossible to use already defined shortcuts for something else)
 - Fix crashes in font dialog (when Xft is used)
 * efinder
 - Totally new code and look. Now works as should.
-
+* edewm
+- Added focus follows mouse.
+- Added maximize (netwm) and restore via messages (so can work from eworkpanel)
+- Windows are no more out of screen (was this before ?)
+- etc.
 
 1.0.4
 (NOTE: I would like to thank Google Summer of Code for funding my work on (among else)
