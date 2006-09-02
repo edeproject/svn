@@ -521,6 +521,11 @@ void WindowManager::idle()
 extern bool wm_shutdown;
 void WindowManager::shutdown()
 {
+	for(uint n = 0; n < map_order.size(); n++)
+	{
+		Frame* f = map_order[n];
+		f->kill();
+	}
 	wm_shutdown = true;
 }
 
