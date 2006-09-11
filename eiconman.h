@@ -72,7 +72,7 @@ class Desktop : public Fl_Double_Window
 		std::vector<Icon*> selectionbuff;
 		std::vector<Icon*> icons;
 
-		void load_icon_file(const char* path, IconSettings& isett);
+		void read_icon_file(const char* path, IconSettings& isett);
 		void read_icons_conf(Fl_Config& conf);
 		void read_bg_conf(Fl_Config& conf);
 		void sort_internals(void);
