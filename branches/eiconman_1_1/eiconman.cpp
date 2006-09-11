@@ -215,7 +215,7 @@ void Desktop::update_bg(void)
 	redraw();
 }
 
-void Desktop::load_icon_file(const char* path, IconSettings& isett)
+void Desktop::read_icon_file(const char* path, IconSettings& isett)
 {
 	assert(path != NULL);
 	Fl_Config conf(path, true, false);
@@ -287,7 +287,7 @@ void Desktop::load_icons(void)
 				printf("Loading %s\n", filename.c_str());
 
 				IconSettings s;
-				load_icon_file(filename.c_str(), s);
+				read_icon_file(filename.c_str(), s);
 
 				// now create icon and add it to our Fl_Group
 				Icon* ic = new Icon(&gisett, &s);

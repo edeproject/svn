@@ -1,0 +1,76 @@
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2.0003 
+i18n 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+Function {} {open
+} {
+  Fl_Window {} {
+    label {Icon settings} open
+    xywh {332 123 310 290} resizable visible
+  } {
+    Fl_Button {} {
+      label {&Close}
+      xywh {225 260 80 25}
+    }
+    Fl_Button {} {
+      label {&Apply}
+      xywh {140 260 80 25}
+    }
+    Fl_Tabs {} {open
+      xywh {5 5 300 249} color 0xfffffffe
+    } {
+      Fl_Group {} {
+        label Settings open
+        xywh {1 23 298 225}
+      } {
+        Fl_Box {} {
+          label label selected
+          xywh {125 10 60 60}
+        }
+        Fl_Input {} {
+          label {Name:}
+          xywh {9 88 250 25} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+        }
+        Fl_Input {} {
+          label {Image:}
+          xywh {9 133 250 25} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+        }
+        Fl_Button {} {
+          label {...}
+          xywh {264 133 25 25} label_type ENGRAVED_LABEL
+          extra_code {/*image browse button*/}
+        }
+        Fl_Input {} {
+          label {Program to run:}
+          xywh {9 188 250 25} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+        }
+        Fl_Button {} {
+          label {...}
+          xywh {264 188 25 25} label_type ENGRAVED_LABEL
+          extra_code {/*program cmd button*/}
+        }
+      }
+      Fl_Group {} {
+        label Terminal open
+        xywh {1 23 298 225} hide
+      } {
+        Fl_Check_Button {} {
+          label {Run in terminal}
+          xywh {9 18 250 25}
+        }
+        Fl_Input {} {
+          label {Terminal program:}
+          xywh {9 68 250 25} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+        }
+        Fl_Button {} {
+          label {...}
+          xywh {264 68 26 25} label_type ENGRAVED_LABEL
+        }
+      }
+    }
+  }
+} 

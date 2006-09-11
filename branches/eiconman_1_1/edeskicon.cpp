@@ -12,6 +12,7 @@
 
 #include "edeskicon.h"
 #include "eiconman.h"
+#include "icondialog.h"
 
 #include <efltk/Fl_Item.h>
 #include <efltk/Fl_Divider.h>
@@ -47,16 +48,39 @@ void delete_cb(Fl_Widget*, void* ic)
 	fl_ask(_("Delete %s ?"), icon->label().c_str());
 }
 
-Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x, s->y, ICONSIZE, ICONSIZE, "")
+void prop_cb(Fl_Widget*, void* ic)
+{
+	Icon* icon = (Icon*)ic;
+	assert(icon != NULL);
+
+	IconDialog id(icon->icon_settings(), icon->icon_image());
+	printf("%s\n", icon->icon_settings()->name.c_str());
+	id.exec();
+}
+
+Icon::Icon(const GlobalIconSettings* gs, IconSettings* s) : Fl_Widget(s->x, s->y, ICONSIZE, ICONSIZE, "")
 {
 	assert(gs != NULL);
 	assert(s != NULL);
+
+	/* GlobalIconSettings and IconSettings are shared
+	 * via single object who is changed from eiconman.
+	 * Since IconSettings are used more, we allocate for it.
+	 */
 	globals = gs;
-	settings = s;
+
+	settings = new IconSettings;
+	settings->name = s->name;
+	settings->cmd  = s->cmd;
+	settings->icon_path = s->icon_path;
+
+	/* settings->x and settings->y are not needed
+	 * since x() and y() have it.
+	 */
+
 	lwidth = lheight = 0;
 	infocus = false;
 	micon = NULL;
-
 
 	popup = new Fl_Menu_Button(0, 0, 0, 0);
 	// ?@?
@@ -82,12 +106,13 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 
 	Fl_Item* propit = new Fl_Item(_("&Properties"));
 	propit->x_offset(off);
+	propit->callback(prop_cb, this);
 
 	popup->end();
 
 	box(FL_NO_BOX);
 
-	//tooltip(settings->name);
+	//tooltip(tt);
 
 	copy_label(settings->name);
 	label_color(globals->label_foreground);
@@ -96,9 +121,6 @@ Icon::Icon(const GlobalIconSettings* gs, const IconSettings* s) : Fl_Widget(s->x
 	update_label_size();
 
 	icon_img = Fl_Image::read(settings->icon_path, 0);
-
-	//icon_tooltip = new IconTooltip();
-	//icon_tooltip->set_data(icon_img, label().c_str(), settings->cmd.c_str());
 }
 
 Icon::~Icon()
@@ -107,7 +129,14 @@ Icon::~Icon()
 	if(micon != NULL)
 		delete micon;
 
-	//delete icon_tooltip;
+	if(settings)
+		delete settings;
+}
+
+IconSettings* Icon::icon_settings(void)
+{
+	assert(settings != NULL);
+	return settings;
 }
 
 void Icon::update_label_size(void)

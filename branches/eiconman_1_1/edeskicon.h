@@ -30,7 +30,7 @@ class Icon : public Fl_Widget
 	private:
 		Fl_Menu_Button* popup;
 		Fl_Image* icon_img;
-		const IconSettings* settings;
+		IconSettings* settings;
 		const GlobalIconSettings* globals;
 		int lwidth;
 		int lheight;
@@ -42,9 +42,8 @@ class Icon : public Fl_Widget
 		void update_label_size(void);
 
 	public:
-		Icon(const GlobalIconSettings* gs, const IconSettings* s);
+		Icon(const GlobalIconSettings* gs, IconSettings* s);
 		~Icon();
-		Fl_Image* icon_image(void) { return icon_img; }
 		void draw(void);
 		void layout(void);
 		int handle(int event);
@@ -58,6 +57,9 @@ class Icon : public Fl_Widget
 		void do_focus(void);
 		void do_unfocus(void);
 		bool is_focused(void) const { return infocus; }
+
+		Fl_Image* icon_image(void)        { return icon_img; }
+		IconSettings* icon_settings(void);
 };
 
 class MovableIcon : public Fl_Window
