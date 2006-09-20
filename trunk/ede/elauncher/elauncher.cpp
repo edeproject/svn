@@ -1,14 +1,7 @@
-/*
- * $Id$
- *
- * Elauncher, tool for running apps
- * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2006 EDE Authors.
- *
- * This program is licenced under terms of the 
- * GNU General Public Licence version 2 or newer.
- * See COPYING for details.
- */
+// Copyright (c) 2000. - 2005. EDE Authors
+// This program is licenced under terms of the
+// GNU General Public Licence version 2 or newer.
+// See COPYING for details.
 
 #include "elauncher.h"
 #include <edeconf.h>
@@ -125,11 +118,14 @@ void process_output_status(int child_val)
 			// unknown status, display stdout & stderr
 			char buffer[255];
 			char output[65535];
-			int bytes;
+			int bytes,totalbytes;
 
 			bool changed=false;
 			strcpy(output,"");
+			totalbytes=0;
 			while ((bytes = read(fds_[1], buffer, sizeof(buffer)))>0) {
+				totalbytes+=bytes;
+				if (totalbytes>=65534) break;
 				buffer[bytes]='\0';
 				strcat(output, buffer);
 				changed=true;
@@ -138,7 +134,10 @@ void process_output_status(int child_val)
             
 			changed=false;
 			strcpy(output,"");
+			totalbytes=0;
 			while ((bytes = read(fds_[2], buffer, sizeof(buffer)))>0) {
+				totalbytes+=bytes;
+				if (totalbytes>=65534) break;
 				buffer[bytes]='\0';
 				strcat(output, buffer);
 				changed=true;
@@ -146,25 +145,6 @@ void process_output_status(int child_val)
 			if (changed) output_window(_("Standard error output"),output);
 		} // if (child_val>0)
 	} // if (!messages...)
-}
-
-void notify_wm(void)
-{
-	fl_open_display();
-	Atom _XA_EDE_WM_STARTUP_NOTIFY   = XInternAtom(fl_display, "_EDE_WM_STARTUP_NOTIFY", False);
-	Atom _XA_EDE_WM_APP_STARTING     = XInternAtom(fl_display, "_EDE_WM_APP_STARTING", False);
-
-	XEvent xevent;
-	xevent.xclient.type = ClientMessage;
-	xevent.xclient.message_type = _XA_EDE_WM_STARTUP_NOTIFY;
-	xevent.xclient.window = RootWindow(fl_display, fl_screen);
-	xevent.xclient.format = 32;
-	xevent.xclient.data.l[0] = _XA_EDE_WM_APP_STARTING;
-
-	XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
-			PropertyChangeMask, &xevent);
-
-	XFlush(fl_display);
 }
 
 // unlike fl_start... this checks on the status of child
@@ -189,9 +169,16 @@ int ede_start_child_process(char *cmd)
     signal (SIGCHLD, SIG_DFL);
 
 
-	// let wm know we started application
-  	notify_wm(); 
+    // FIXME: unfinished work
+    // Set busy cursor
+    // We're not using fl_cursor cause it isn't flexible enough
+/*    fl_open_display();
+    Cursor watch;
+    watch = XCreateFontCursor(fl_display,FL_CURSOR_WAIT);
+    XDefineCursor(fl_display,RootWindow(fl_display,fl_screen),watch);
+    XFlush(fl_display);*/
 
+    
     switch(pid_=fork()) {
     case 0:
         // The child process goes here...  Setup stdin, stdout, and stderr
@@ -245,6 +232,7 @@ int ede_start_child_process(char *cmd)
 	// FIXME: unfinished code
 	// Add callback for attempt to read from STDIN
 //	Fl::add_fd(fds_[0], FL_READ, (void (*)(int, void*)) stdin_cb, (void *)fds_[0]);
+
 
 	// Wait for PID
         int status, child_val;
