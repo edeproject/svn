@@ -1,9 +1,17 @@
+{title: EDE on Zaurus}
+
+Yes, EDE works on {link:Zaurus | http://en.wikipedia.org/wiki/Zaurus} too! Congratulations to
+{link:zavrik.ru | http://www.zavrik.ru} team, who ported it. More details with screenshots and
+download links you can find at {link:OESF forum | http://www.oesf.org/forums/index.php?showtopic=21548&amp;hl=equinox}.
+
+
+
 {title: 1.1 is released}
 
 After a year from 1.0.4, we are happy to announce a new release. It comes with a lot of changes, following release 
 of efltk to version 2.0.6. Details about both can be found in their changelogs
-{link:ede | http://sourceforge.net/project/shownotes.php?group_id=49891&release_id=444320} and
-{link:efltk | http://sourceforge.net/project/shownotes.php?group_id=49891&release_id=444321}.
+{link:ede | http://sourceforge.net/project/shownotes.php?group_id=49891&amp;release_id=444320} and
+{link:efltk | http://sourceforge.net/project/shownotes.php?group_id=49891&amp;release_id=444321}.
 
 All files can be downloaded from {link:our download section | http://sourceforge.net/project/showfiles.php?group_id=49891}.
 
@@ -30,26 +38,3 @@ browsing, etc. can be found at {link:download | /page/download} page.
 
 There has been small changes to this site too, with possibility to be continued. So if you
 find some odd behaviors on some of pages, it means someone is working on it :).
-
-
-
-{title: A new distro using EDE}
-
-STX (pronounced: sticks) is a LiveCD distro based on Debian/Mepis that has 
-chosen Equinox Desktop Environment as its default and only graphical 
-environment. This distro in our opinion has a very solid implementation of 
-EDE and it's a good way to try out EDE without installing it on your 
-computer.
-
-Please remember that this is a very early version and it's still under 
-development.
-
-Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
-
-
-
-{title: New theme}
-
-Thanks to STIBS, we have new original theme called {i: stx}. This is default
-theme for upcoming new version of STX linux distribution. You can find it on 
-{link: themes|/page/themes} for download.
