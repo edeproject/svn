@@ -1,3 +1,26 @@
+{title: A new distro using EDE}
+
+STX (pronounced: sticks) is a LiveCD distro based on Slackware that has 
+chosen Equinox Desktop Environment as its default and only graphical 
+environment. This distro in our opinion has a very solid implementation of 
+EDE and it's a good way to try out EDE without installing it on your 
+computer.
+
+Please remember that this is a very early version and it's still under 
+development.
+
+Link: {link: http://stibs.cc/stx/|http://stibs.cc/stx/}
+
+
+
+{title: New theme}
+
+Thanks to STIBS, we have new original theme called {i: stx}. This is default
+theme for upcoming new version of STX linux distribution. You can find it on 
+{link: themes|/page/themes} for download.
+
+
+
 {title: 1.0.4 is released}
 
 New version is ready for download. The most important feature is full FreeBSD
