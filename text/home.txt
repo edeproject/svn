@@ -1,8 +1,9 @@
 {title: EDE on Zaurus}
 
 Yes, EDE works on {link:Zaurus | http://en.wikipedia.org/wiki/Zaurus} too! Congratulations to
-{link:zavrik.ru | http://www.zavrik.ru} team, who ported it. More details with screenshots and
-download links you can find at {link:OESF forum | http://www.oesf.org/forums/index.php?showtopic=21548&amp;hl=equinox}.
+{link:zavrik.ru | http://www.zavrik.ru} team, who ported it. More details with screenshots, 
+documentation and download links you can find at 
+{link:OESF forum | http://www.oesf.org/forums/index.php?showtopic=21548&amp;hl=equinox}.
 
 
 
