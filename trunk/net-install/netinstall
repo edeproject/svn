@@ -56,16 +56,21 @@ http://mesh.dl.sourceforge.net/sourceforge/ede/"
 
 ######################################################
 
+# as far as I know, everyone keeps 'which' to /usr/bin/which;
+# we have to use full path to 'which' since some shells provides
+# builtin one, and that one is different story
+FIND="/usr/bin/which"
+
+PATCH="`$FIND patch` -t -p0"
+
 # bz2 is prefered
 EXTRACT_BZ2="tar -xjpf"
 EXTRACT_GZ="tar -xzpf"
 
-PATCH="patch -t -p0"
-
-
 # some vars which users can override
 
-WGET="${WGET:=`which wget` -c}"
+#WGET="${WGET:=`$FIND wget` -c}"
+[ -z $WGET ] && WGET="`$FIND wget` -c"
 
 if [ "$MD5SUM" = "" ]; then
 	# check if we are on BSDs since they
@@ -73,10 +78,10 @@ if [ "$MD5SUM" = "" ]; then
 	platform=`uname`
 	case $platform in
 		*BSD)
-			md5path=`which md5`
+			md5path=`$FIND md5`
 			MD5SUM="$md5path -r";;
 	 	*)
-			MD5SUM=`which md5sum`;;
+			MD5SUM=`$FIND md5sum`;;
 	esac
 fi
 
@@ -141,16 +146,29 @@ patch_files()
 # see if we have all things that should be there
 prepare()
 {
+	# check can we write in current directory
+	currdir=`pwd`
+	if [ ! -w "$currdir" ]; then
+		ealert "Can't write to $currdir, where currently this script resides. Either move this"
+		ealert "script to somewhere else of make this directory writeable"
+		exit 1
+	fi
+
+	# check if we are root
+	if [ `id -u` -ne 0 ]; then
+		if [ "$NOROOTCHECK" = "" ]; then
+			ealert "Seems you are not root. You can continue with this, althought installation will"
+			ealert "be skipped. To remove this message, just set NOROOTCHECK=1 in your console"
+			exit 1
+		fi
+	fi
+
 	# check is ede installed via 'efltk-config -g'
 	# but first look for efltk-config
-
-	# TODO: which on FreeBSD is broken; according to docs
-	# which -s should return 1/0, but current implementation
-	# (at least for 5.3) does not have '-s' option
-	efltkc=`which efltk-config`
+	efltkc=`$FIND efltk-config`
 	if [ "$efltkc" != "" ]; then
 		if [ "$IGNORECHECK" = "" ]; then
-			efltk-config -g 2> /dev/null
+			$efltkc -g 2> /dev/null
 
 			if [ $? -eq 0 ]; then
 				ealert "Seems an older version of ede or efltk installed. You have to remove it first or you"
@@ -176,13 +194,11 @@ prepare()
 		exit 1
 	fi
 
-	# check if we are root
-	if [ `id -u` -ne 0 ]; then
-		if [ "$NOROOTCHECK" = "" ]; then
-			ealert "Seems you are not root. You can continue with this, althought installation will"
-			ealert "be skipped. To remove this message, just set NOROOTCHECK=1 in your console"
-			exit 1
-		fi
+	# check is patch present
+	patch_cmd=`echo $PATCH | sed -e 's/ .*//g'`
+	if [ ! -x $patch_cmd ]; then
+		ealert "patch tool is missing! Looks like you have to install it"
+		exit 1
 	fi
 }
 
