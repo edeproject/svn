@@ -13,6 +13,8 @@
 #ifndef __EICONMAN_H__
 #define __EICONMAN_H__
 
+#include "wallpaper.h"
+
 #include <efltk/Fl_Double_Window.h>
 #include <efltk/Fl_Menu_Button.h>
 #include <efltk/Fl_String.h>
@@ -56,6 +58,10 @@ class Desktop : public Fl_Double_Window
 {
 	private:
 		IconSelector isel;
+
+		// TODO: delay loading
+		Wallpaper wallp;
+
 		Fl_Menu_Button *popup;
 		IconSettings isett;
 		GlobalIconSettings gisett;
@@ -80,6 +86,8 @@ class Desktop : public Fl_Double_Window
 		void move_selection(int x, int y, bool apply);
 		void select(Icon* i);
 		void select_only(Icon* i);
+
+		void set_xbackground(int dx, int dy, int dw, int dh);
 		//Icon* icon_clicked(void);
 
 	public:
