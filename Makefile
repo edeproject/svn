@@ -8,7 +8,7 @@
 # GNU General Public Licence version 2 or newer.
 # See COPYING for details.
 
-CPPFILES = icondialog.cpp eiconman.cpp edeskicon.cpp
+CPPFILES = icondialog.cpp eiconman.cpp edeskicon.cpp wallpaper.cpp
 TARGET   = eiconman
 
 #POFILES = locale/ru.po\

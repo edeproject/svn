@@ -207,11 +207,28 @@ void Desktop::read_bg_conf(Fl_Config& conf)
     conf.read("Opacity", bg_opacity, 255);
     conf.read("Mode", bg_mode, 0);
     conf.read("Use", bg_use, 1);
+	if(bg_use)
+	{
+		Fl_String bg_path;
+		if(!conf.read("Wallpaper", bg_path, 0) && wallp.load(bg_path))
+		{
+			wallp.set_opacity(bg_opacity, bg_color);
+			wallp.set_mode(bg_mode, Fl::w(), Fl::h());
+			//wallp.apply();
+			printf("Loaded %s\n", bg_path.c_str());
+		}
+		else
+			printf("Not loaded background\n");
+	}
 }
 
 void Desktop::update_bg(void)
 {
 	color(bg_color);
+
+	// TODO: uh, oh...
+	wallp.apply();
+		
 	redraw();
 }
 
@@ -414,10 +431,35 @@ void Desktop::select_only(Icon* ic)
 	ic->redraw();
 }
 
+void Desktop::set_xbackground(int dx, int dy, int dw, int dh)
+{
+	//Pixmap pix = wallp.wimage()->get_offscreen();
+	//if(!pix)
+	//	return;
+	//fl_transform(dx, dy);
+	//fl_copy_offscreen(dx, dy, wallp.wimage()->width(), wallp.wimage()->height(), pix, 0, 0);
+	//fl_copy_offscreen(dx, dy, dw, dh, pix, 0, 0);
+	//wallp.wimage()->set_offscreen(pix);
+	
+	Pixmap pix = wallp.wimage()->get_offscreen();
+	if(!pix)
+		return;
+
+	Atom prop_root = XInternAtom(fl_display, "_XROOTPMAP_ID", False);
+    XChangeProperty(fl_display, RootWindow(fl_display, fl_screen), prop_root, XA_PIXMAP, 32,
+			PropModeReplace, (unsigned char *) &pix, 1);	
+}
+
 void Desktop::draw(void)
 {
 	fl_color(bg_color);
 	fl_rectf(0,0,w(),h());
+
+	if(wallp.is_loaded())
+	{
+		wallp.wimage()->draw(0, 0, w(), h());
+		set_xbackground(10, 10, w(), h());
+	}
 
 	for(uint n = icons.size(); n--;) 
 	{
