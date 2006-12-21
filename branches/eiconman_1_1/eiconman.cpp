@@ -30,10 +30,9 @@
 #include <locale.h> // setlocale
 #include <assert.h>
 
-//#include <vector>
-#include <algorithm> // sort
-using std::sort;
-using std::vector;
+//#include <algorithm> // sort
+//using std::sort;
+//using std::vector;
 
 #define CONFIG_FILE         "ede.conf"
 #define ICONS_DIR           "/.ede/desktop/"

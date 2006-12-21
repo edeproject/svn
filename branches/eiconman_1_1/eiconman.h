@@ -20,7 +20,12 @@
 #include <efltk/Fl_String.h>
 #include <efltk/Fl_Config.h>
 
-#include <vector>
+#ifdef LOCAL_VECTOR
+	#include "Vector.h"
+#else
+	#include <vector>
+	using std::vector;
+#endif
 
 struct GlobalIconSettings
 {
@@ -75,8 +80,8 @@ class Desktop : public Fl_Double_Window
 		int selection_x;
 		int selection_y;
 
-		std::vector<Icon*> selectionbuff;
-		std::vector<Icon*> icons;
+		vector<Icon*> selectionbuff;
+		vector<Icon*> icons;
 
 		void read_icon_file(const char* path, IconSettings& isett);
 		void read_icons_conf(Fl_Config& conf);
