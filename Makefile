@@ -9,6 +9,7 @@
 # See COPYING for details.
 
 CPPFILES = icondialog.cpp eiconman.cpp edeskicon.cpp wallpaper.cpp
+LOCALFLAGS = -DLOCAL_VECTOR
 TARGET   = eiconman
 
 #POFILES = locale/ru.po\
