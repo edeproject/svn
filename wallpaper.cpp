@@ -1,5 +1,5 @@
 /*
- * $Id: eiconman.h 1653 2006-06-09 13:08:58Z karijes $
+ * $Id$
  *
  * Eiconman, desktop and icon manager
  * Part of Equinox Desktop Environment (EDE).
