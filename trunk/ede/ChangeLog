@@ -1,3 +1,7 @@
+1.2
+* eworkpanel
+- fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
+
 1.1
 * general
 - Version number is now uniformly handled throught the docs, via configure

@@ -415,6 +415,8 @@ void MainMenu::init_entries()
         }
     }
 
+	fclose(fp);
+
     if(!doc) {
         // One more try!
         try {
