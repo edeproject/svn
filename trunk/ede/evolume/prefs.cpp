@@ -67,7 +67,7 @@ static void cb_Cancel(Fl_Button*, void*) {
 
 void PreferencesDialog(Fl_Widget *, void *) {
   Fl_Window* w;
-   {Fl_Window* o = preferenciesWindow = new Fl_Window(265, 289, _("Preferencies"));
+   {Fl_Window* o = preferenciesWindow = new Fl_Window(265, 289, _("Preferences"));
     w = o;
      {Fl_Tabs* o = new Fl_Tabs(5, 5, 255, 245);
        {Fl_Group* o = new Fl_Group(0, 23, 255, 221, _("Sound device"));

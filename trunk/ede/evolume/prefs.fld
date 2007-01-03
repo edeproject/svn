@@ -54,7 +54,7 @@ Function {choice_items(char *path)} {return_type void
 Function {PreferencesDialog(Fl_Widget *, void *)} {return_type void
 } {
   Fl_Window preferenciesWindow {
-    label Preferencies open
+    label Preferences open
     xywh {249 86 265 289} hide
   } {
     Fl_Tabs {} {open

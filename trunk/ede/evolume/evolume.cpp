@@ -278,7 +278,7 @@ int main (int argc, char **argv)
     vc_menubar->begin();
     
     Fl_Item_Group file(_("&File"));
-          Fl_Item* pref_item = new Fl_Item(_("Preferencies"));
+          Fl_Item* pref_item = new Fl_Item(_("Preferences"));
                    pref_item->shortcut(FL_CTRL+'p');
 		   pref_item->callback(PreferencesDialog);
     
