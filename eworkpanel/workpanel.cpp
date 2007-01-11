@@ -368,7 +368,7 @@ void updateWorkspaces(Fl_Widget*,void*)
 		i->type(Fl_Item::RADIO);
 		if(n<names_count && names[n]) {
 			i->label(names[n]);
-			delete []names[n];
+			free(names[n]);
 		} else {
 			Fl_String tmp;
 			i->label(tmp.printf(tmp, "%s %d", _("Workspace") ,n+1));
@@ -485,21 +485,20 @@ static void cb_qlb_taskbutton(Fl_Button *button, void *data)
  */
 unsigned int qlb_get_buttonnum(const char *configname)
 {
-	FILE *ifile;
-	unsigned int c = 0;
-	char *s=(char *)calloc(256, sizeof(char));	
-	
 	if (!configname)
 		return 0;
-	ifile=fopen(configname, "r+");
+
+	FILE* ifile=fopen(configname, "r+");
 	if (!ifile)
 		return 0;
+
+	unsigned int c = 0;
+	char buff[256];
 	while (!feof(ifile)) {
-		fgets(s, 256, ifile);
+		fgets(buff, sizeof(buff)-1, ifile);
 		c++;
 	}
 	fclose(ifile);
-	free(s);
 	return c;
 }
 

@@ -1,6 +1,7 @@
 1.2
 * eworkpanel
 - fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
+- closed few memleaks
 
 1.1
 * general
