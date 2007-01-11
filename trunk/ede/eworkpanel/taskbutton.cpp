@@ -397,7 +397,7 @@ void TaskBar::update()
 			add_new_task(winlist[n]);
 		}
 	}
-	delete []wins;
+	free(wins);
 
 	// Probably redundant
 	relayout();
