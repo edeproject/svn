@@ -1,3 +1,16 @@
+/*
+ * $Id$
+ *
+ * Eiconman, desktop and icon manager
+ * Part of Equinox Desktop Environment (EDE).
+ * Copyright (c) 2000-2006 EDE Authors.
+ *
+ * This program is licenced under terms of the 
+ * GNU General Public Licence version 2 or newer.
+ * See COPYING for details.
+ */
+
+
 #include "icondialog.h"
 #include "eiconman.h"
 
@@ -15,6 +28,18 @@ void cmd_input_cb(Fl_Widget*, void* i)
 	const char *f = fl_select_file(in->value(), file_types, _("Open location..."));
 	if(f)
 		in->value(f);
+}
+
+void apply_cb(Fl_Widget*, void* d)
+{
+	IconDialog* id = (IconDialog*)d;
+	id->apply_cb_internal();
+}
+
+void cancel_cb(Fl_Widget*, void* d)
+{
+	IconDialog* id = (IconDialog*)d;
+	id->hide();
 }
 
 IconDialog::IconDialog(IconSettings* isett, Fl_Image* img) : Fl_Window(310, 290, _("Icon settings")), settings(isett)
@@ -58,12 +83,18 @@ IconDialog::IconDialog(IconSettings* isett, Fl_Image* img) : Fl_Window(310, 290,
 	gr2->end();
 	tt->end();
 
-	apply = new Fl_Button(140, 260, 80, 25, _("&Apply"));
-	close = new Fl_Button(225, 260, 80, 25, _("&Close"));
+	ok = new Fl_Button(140, 260, 80, 25, _("&OK"));
+	ok->callback(apply_cb, this);
+	cancel = new Fl_Button(225, 260, 80, 25, _("&Cancel"));
+	cancel->callback(cancel_cb, this);
 	
 	end();
 }
 
 IconDialog::~IconDialog()
+{
+}
+
+void IconDialog::apply_cb_internal(void)
 {
 }
