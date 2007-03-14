@@ -3,7 +3,7 @@
  *
  * Eiconman, desktop and icon manager
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2006 EDE Authors.
+ * Copyright (c) 2000-2007 EDE Authors.
  *
  * This program is licenced under terms of the 
  * GNU General Public Licence version 2 or newer.
@@ -508,10 +508,14 @@ int Desktop::handle(int event)
 			printf("buff sz: %i\n", selectionbuff.size());
 
 			//Icon* tmp = icon_clicked();
-
 			// from here, all events are managed for icons
 			tmp_icon = (Icon*)clicked;
-			assert(tmp_icon != NULL);
+
+			/* do no use assertion on this, since
+			 * Fl::belowmouse() can miss our icon
+			 */
+			if(!tmp_icon)
+				return 1;
 
 			if(SELECTION_MULTI)
 			{
@@ -521,7 +525,6 @@ int Desktop::handle(int event)
 			}
 			else if(SELECTION_SINGLE)
 			{
-
 				if(!in_selection(tmp_icon))
 					select_only(tmp_icon);
 			}
@@ -558,6 +561,16 @@ int Desktop::handle(int event)
 				move_selection(Fl::event_x_root(), Fl::event_y_root(), true);
 				//selectionbuff.clear();
 			}
+
+			/* do not send FL_RELEASE during move
+			 * TODO: should be alowed FL_RELEASE to multiple
+			 * icons? (aka. run command for all selected icons ?
+			 * TODO: or to make something like selectionbuff[0]->execute()
+			 * so icon execute whatever it have ?
+			 */
+			if(selectionbuff.size() == 1 && !moving)
+				selectionbuff[0]->handle(FL_RELEASE);
+
 			moving = false;
 			return 1;
 		case FL_FOCUS:

@@ -37,7 +37,12 @@ void rename_cb(Fl_Widget*, void* ic)
 	const char* val = fl_input(_("Rename icon:"), icon->label().c_str());
 
 	if(val)
-		icon->update_label(val);
+	{
+		if(strlen(val) == 0)
+			fl_alert(_("Please do not use empty values as icon names"));
+		else
+			icon->update_label(val);
+	}
 }
 
 void delete_cb(Fl_Widget*, void* ic)
@@ -292,6 +297,12 @@ int Icon::handle(int event)
 			//icon_tooltip->hide_tooltip();
 			if(Fl::event_button() == 3)
 				popup->popup();
+			return 1;
+		case FL_RELEASE:
+			if(Fl::event_clicks() > 0)
+			{
+				printf("EXECUTE: %s\n", settings->cmd.c_str());
+			}
 			return 1;
 	}
 
