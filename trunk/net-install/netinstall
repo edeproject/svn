@@ -24,8 +24,7 @@
 #
 # Bugs, etc. direct to: "karijes@users.sf.net"
 
-VERSION="0.1 (alpha, deep alpha)"
-UPDATEDATE="10/10/06"
+VERSION="0.2"
 
 ######################################################
 
@@ -78,10 +77,14 @@ if [ "$MD5SUM" = "" ]; then
 	platform=`uname`
 	case $platform in
 		*BSD)
-			md5path=`$FIND md5`
-			MD5SUM="$md5path -r";;
+			MD5SUM=`$FIND md5`
+			# bsd's output looks like 'MD5 (XXX) = sum'
+			SUMSTR="s/.*= //g";;
 	 	*)
-			MD5SUM=`$FIND md5sum`;;
+			MD5SUM=`$FIND md5sum`
+			# linux output looks like 'sum = XXX'
+			# TODO: solaris, rest ???
+			SUMSTR="s/ .*//g";;
 	esac
 fi
 
@@ -165,7 +168,7 @@ prepare()
 
 	# check is ede installed via 'efltk-config -g'
 	# but first look for efltk-config
-	efltkc=`$FIND efltk-config`
+	efltkc=`$FIND efltk-config 2> /dev/null`
 	if [ "$efltkc" != "" ]; then
 		if [ "$IGNORECHECK" = "" ]; then
 			$efltkc -g 2> /dev/null
@@ -233,7 +236,7 @@ extract_file()
 
 	# check md5
 	# extract first column, since it is the hash
-	sum=`$MD5SUM $pkg_name | sed -e 's/ .*//g'`
+	sum=`$MD5SUM $pkg_name | sed -e "$SUMSTR"`
 	if [ "$sum" != "$pkg_sum" ]; then
 		ealert "Sums for $pkg_name does not match! Either download failed or something went wrong. Please remove"
 		ealert "$pkg_name and rerun download again"
