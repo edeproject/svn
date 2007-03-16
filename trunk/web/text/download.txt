@@ -27,13 +27,13 @@ about usage can be found on {link:subversion page|http://subversion.tigris.org/}
 Here is how to checkout each component:
 
 ede:
-[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/ede]]]
+[[[svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/ede]]]
 
 efltk:
-[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/efltk]]]
+[[[svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/efltk]]]
 
 themes:
-[[[svn co https://svn.sourceforge.net/svnroot/ede/trunk/themes]]]
+[[[svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/themes]]]
 
 or {link: directly browse | http://svn.sourceforge.net/viewvc/ede/} it to see what is there.
 
