@@ -1,0 +1,149 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2006 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+
+# If in any case you can't compile with GNU make, try with this one.
+
+SubDir TOP ;
+
+# directories
+COMMON           = common/aboutdialog.cpp ;
+EDISPLAYCONF_DIR = edisplayconf ;
+ECONTROL_DIR     = econtrol ;
+EICONSCONF_DIR   = eiconsconf ;
+ETIMEDATE_DIR    = etimedate ;
+ELAUNCHER_DIR    = elauncher ;
+EWORKPANEL_DIR   = eworkpanel ;
+EPANELCONF_DIR   = epanelconf ;
+EVOLUME_DIR      = evolume ;
+EMENUEDITOR_DIR  = emenueditor ;
+ESVRCONF_DIR     = esvrconf ;
+EICONMAN_DIR     = eiconman ;
+ECOLORCONF_DIR   = ecolorconf ;
+EWMCONF_DIR      = ewmconf ;
+ETIP_DIR         = etip ;
+EDEWM_DIR        = edewm ;
+EINSTALLER_DIR   = einstaller ;
+EKEYCONF_DIR     = ekeyconf ;
+ERUN_DIR         = erun ;
+EFINDER_DIR      = efinder ;
+
+
+# build common first
+Objects $(COMMON) ;
+DEPENDS all : $(COMMON:S=$(SUFOBJ)) ;
+
+Build $(EDISPLAYCONF_DIR) : edisplayconf : edisplayconf.cpp conf.cpp ;
+Build $(ECONTROL_DIR)     : econtrol     : econtrol.cpp $(COMMON) ;
+Build $(EICONSCONF_DIR)   : eiconsconf   : eiconsconf.cpp eicon.cpp ;
+Build $(ETIMEDATE_DIR)    : etimedate    : fl_time.cpp etimedate.cpp ;
+Build $(ELAUNCHER_DIR)    : elauncher    : elauncher.cpp ;
+Build $(EPANELCONF_DIR)   : epanelconf   : epanelconf.cpp util.cpp ;
+Build $(EVOLUME_DIR)      : evolume      : prefs.cpp evolume.cpp $(COMMON) ;
+Build $(EMENUEDITOR_DIR)  : emenueditor  : emenueditor.cpp $(COMMON) ;
+Build $(ESVRCONF_DIR)     : esvrconf     : escrsaverconf.cpp escreensaver.cpp ;
+Build $(EICONMAN_DIR)     : eiconman     : propdialog.cpp eiconman.cpp edeskicon.cpp edeskconf.cpp ;
+Build $(ECOLORCONF_DIR)   : ecolorconf   : ecolorutils.cpp ecolorconf.cpp efontdialog.cpp $(COMMON) ;
+Build $(EWMCONF_DIR)      : ewmconf      : ewmconf.cpp ewm.cpp ;
+Build $(ETIP_DIR)         : etip         : etip.cpp ;
+Build $(EINSTALLER_DIR)   : einstaller   : einstaller.cpp einstall.cpp ;
+Build $(EKEYCONF_DIR)     : ekeyconf     : ekeys.cpp ekeyconf.cpp Shortcut_Button.cpp ;
+Build $(ERUN_DIR)         : erun         : erun.cpp ;
+Build $(EFINDER_DIR)      : efinder      : VerticalTabs.cpp eglob.cpp efinder.cpp $(COMMON) ;
+
+Build $(EWORKPANEL_DIR)   : eworkpanel : item.cpp
+                                       taskbutton.cpp
+                                       cpumonitor.cpp
+                                       workpanel.cpp
+                                       mainmenu.cpp
+                                       mainmenu_scan.cpp
+                                       dock.cpp
+                                       batterymonitor.cpp
+                                       keyboardchooser.cpp
+                                       logoutdialog.cpp
+                                       aboutdialog.cpp
+                                       panelbutton.cpp ;
+
+# edewm
+if $(NEW_EDEMW) {
+Build $(EDEWM_DIR) : edewm : Utils.cpp
+                             Atoms.cpp
+                             main.cpp
+                             Hints.cpp
+                             Windowmanager.cpp
+                             Events.cpp
+                             Titlebar.cpp
+                             Cursor.cpp
+                             debug.cpp
+                             Frame.cpp
+                             Sound.cpp ;
+}
+else {
+Build $(EDEWM_DIR) : edewm : WMWindow.cpp 
+                             Theme.cpp 
+                             Netwm.cpp 
+                             Mwm.cpp 
+                             Icccm.cpp 
+                             Icon.cpp 
+                             Cursor.cpp 
+                             Desktop.cpp 
+                             Events.cpp 
+                             Frame.cpp 
+                             Hotkeys.cpp 
+                             Tabmenu.cpp 
+                             Titlebar.cpp 
+                             Windowmanager.cpp 
+                             Winhints.cpp 
+                             main.cpp ;
+}
+
+Translation [ FDirName $(EDISPLAYCONF_DIR) locale ] : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(ECONTROL_DIR) locale ]     : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EICONSCONF_DIR) locale ]   : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(ETIMEDATE_DIR) locale ]    : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(ELAUNCHER_DIR) locale ]    : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EPANELCONF_DIR) locale ]   : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EVOLUME_DIR) locale ]      : hu.po id.po ru.po sk.po ;
+Translation [ FDirName $(ESVRCONF_DIR) locale ]     : hu.po ru.po sk.po ;
+Translation [ FDirName $(EICONMAN_DIR) locale ]     : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(ECOLORCONF_DIR) locale ]   : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EWMCONF_DIR) locale ]      : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(ETIP_DIR) locale ]         : id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EINSTALLER_DIR) locale ]   : hu.po ru.po sk.po ;
+Translation [ FDirName $(ERUN_DIR) locale ]         : id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EFINDER_DIR) locale ]      : hu.po id.po ru.po sk.po ;
+Translation [ FDirName $(EWORKPANEL_DIR) locale ]   : hu.po id.po ru.po sk.po sr.po ;
+Translation [ FDirName $(EDEWM_DIR) locale ]        : hu.po id.po ru.po sk.po sr.po fi.po ;
+
+# Translation [ FDirName $(EKEYCONF_DIR) locale ]     : hu.po id.po ru.po sk.po sr.po ;
+
+InstallImages [ FDirName $(ICONSDIR) 16x16 ] : [ FDirName datas icons-16 ] ;
+InstallImages [ FDirName $(ICONSDIR) 48x48 ] : [ FDirName datas icons-48 ] ;
+
+DOCS = ede-small.gif
+	   index.html
+	   authors.html
+	   changelog.html
+	   copying.html
+	   help.html
+	   logoinvert100.png
+	   getede.png
+	   ede.png
+	   style.css ;
+
+docs_dir = [ FDirName docs ede ] ;
+InstallData $(DOCSDIR) : $(docs_dir)/$(DOCS) ;
+
+CONF_DATA = ede.conf 
+            wmanager.conf 
+            mime.conf 
+ 			efltk.conf ;
+
+conf_dir = [ FDirName datas ] ;
+InstallData $(CONFDIR) : $(conf_dir)/$(CONF_DATA) ;
