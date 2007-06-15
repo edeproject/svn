@@ -1,0 +1,45 @@
+#
+# $Id$
+#
+# Part of edelib.
+# Copyright (c) 2005-2007 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+#
+
+SubDir TOP test ;
+
+# shared library requires linkage with FLTK
+if $(SHARED)
+{
+	ADDONLIB = $(FLTKLIBS) ;
+}
+
+MakeTest run_tests : UnitTest.cpp 
+					utest.cpp 
+					util.cpp
+					strutil.cpp 
+					file.cpp
+					directory.cpp
+					datetime.cpp
+					conf.cpp
+					string.cpp
+					color.cpp
+					xml.cpp
+					mime.cpp
+					run_tests.cpp
+					: 
+					$(ADDONLIB) $(FLTKLIBS) ;
+
+#MakeTest th : th.cpp ;
+#MakeTest pth : pth.cpp ;
+#MakeTest dd : dd.cpp ;
+$MakeTest pp : pp.cpp ;
+
+Clean clean : [ FFileName $(TOP) test .foo.txt ] ;
+Clean clean : [ FFileName $(TOP) test .ede.conf ] ;
+
+# include examples directory
+SubInclude TOP test examples ;
