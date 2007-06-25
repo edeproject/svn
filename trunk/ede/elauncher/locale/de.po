@@ -1,0 +1,195 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2007 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the EDE package.
+# Ralf Eichinger <ralf.eichinger@pixotec.de>, 2007.
+#
+#: elauncher/elauncher.cpp:116
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: elauncher 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-12-12 21:03+0100\n"
+"PO-Revision-Date: 2007-02-22 21:00+0100\n"
+"Last-Translator: Ralf Eichinger <ralf.eichinger@pixotec.de>\n"
+"Language-Team: German <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: elauncher/elauncher.cpp:53
+msgid "&Ok"
+msgstr "&OK"
+
+#: elauncher/elauncher.cpp:72
+msgid "Error"
+msgstr "Fehler"
+
+#: elauncher/elauncher.cpp:76 elauncher/elauncher.cpp:429
+msgid "&OK"
+msgstr "&OK"
+
+#: elauncher/elauncher.cpp:111
+msgid "Program not found:"
+msgstr "Programm nicht gefunden:"
+
+#: elauncher/elauncher.cpp:112
+msgid "Perhaps it is not installed properly. Check your $PATH value."
+msgstr "Vielleicht ist es nicht richtig installiert. Überprüfen Sie den $PATH-Wert."
+
+#: elauncher/elauncher.cpp:115
+msgid "File is not executable:"
+msgstr "Datei ist nicht ausführbar:"
+
+#: elauncher/elauncher.cpp:122
+#, c-format
+msgid "Elauncher: child's exited normally with status %d\n"
+msgstr "Elauncher: Kindprozess normal beendet mit Status %d\n"
+
+#: elauncher/elauncher.cpp:137
+msgid "Standard output"
+msgstr "Standardausgabe"
+
+#: elauncher/elauncher.cpp:146
+msgid "Standard error output"
+msgstr "Standard-Fehlerausgabe"
+
+#: elauncher/elauncher.cpp:222
+#, c-format
+msgid "Elauncher: fork() failed!"
+msgstr "Elauncher: fork() fehlgeschlagen!"
+
+#: elauncher/elauncher.cpp:253
+#, c-format
+msgid "Elauncher: waitpid failed\n"
+msgstr "Elauncher: waitpid fehlgeschlagen\n"
+
+#: elauncher/elauncher.cpp:263
+#, c-format
+msgid "Elauncher: %s: child died unexpectedly!\n"
+msgstr "Elauncher: %s: Kindprozess unerwartet gestorben!\n"
+
+#: elauncher/elauncher.cpp:314
+#, c-format
+msgid ""
+"Unknown file type:\n"
+"\t%s\n"
+"To open this file in 'appname' please use\n"
+" 'appname %s'"
+msgstr ""
+"Unbekannter Dateityp:\n"
+"\t%s\n"
+"Um diese Datei mit einer Anwendung 'appname' zu öffnen, verwenden Sie bitte\n"
+" 'appname %s'"
+
+#: elauncher/elauncher.cpp:352
+#, c-format
+msgid ""
+"You have requested to execute program %s via Elauncher. However, secure mode "
+"was enabled. Execution has been prevented."
+msgstr ""
+"Sie wollten das Programm %s von Elauncher aus starten. Es war jedoch der "
+"sichere Modus aktiviert. Die Ausführung wurde verhindert."
+
+#: elauncher/elauncher.cpp:404
+msgid "Executables (*.*), *, All files (*.*), *"
+msgstr "Ausführbare Dateien (*.*), *, Alle Dateien (*.*), *"
+
+#: elauncher/elauncher.cpp:405
+msgid "File selection..."
+msgstr "Dateiauswahl..."
+
+#: elauncher/elauncher.cpp:413
+msgid "Open..."
+msgstr "Öffnen..."
+
+#: elauncher/elauncher.cpp:416
+msgid "Open:"
+msgstr "Öffne:"
+
+#: elauncher/elauncher.cpp:425
+msgid ""
+"Type the location you want to open or the name of the program you want to "
+"run. (Possible prefixes are: http:, ftp:, gg:, av:, leo:)"
+msgstr ""
+"Tippen Sie den Pfad ein, den Sie öffnen wollen oder den Namen des Programms, "
+"das Sie ausführen wollen. (Mögliche Prefixe sind: http:, ftp:, gg:, av:, leo:)"
+
+#: elauncher/elauncher.cpp:432
+msgid "&Cancel"
+msgstr "&Abbrechen"
+
+#: elauncher/elauncher.cpp:435
+msgid "&Browse..."
+msgstr "&Durchsuchen..."
+
+#: elauncher/elauncher.cpp:450
+#, c-format
+msgid "program and URL opener for EDE.\n"
+msgstr "Programm- und URL-Öffner für EDE.\n"
+
+#: elauncher/elauncher.cpp:452
+#, c-format
+msgid ""
+"Licenced under terms of GNU General Public Licence v2.0 or newer.\n"
+"\n"
+msgstr ""
+"Lizensiert unter den Bedingungen der GNU General Public Licence v2.0 oder neuer.\n"
+"\n"
+
+#: elauncher/elauncher.cpp:453
+#, c-format
+msgid "Usage:\n"
+msgstr "Anwendung:\n"
+
+#: elauncher/elauncher.cpp:457
+#, c-format
+msgid ""
+"\tParse URL in form protocol:address and open in appropriate program.\n"
+"\tURLs with protocol 'file' are opened based on their MIME type.\n"
+msgstr ""
+"\tLiest eine URL im Format Protokoll:Adresse und öffnet diese im passenden Programm.\n"
+"\tURLs mit dem Protokoll 'file' werden basierend auf ihrem MIME-Typ geöffnet.\n"
+
+#: elauncher/elauncher.cpp:459
+#, c-format
+msgid ""
+"\tRun the program. If no path is given, look in $PATH. To give parameters\n"
+"\tto program, use quotes e.g.:\n"
+msgstr ""
+"\tFührt ein Programm aus. Wenn kein Pfad angegeben ist, wird innerhalb $PATH gesucht. "
+"\tUm Parameter an das Programm zu übergeben, verwenden Sie Anführungszeichen, z.B.:\n"
+
+#: elauncher/elauncher.cpp:461
+#, c-format
+msgid "Options:\n"
+msgstr "Optionen:\n"
+
+#: elauncher/elauncher.cpp:463
+#, c-format
+msgid "This help screen.\n"
+msgstr "Diese Hilfeseite.\n"
+
+#: elauncher/elauncher.cpp:465
+#, c-format
+msgid "Run as root. Dialog is opened to enter password.\n"
+msgstr "Als root ausführen. Es wird ein Dialogfenster zur Eingabe des Passwortes geöffnet.\n"
+
+#: elauncher/elauncher.cpp:467
+#, c-format
+msgid "Prevent running programs. Only URLs are allowed.\n"
+msgstr "Verhindert das Ausführen von Programmen. Nur URLs sind erlaubt.\n"
+
+#: elauncher/elauncher.cpp:469
+#, c-format
+msgid ""
+"Open in default terminal app.\n"
+"\n"
+msgstr ""
+"In der Standard-Terminalanwendung öffnen.\n"
+"\n"
+
+#: elauncher/elauncher.cpp:500
+#, c-format
+msgid "Elauncher: Wrong number of parameters...\n"
+msgstr "Elauncher: Ungültige Anzahl an Parametern...\n"

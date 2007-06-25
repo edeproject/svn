@@ -11,6 +11,9 @@
 CPPFILES = aboutdialog.cpp
 TARGET   =
 
+
+POFILES = locale/de.po
+
 include ../makeinclude
 
 all: aboutdialog.o
