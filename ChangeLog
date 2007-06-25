@@ -1,4 +1,8 @@
 1.2
+* general
+- Added German translation by Ralf Eichinger (pixotec)
+* elauncher
+- Fix for bug "lots of output crash elauncher"
 * eworkpanel
 - fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
 - closed few memleaks
