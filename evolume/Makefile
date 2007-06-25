@@ -14,7 +14,8 @@ TARGET   = evolume
 
 POFILES = locale/ru.po\
 		  locale/sk.po\
-		  locale/hu.po
+		  locale/hu.po\
+		  locale/de.po
 
 include ../makeinclude
 

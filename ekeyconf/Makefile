@@ -11,6 +11,10 @@
 CPPFILES = ekeys.cpp ekeyconf.cpp Shortcut_Button.cpp
 TARGET   = ekeyconf
 
+
+POFILES = locale/de.po
+
+
 include ../makeinclude
 
 install:
