@@ -724,9 +724,13 @@ int main(int argc, char **argv)
 	
 	// Run browser
 	if (doRunBrowser) {
+		Fl_Group *g3 = new Fl_Group(0,0,100,20);
+		g3->box(FL_FLAT_BOX);
+		g3->layout_spacing(0);
+		g3->layout_align(FL_ALIGN_LEFT);
 		runBrowser = new Fl_Input_Browser("",100,FL_ALIGN_LEFT,30);
 		//runBrowser->image(run_pix);
-		//runBrowser->box(FL_THIN_DOWN_BOX);
+		runBrowser->box(FL_THIN_DOWN_BOX); // This is the only box type which works :(
 
 		// Added _ALWAYS so callback is in case:
 		// 1) select old command from input browser
@@ -737,6 +741,9 @@ int main(int argc, char **argv)
 		runBrowser->input()->when(FL_WHEN_ENTER_KEY); 
 		runBrowser->input()->callback((Fl_Callback*)cb_run_app);
 		runBrowser->callback((Fl_Callback*)cb_run_app2);
+		g3->end();
+		g3->show();
+		g3->resizable();
 
 		v = new Fl_VertDivider(0, 0, 5, 18, "");
 		v->layout_align(FL_ALIGN_LEFT);
