@@ -77,20 +77,21 @@ void MainMenu::draw()
     {
         flags = FL_INACTIVE;
     }
-    else if (belowmouse()) {
-        flags = FL_HIGHLIGHT;
-        color = fl_lighter(color);
-        lcolor = fl_lighter(label_color());
-        if(!color) color = this->color();
-        if(!lcolor) color = this->label_color();        
-    }
     else if (m_open) {
         flags = FL_HIGHLIGHT|FL_VALUE;
         color = fl_lighter(color);
         lcolor = fl_lighter(label_color());
         if(!color) color = this->color();
         if(!lcolor) color = this->label_color();
-    } else {
+    }
+    else if (belowmouse()) {
+        flags = FL_HIGHLIGHT;
+        color = fl_lighter(color);
+        lcolor = fl_lighter(label_color());
+        if(!color) color = this->color();
+        if(!lcolor) color = this->label_color();        
+    } 
+    else {
         flags = 0;
     }
     box->draw(0, 0, this->w(), this->h(), color, flags);
@@ -449,7 +450,10 @@ int MainMenu::popup(int X, int Y, int W, int H)
     if(Fl::event_button()==1) {
         m_open = true;
         init_entries();
-        int ret = Fl_Menu_::popup(X, Y-calculate_height()-h()-1, W, H);
+        int newy=Y-calculate_height()-h()-1;
+        // mainmenu is inside a group:
+        if (parent()->parent()->y()+newy<1) newy=Y;
+        int ret = Fl_Menu_::popup(X, newy, W, H);
         clear();
         m_open = false;
         return ret;
