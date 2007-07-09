@@ -100,7 +100,7 @@ int Fl_Update_Window::handle(int event)
 
 	case FL_ENTER:
 		if(!autoHide) {
-			position(initX, initY);
+//			position(initX, initY);
 			if(shown()) Fl_WM::set_window_strut(fl_xid(mPanelWindow), 0, 0, 0, h());
 		}
 		else 
@@ -374,6 +374,10 @@ void updateWorkspaces(Fl_Widget*,void*)
 			i->label(tmp.printf(tmp, "%s %d", _("Workspace") ,n+1));
 		}
 		if(current==n) i->set_value();
+	}
+	// add a divider if there are no workspaces
+	if (count<1) {
+		new Fl_Menu_Divider();
 	}
 	if(names) delete []names;
 

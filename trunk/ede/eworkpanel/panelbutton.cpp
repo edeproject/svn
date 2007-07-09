@@ -103,7 +103,9 @@ int PanelMenu::popup()
     m_open = true;
     redraw(); // push down button
     calculate_height();
-    int retval = Fl_Menu_::popup(0, 0-Height);//, w(), h());
+    int newy=0-Height;
+    if (parent()->y()+newy<1) newy=parent()->h();
+    int retval = Fl_Menu_::popup(0, newy);//, w(), h());
     m_open = false;
     redraw();
     return retval;
