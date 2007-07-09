@@ -7,6 +7,8 @@ void* to int
 - Fix for bug "lots of output crash elauncher"
 * eworkpanel
 - Enable to put workpanel on top of screen using -g command line switch
+(if autohiding is enabled, the panel will go to the bottom anyways - 
+TODO)
 - Improved rendering of main menu button and run browser
 - Fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
 - Closed few memleaks
