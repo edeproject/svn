@@ -47,108 +47,96 @@ void quit_cb(Fl_Widget*, void*)
     main_window->hide();
 }
 
-void cb_volume(Fl_Slider* o, void *i) 
+void cb_volume(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_VOLUME, volume_slider, volume_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_VOLUME, volume_slider, volume_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_VOLUME, volume_slider, volume_balance, volume_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_VOLUME, volume_rec);
 }
 
-void cb_cd(Fl_Slider* o, void *i) 
+void cb_cd(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_CD, cd_slider, cd_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_CD, cd_slider, cd_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_CD, cd_slider, cd_balance, cd_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_CD, cd_rec);
 }
 
-void cb_pcm(Fl_Slider* o, void *i) 
+void cb_pcm(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_PCM, pcm_slider, pcm_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_PCM, pcm_slider, pcm_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_PCM, pcm_slider, pcm_balance, pcm_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_PCM, pcm_rec);
 }
 
-void cb_synth(Fl_Slider* o, void *i) 
+void cb_synth(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_SYNTH, synth_slider, synth_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_SYNTH, synth_slider, synth_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_SYNTH, synth_slider, synth_balance, synth_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_SYNTH, synth_rec);
 }
 
-void cb_line(Fl_Slider* o, void *i) 
+void cb_line(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_LINE, line_slider, line_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_LINE, line_slider, line_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_LINE, line_slider, line_balance, line_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_LINE, line_rec);
 }
 
-void cb_bass(Fl_Slider* o, void *i) 
+void cb_bass(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_BASS, bass_slider, bass_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_BASS, bass_slider, bass_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_BASS, bass_slider, bass_balance, bass_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_BASS, bass_rec);
 }
 
-void cb_treble(Fl_Slider* o, void *i) 
+void cb_treble(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_TREBLE, treble_slider, treble_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_TREBLE, treble_slider, treble_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_TREBLE, treble_slider, treble_balance, treble_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_TREBLE, treble_rec);
 }
 
-void cb_mic(Fl_Slider* o, void *i) 
+void cb_mic(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_MIC, mic_slider, mic_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_MIC, mic_slider, mic_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_MIC, mic_slider, mic_balance, mic_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_MIC, mic_rec);
 }
 
-void cb_speaker(Fl_Slider* o, void *i) 
+void cb_speaker(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_SPEAKER, speaker_slider, speaker_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_SPEAKER, speaker_slider, speaker_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_SPEAKER, speaker_slider, speaker_balance, speaker_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_SPEAKER, speaker_rec);
 }
 
-void cb_imix(Fl_Slider* o, void *i) 
+void cb_imix(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_IMIX, imix_slider, imix_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_IMIX, imix_slider, imix_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_IMIX, imix_slider, imix_balance, imix_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_IMIX, imix_rec);
 }
 
-void cb_igain(Fl_Slider* o, void *i) 
+void cb_igain(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_IGAIN, igain_slider, igain_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_IGAIN, igain_slider, igain_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_IGAIN, igain_slider, igain_balance, igain_mute);
     if (x == 4) set_rec(mixer_device, SOUND_MIXER_IGAIN, igain_rec);
 }
 
-void cb_ogain(Fl_Slider* o, void *i) 
+void cb_ogain(Fl_Widget*, long x) 
 {
-    int x = (int) i;
     if (x == 1) set_device(mixer_device, SOUND_MIXER_OGAIN, ogain_slider, ogain_balance);
     if (x == 2) set_device(mixer_device, SOUND_MIXER_OGAIN, ogain_slider, ogain_balance);
     if (x == 3) set_mute(mixer_device, SOUND_MIXER_OGAIN, ogain_slider, ogain_balance, ogain_mute);
@@ -420,76 +408,76 @@ int main (int argc, char **argv)
 
     update_info();
     
-    volume_slider->callback( (Fl_Callback*) cb_volume, (void*) 1 );
-    volume_balance->callback( (Fl_Callback*) cb_volume,(void *) 2 );    
-    volume_mute->callback( (Fl_Callback*) cb_volume,(void *) 3 );    
-    volume_rec->callback( (Fl_Callback*) cb_volume,(void *) 4 );
+    volume_slider->callback( cb_volume, 1 );
+    volume_balance->callback( cb_volume, 2 );    
+    volume_mute->callback( cb_volume, 3 );    
+    volume_rec->callback( cb_volume, 4 );
     get_device_info(mixer_device, volume_slider, volume_balance, volume_rec, SOUND_MIXER_VOLUME);    
     
-    cd_slider->callback( (Fl_Callback*) cb_cd, (void *) 1 );
-    cd_balance->callback( (Fl_Callback*) cb_cd,(void *) 2 );    
-    cd_mute->callback( (Fl_Callback*) cb_cd,(void *) 3 );    
-    cd_rec->callback( (Fl_Callback*) cb_cd,(void *) 4 );
+    cd_slider->callback(  cb_cd,  1 );
+    cd_balance->callback(  cb_cd, 2 );    
+    cd_mute->callback(  cb_cd, 3 );    
+    cd_rec->callback(  cb_cd, 4 );
     get_device_info(mixer_device, cd_slider, cd_balance, cd_rec, SOUND_MIXER_CD);
 
-    pcm_slider->callback( (Fl_Callback*) cb_pcm, (void *) 1 );
-    pcm_balance->callback( (Fl_Callback*) cb_pcm,(void *) 2 );    
-    pcm_mute->callback( (Fl_Callback*) cb_pcm,(void *) 3 );    
-    pcm_rec->callback( (Fl_Callback*) cb_pcm,(void *) 4 );
+    pcm_slider->callback(  cb_pcm,  1 );
+    pcm_balance->callback(  cb_pcm, 2 );    
+    pcm_mute->callback(  cb_pcm, 3 );    
+    pcm_rec->callback(  cb_pcm, 4 );
     get_device_info(mixer_device, pcm_slider, pcm_balance, pcm_rec, SOUND_MIXER_PCM);
 
-    synth_slider->callback( (Fl_Callback*) cb_synth, (void *) 1 );
-    synth_balance->callback( (Fl_Callback*) cb_synth,(void *) 2 );    
-    synth_mute->callback( (Fl_Callback*) cb_synth,(void *) 3 );    
-    synth_rec->callback( (Fl_Callback*) cb_synth,(void *) 4 );
+    synth_slider->callback(  cb_synth,  1 );
+    synth_balance->callback(  cb_synth, 2 );    
+    synth_mute->callback(  cb_synth, 3 );    
+    synth_rec->callback(  cb_synth, 4 );
     get_device_info(mixer_device, synth_slider, synth_balance, synth_rec, SOUND_MIXER_SYNTH);    
     
-    line_slider->callback( (Fl_Callback*) cb_line, (void *) 1 );
-    line_balance->callback( (Fl_Callback*) cb_line,(void *) 2 );    
-    line_mute->callback( (Fl_Callback*) cb_line,(void *) 3 );    
-    line_rec->callback( (Fl_Callback*) cb_line,(void *) 4 );
+    line_slider->callback(  cb_line,  1 );
+    line_balance->callback(  cb_line, 2 );    
+    line_mute->callback(  cb_line, 3 );    
+    line_rec->callback(  cb_line, 4 );
     get_device_info(mixer_device, line_slider, line_balance, line_rec, SOUND_MIXER_LINE);    
     
-    bass_slider->callback( (Fl_Callback*) cb_bass, (void *) 1 );
-    bass_balance->callback( (Fl_Callback*) cb_bass,(void *) 2 );    
-    bass_mute->callback( (Fl_Callback*) cb_bass,(void *) 3 );    
-    bass_rec->callback( (Fl_Callback*) cb_bass,(void *) 4 );
+    bass_slider->callback(  cb_bass,  1 );
+    bass_balance->callback(  cb_bass, 2 );    
+    bass_mute->callback(  cb_bass, 3 );    
+    bass_rec->callback(  cb_bass, 4 );
     get_device_info(mixer_device, bass_slider, bass_balance, bass_rec, SOUND_MIXER_BASS);    
      
-    treble_slider->callback( (Fl_Callback*) cb_treble, (void *) 1 );
-    treble_balance->callback( (Fl_Callback*) cb_treble,(void *) 2 );    
-    treble_mute->callback( (Fl_Callback*) cb_treble,(void *) 3 );    
-    treble_rec->callback( (Fl_Callback*) cb_treble,(void *) 4 );
+    treble_slider->callback(  cb_treble,  1 );
+    treble_balance->callback(  cb_treble, 2 );    
+    treble_mute->callback(  cb_treble, 3 );    
+    treble_rec->callback(  cb_treble, 4 );
     get_device_info(mixer_device, treble_slider, treble_balance, treble_rec, SOUND_MIXER_TREBLE);    
     
-    mic_slider->callback( (Fl_Callback*) cb_mic, (void *) 1 );
-    mic_balance->callback( (Fl_Callback*) cb_mic,(void *) 2 );    
-    mic_mute->callback( (Fl_Callback*) cb_mic,(void *) 3 );    
-    mic_rec->callback( (Fl_Callback*) cb_mic,(void *) 4 );
+    mic_slider->callback(  cb_mic,  1 );
+    mic_balance->callback(  cb_mic, 2 );    
+    mic_mute->callback(  cb_mic, 3 );    
+    mic_rec->callback(  cb_mic, 4 );
     get_device_info(mixer_device, mic_slider, mic_balance, mic_rec, SOUND_MIXER_MIC);    
      
-    speaker_slider->callback( (Fl_Callback*) cb_speaker, (void *) 1 );
-    speaker_balance->callback( (Fl_Callback*) cb_speaker,(void *) 2 );    
-    speaker_mute->callback( (Fl_Callback*) cb_speaker,(void *) 3 );    
-    speaker_rec->callback( (Fl_Callback*) cb_speaker,(void *) 4 );
+    speaker_slider->callback(  cb_speaker,  1 );
+    speaker_balance->callback(  cb_speaker, 2 );    
+    speaker_mute->callback(  cb_speaker, 3 );    
+    speaker_rec->callback(  cb_speaker, 4 );
     get_device_info(mixer_device, speaker_slider, speaker_balance, speaker_rec, SOUND_MIXER_SPEAKER);    
      
-    imix_slider->callback( (Fl_Callback*) cb_imix, (void *) 1 );
-    imix_balance->callback( (Fl_Callback*) cb_imix,(void *) 2 );    
-    imix_mute->callback( (Fl_Callback*) cb_imix,(void *) 3 );    
-    imix_rec->callback( (Fl_Callback*) cb_imix,(void *) 4 );
+    imix_slider->callback(  cb_imix,  1 );
+    imix_balance->callback(  cb_imix, 2 );    
+    imix_mute->callback(  cb_imix, 3 );    
+    imix_rec->callback(  cb_imix, 4 );
     get_device_info(mixer_device, imix_slider, imix_balance, imix_rec, SOUND_MIXER_IMIX);    
     
-    igain_slider->callback( (Fl_Callback*) cb_igain, (void *) 1 );
-    igain_balance->callback( (Fl_Callback*) cb_igain,(void *) 2 );    
-    igain_mute->callback( (Fl_Callback*) cb_igain,(void *) 3 );    
-    igain_rec->callback( (Fl_Callback*) cb_igain,(void *) 4 );
+    igain_slider->callback(  cb_igain,  1 );
+    igain_balance->callback(  cb_igain, 2 );    
+    igain_mute->callback(  cb_igain, 3 );    
+    igain_rec->callback(  cb_igain, 4 );
     get_device_info(mixer_device, igain_slider, igain_balance, igain_rec, SOUND_MIXER_IGAIN);    
 	       
-    ogain_slider->callback( (Fl_Callback*) cb_ogain, (void *) 1 );
-    ogain_balance->callback( (Fl_Callback*) cb_ogain,(void *) 2 );    
-    ogain_mute->callback( (Fl_Callback*) cb_ogain,(void *) 3 );    
-    ogain_rec->callback( (Fl_Callback*) cb_ogain,(void *) 4 );
+    ogain_slider->callback(  cb_ogain,  1 );
+    ogain_balance->callback(  cb_ogain, 2 );    
+    ogain_mute->callback(  cb_ogain, 3 );    
+    ogain_rec->callback(  cb_ogain, 4 );
     get_device_info(mixer_device, ogain_slider, ogain_balance, ogain_rec, SOUND_MIXER_OGAIN);    
 
     main_window->end();

@@ -1,11 +1,15 @@
 1.2
 * general
 - Added German translation by Ralf Eichinger (pixotec)
+- Fix compilation warnings on 64-bit platforms caused by casting from 
+void* to int
 * elauncher
 - Fix for bug "lots of output crash elauncher"
 * eworkpanel
-- fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
-- closed few memleaks
+- Enable to put workpanel on top of screen using -g command line switch
+- Improved rendering of main menu button and run browser
+- Fixed file stream closing in mainmenu.cpp (duh!), thanks to Triples
+- Closed few memleaks
 
 1.1
 * general

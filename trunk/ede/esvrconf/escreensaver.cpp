@@ -315,7 +315,7 @@ void writeConfiguration()
     config.create_section("Saver");
     config.set_section("Saver");
     
-    config.write("Active", saversList->item() ? (int)saversList->item()->user_data() : default_saver);
+    config.write("Active", saversList->item() ? (long)saversList->item()->user_data() : default_saver);
 
     config.write("Timeout", timeoutSlider->value());
     config.create_section("DPMS");
@@ -352,10 +352,10 @@ void writeConfigurationSaver()
     fprintf(config, "selected:		%d\n", 0);    
     
     fprintf(config, "programs:	\"%s\"	%s\n", saversList->item() ?
-        (char*)p.screenhacks[(int)saversList->item()->user_data()]->name :
+        (char*)p.screenhacks[(long)saversList->item()->user_data()]->name :
 	    (char*)p.screenhacks[default_saver]->name,
 	saversList->item() ?    
-	(char*)p.screenhacks[(int)saversList->item()->user_data()]->command :
+	(char*)p.screenhacks[(long)saversList->item()->user_data()]->command :
 	    (char*)p.screenhacks[default_saver]->command
     );    
     
@@ -468,7 +468,7 @@ void startSaverPreview()
 
     char cmd[4096] = {0};
     snprintf(cmd, 4096, "%s%s -window-id 0x%X", location, 
-	saversList->item() ? (char*)p.screenhacks[(int)saversList->item()
+	saversList->item() ? (char*)p.screenhacks[(long)saversList->item()
 	->user_data()]->command : 
 	(char*)p.screenhacks[default_saver]->command, (int)id);
     launchPreviewSubprocess(cmd);
