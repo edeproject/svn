@@ -126,9 +126,9 @@ int Fl_Update_Window::handle(int event)
 /////////////////////////////////////////////////////////////////////////////
 
 
-void setWorkspace(Fl_Button *, void *w)
+void setWorkspace(Fl_Widget *, long w)
 {
-	Fl_WM::set_current_workspace((int) w);
+	Fl_WM::set_current_workspace(w);
 }
 
 void restoreRunBrowser() {
@@ -364,7 +364,7 @@ void updateWorkspaces(Fl_Widget*,void*)
 
 	for(int n=0; n<count; n++) {
 		Fl_Item *i = new Fl_Item();
-		i->callback( (Fl_Callback *) setWorkspace, (void*)n);
+		i->callback(setWorkspace, (long)n);
 		i->type(Fl_Item::RADIO);
 		if(n<names_count && names[n]) {
 			i->label(names[n]);
