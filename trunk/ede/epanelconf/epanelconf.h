@@ -32,6 +32,7 @@ extern Fl_Check_Button* runbrowser_check;
 extern Fl_Check_Button* soundmixer_check;
 extern Fl_Check_Button* cpumonitor_check;
 extern Fl_Check_Button* autohide_check;
+extern Fl_Check_Button* username_check;
 extern Fl_Value_Slider* ws_slider;
 extern Fl_Input* browserProgram;
 extern Fl_Input* terminalProgram;
