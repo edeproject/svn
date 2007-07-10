@@ -116,6 +116,18 @@ int Fl_Update_Window::handle(int event)
 		}
 //		throw_focus();
 		return 1;
+
+	case FL_MOUSEWHEEL:
+		if (mWorkspace == Fl::belowmouse()) {
+			int count = Fl_WM::get_workspace_count();
+			int current = Fl_WM::get_current_workspace();
+
+			current-=Fl::event_dy(); // direction of dy is opposite
+			while (current>=count) current-=count;
+			while (current<0) current+=count;
+
+			Fl_WM::set_current_workspace(current);
+		}
 	}
 
 	return Fl_Window::handle(event);
@@ -684,6 +696,7 @@ int main(int argc, char **argv)
 	}
 	
 	// Workspaces panel
+	mWorkspace=0; // so we can detect it later
 	if (doWorkspaces) {
 		mWorkspace = new PanelMenu(0, 0, 24, 22, FL_NO_BOX, FL_DOWN_BOX, "WSMenu");
 		mWorkspace->layout_align(FL_ALIGN_LEFT);

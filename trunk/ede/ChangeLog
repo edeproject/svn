@@ -6,6 +6,7 @@ void* to int
 * elauncher
 - Fix for bug "lots of output crash elauncher"
 * eworkpanel
+- Change workspace using mouse wheel
 - Run browser don't lose focus when mouse is moved (bug #123)
 - Enable to put workpanel on top of screen using -g command line switch
 (if autohiding is enabled, the panel will go to the bottom anyways - 
