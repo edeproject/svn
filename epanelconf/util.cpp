@@ -1,14 +1,3 @@
-/*
- * $Id$
- *
- * Epanelconf, panel configuration tool
- * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2006 EDE Authors.
- *
- * This program is licenced under terms of the 
- * GNU General Public Licence version 2 or newer.
- * See COPYING for details.
- */
 
 #include "epanelconf.h"
 
@@ -37,6 +26,19 @@ void read_config()
 
     cfg.read("AutoHide", temp_bool, false);
     autohide_check->value(temp_bool);
+
+    cfg.read("ShowDesktop", temp_bool, false);
+    showdesktop_check->value(temp_bool);
+    cfg.read("Workspaces", temp_bool, true);
+    workspace_check->value(temp_bool);
+    cfg.read("QuickLaunchBar", temp_bool, true);
+    qlb_check->value(temp_bool);
+    cfg.read("RunBrowser", temp_bool, true);
+    runbrowser_check->value(temp_bool);
+    cfg.read("SoundMixer", temp_bool, true);
+    soundmixer_check->value(temp_bool);
+    cfg.read("CPUMonitor", temp_bool, true);
+    cpumonitor_check->value(temp_bool);
     
     cfg.set_section("Web");
     if(!cfg.read("Browser", temp_value, 0, sizeof(temp_value))) {
@@ -57,6 +59,13 @@ void write_config()
     cfg.write("Volume Control", vcProgram->value());
     cfg.write("Time and date", tdProgram->value());
     cfg.write("AutoHide", autohide_check->value());
+
+    cfg.write("ShowDesktop", showdesktop_check->value());
+    cfg.write("Workspaces", workspace_check->value());
+    cfg.write("QuickLaunchBar", qlb_check->value());
+    cfg.write("RunBrowser", runbrowser_check->value());
+    cfg.write("SoundMixer", soundmixer_check->value());
+    cfg.write("CPUMonitor", cpumonitor_check->value());
 
     cfg.set_section("Web");
     cfg.write("Browser", browserProgram->value());

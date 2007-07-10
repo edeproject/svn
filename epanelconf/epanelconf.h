@@ -10,22 +10,32 @@
  * See COPYING for details.
  */
 
-#ifndef epanelconf_h
-#define epanelconf_h
+#ifndef _EPANELCONF_H_
+#define _EPANELCONF_H_
+
 #include <efltk/Fl.h>
 #include <efltk/Fl_Locale.h>
 #include <efltk/Fl_Window.h>
-extern Fl_Window* panelWindow;
 #include <efltk/Fl_Button.h>
 #include <efltk/Fl_Tabs.h>
 #include <efltk/Fl_Group.h>
-#include <efltk/Fl_Input.h>
-extern Fl_Input* vcProgram;
-extern Fl_Input* tdProgram;
 #include <efltk/Fl_Check_Button.h>
-extern Fl_Check_Button* autohide_check;
 #include <efltk/Fl_Value_Slider.h>
+#include <efltk/Fl_Input.h>
+
+extern Fl_Window* panelWindow;
+extern Fl_Check_Button* showdesktop_check;
+extern Fl_Check_Button* workspace_check;
+extern Fl_Check_Button* qlb_check;
+extern Fl_Check_Button* runbrowser_check;
+extern Fl_Check_Button* soundmixer_check;
+extern Fl_Check_Button* cpumonitor_check;
+extern Fl_Check_Button* autohide_check;
 extern Fl_Value_Slider* ws_slider;
 extern Fl_Input* browserProgram;
 extern Fl_Input* terminalProgram;
+extern Fl_Input* vcProgram;
+extern Fl_Input* tdProgram;
+
+
 #endif
