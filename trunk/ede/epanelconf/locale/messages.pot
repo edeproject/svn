@@ -1,12 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-10-17 18:15+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-07-10 14:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,114 +16,138 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: epanelconf.cpp:25 epanelconf.cpp:35 epanelconf.cpp:60 epanelconf.cpp:70
+#: epanelconf.cpp:53 epanelconf.cpp:62 epanelconf.cpp:71 epanelconf.cpp:80
 msgid "Executables (*.*), *, All files (*.*), *"
 msgstr ""
 
-#: epanelconf.cpp:26 epanelconf.cpp:36 epanelconf.cpp:61 epanelconf.cpp:71
+#: epanelconf.cpp:54 epanelconf.cpp:63 epanelconf.cpp:72 epanelconf.cpp:81
 msgid "File selection..."
 msgstr ""
 
-#: epanelconf.cpp:81
+#: epanelconf.cpp:92
 msgid "Panel settings"
 msgstr ""
 
-#: epanelconf.cpp:83
+#: epanelconf.cpp:95
 msgid "&Apply"
 msgstr ""
 
-#: epanelconf.cpp:86
+#: epanelconf.cpp:98
 msgid "&Close"
 msgstr ""
 
-#: epanelconf.cpp:90
-msgid "Utilities"
+#: epanelconf.cpp:103
+msgid "&Options"
 msgstr ""
 
-#: epanelconf.cpp:91
-msgid "Panel utilities"
+#: epanelconf.cpp:104
+msgid "Panel applets"
 msgstr ""
 
-#: epanelconf.cpp:94
-msgid "Volume control program:"
-msgstr ""
-
-#: epanelconf.cpp:97 epanelconf.cpp:177
-msgid "&Browse..."
-msgstr ""
-
-#: epanelconf.cpp:100
-msgid "Time and date program:"
-msgstr ""
-
-#: epanelconf.cpp:103 epanelconf.cpp:183
-msgid "Br&owse..."
+#: epanelconf.cpp:107
+msgid "Show &desktop button"
 msgstr ""
 
 #: epanelconf.cpp:108
-msgid "Autohide"
+msgid "Wor&kspace switcher"
+msgstr ""
+
+#: epanelconf.cpp:109
+msgid "&Quick launch bar"
+msgstr ""
+
+#: epanelconf.cpp:110
+msgid "&Command line"
 msgstr ""
 
 #: epanelconf.cpp:111
-msgid "Automaticaly hide panel"
+msgid "&Sound mixer"
 msgstr ""
 
-#: epanelconf.cpp:117
-msgid "Workspaces"
+#: epanelconf.cpp:112
+msgid "&Processor load graph"
 msgstr ""
 
-#: epanelconf.cpp:119
-msgid "Number of workspaces: "
+#: epanelconf.cpp:115
+msgid "Autohide"
 msgstr ""
 
-#: epanelconf.cpp:129
-msgid "Workspace names:"
+#: epanelconf.cpp:118
+msgid "&Automaticaly hide panel"
 msgstr ""
 
-#: epanelconf.cpp:132
-msgid "WS 1:"
+#: epanelconf.cpp:124
+msgid "&Workspaces"
+msgstr ""
+
+#: epanelconf.cpp:126
+msgid "&Number of workspaces: "
 msgstr ""
 
 #: epanelconf.cpp:136
-msgid "WS 2:"
+msgid "Workspace names:"
 msgstr ""
 
-#: epanelconf.cpp:140
-msgid "WS 3:"
+#: epanelconf.cpp:139
+msgid "WS &1:"
 msgstr ""
 
-#: epanelconf.cpp:144
-msgid "WS 4:"
+#: epanelconf.cpp:143
+msgid "WS &2:"
 msgstr ""
 
-#: epanelconf.cpp:148
-msgid "WS 5:"
+#: epanelconf.cpp:147
+msgid "WS &3:"
 msgstr ""
 
-#: epanelconf.cpp:152
-msgid "WS 6:"
+#: epanelconf.cpp:151
+msgid "WS &4:"
 msgstr ""
 
-#: epanelconf.cpp:156
-msgid "WS 7:"
+#: epanelconf.cpp:155
+msgid "WS &5:"
 msgstr ""
 
-#: epanelconf.cpp:160
-msgid "WS 8:"
+#: epanelconf.cpp:159
+msgid "WS &6:"
 msgstr ""
 
-#: epanelconf.cpp:169
-msgid "Handlers"
+#: epanelconf.cpp:163
+msgid "WS &7:"
 msgstr ""
 
-#: epanelconf.cpp:171
+#: epanelconf.cpp:167
+msgid "WS &8:"
+msgstr ""
+
+#: epanelconf.cpp:176
+msgid "&Utilities"
+msgstr ""
+
+#: epanelconf.cpp:178
 msgid "Handlers programs"
 msgstr ""
 
-#: epanelconf.cpp:174
-msgid "Internet browser:"
+#: epanelconf.cpp:181
+msgid "&Internet browser:"
 msgstr ""
 
-#: epanelconf.cpp:180
-msgid "Terminal:"
+#: epanelconf.cpp:184 epanelconf.cpp:196
+msgid "&Browse..."
+msgstr ""
+
+#: epanelconf.cpp:187
+msgid "&Terminal:"
+msgstr ""
+
+#: epanelconf.cpp:190 epanelconf.cpp:202
+msgid "Br&owse..."
+msgstr ""
+
+#: epanelconf.cpp:193
+msgid "&Volume control program:"
+msgstr ""
+
+#: epanelconf.cpp:199
+msgid "Time and &date program:"
 msgstr ""
