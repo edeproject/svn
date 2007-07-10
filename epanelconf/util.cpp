@@ -26,6 +26,8 @@ void read_config()
 
     cfg.read("AutoHide", temp_bool, false);
     autohide_check->value(temp_bool);
+    cfg.read("ShowUsernameOnMenu", temp_bool, false);
+    username_check->value(temp_bool);
 
     cfg.read("ShowDesktop", temp_bool, false);
     showdesktop_check->value(temp_bool);
@@ -59,6 +61,7 @@ void write_config()
     cfg.write("Volume Control", vcProgram->value());
     cfg.write("Time and date", tdProgram->value());
     cfg.write("AutoHide", autohide_check->value());
+    cfg.write("ShowUsernameOnMenu", username_check->value());
 
     cfg.write("ShowDesktop", showdesktop_check->value());
     cfg.write("Workspaces", workspace_check->value());

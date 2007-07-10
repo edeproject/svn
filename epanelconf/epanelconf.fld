@@ -26,25 +26,25 @@ Function {} {open
   code {fl_init_locale_support("epanelconf", PREFIX"/share/locale");} {}
   Fl_Window panelWindow {
     label {Panel settings} open
-    xywh {274 114 405 274} resizable visible
+    xywh {268 98 405 270} resizable visible
   } {
     Fl_Button {} {
       label {&Apply}
       callback {write_config();
 send_workspaces();}
-      xywh {237 245 80 25}
+      xywh {237 242 80 25}
     }
     Fl_Button {} {
       label {&Close}
       callback {Fl::first_window()->hide();}
-      private xywh {323 245 80 25}
+      private xywh {323 242 80 25}
     }
     Fl_Tabs {} {open
-      xywh {0 2 403 238} color 0xfffffffe
+      xywh {0 2 403 235} color 0xfffffffe
     } {
       Fl_Group {} {
-        label {&Options} open selected
-        xywh {1 25 401 212}
+        label {&Options} open
+        xywh {1 25 401 209}
       } {
         Fl_Group {} {
           label {Panel applets} open
@@ -52,37 +52,41 @@ send_workspaces();}
         } {
           Fl_Check_Button showdesktop_check {
             label {Show &desktop button}
-            xywh {9 8 160 25}
+            xywh {9 8 175 25}
           }
           Fl_Check_Button workspace_check {
             label {Wor&kspace switcher}
-            xywh {9 33 160 25}
+            xywh {9 33 175 25}
           }
           Fl_Check_Button qlb_check {
             label {&Quick launch bar}
-            xywh {9 58 160 25}
+            xywh {9 58 175 25}
           }
           Fl_Check_Button runbrowser_check {
             label {&Command line}
-            xywh {189 8 160 25}
+            xywh {189 8 200 25}
           }
           Fl_Check_Button soundmixer_check {
             label {&Sound mixer}
-            xywh {189 58 160 25}
+            xywh {189 58 200 25}
           }
           Fl_Check_Button cpumonitor_check {
             label {&Processor load graph}
-            xywh {189 33 160 25}
+            xywh {189 33 200 25}
           }
         }
         Fl_Group {} {
-          label Autohide open
+          label {Other options} open
           xywh {5 133 395 35} align FL_ALIGN_TOP|FL_ALIGN_LEFT box ENGRAVED_BOX
           extra_code {;}
         } {
           Fl_Check_Button autohide_check {
             label {&Automatically hide panel}
-            xywh {5 5 385 25}
+            xywh {5 5 184 25}
+          }
+          Fl_Check_Button username_check {
+            label {Show &username} selected
+            xywh {189 5 184 25}
           }
         }
         Fl_Box {} {
@@ -92,7 +96,7 @@ send_workspaces();}
       }
       Fl_Group {} {
         label {&Workspaces} open
-        xywh {1 25 401 212} hide
+        xywh {1 25 401 209} hide
       } {
         Fl_Value_Slider ws_slider {
           label {&Number of workspaces: }
@@ -156,7 +160,7 @@ o->range(1,8);}
       }
       Fl_Group {} {
         label {&Utilities} open
-        xywh {1 25 401 212} hide
+        xywh {1 25 401 209} hide
       } {
         Fl_Group {} {
           label {Handlers programs} open

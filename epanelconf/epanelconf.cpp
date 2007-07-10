@@ -36,6 +36,7 @@ Fl_Check_Button* runbrowser_check;
 Fl_Check_Button* soundmixer_check;
 Fl_Check_Button* cpumonitor_check;
 Fl_Check_Button* autohide_check;
+Fl_Check_Button* username_check;
 Fl_Value_Slider* ws_slider;
 
 static void cb_ws_slider(Fl_Value_Slider*, void*) {
@@ -89,33 +90,34 @@ int main (int argc, char **argv) {
 
   Fl_Window* w;
   fl_init_locale_support("epanelconf", PREFIX"/share/locale");
-   {Fl_Window* o = panelWindow = new Fl_Window(405, 274, _("Panel settings"));
+   {Fl_Window* o = panelWindow = new Fl_Window(405, 270, _("Panel settings"));
     w = o;
     o->shortcut(0xff1b);
-     {Fl_Button* o = new Fl_Button(237, 245, 80, 25, _("&Apply"));
+     {Fl_Button* o = new Fl_Button(237, 242, 80, 25, _("&Apply"));
       o->callback((Fl_Callback*)cb_Apply);
     }
-     {Fl_Button* o = new Fl_Button(323, 245, 80, 25, _("&Close"));
+     {Fl_Button* o = new Fl_Button(323, 242, 80, 25, _("&Close"));
       o->callback((Fl_Callback*)cb_Close);
     }
-     {Fl_Tabs* o = new Fl_Tabs(0, 2, 403, 238);
+     {Fl_Tabs* o = new Fl_Tabs(0, 2, 403, 235);
       o->color((Fl_Color)0xfffffffe);
-       {Fl_Group* o = new Fl_Group(1, 25, 401, 212, _("&Options"));
+       {Fl_Group* o = new Fl_Group(1, 25, 401, 209, _("&Options"));
          {Fl_Group* o = new Fl_Group(5, 20, 395, 93, _("Panel applets"));
           o->box(FL_ENGRAVED_BOX);
           o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
-          showdesktop_check = new Fl_Check_Button(9, 8, 160, 25, _("Show &desktop button"));
-          workspace_check = new Fl_Check_Button(9, 33, 160, 25, _("Wor&kspace switcher"));
-          qlb_check = new Fl_Check_Button(9, 58, 160, 25, _("&Quick launch bar"));
-          runbrowser_check = new Fl_Check_Button(189, 8, 160, 25, _("&Command line"));
-          soundmixer_check = new Fl_Check_Button(189, 58, 160, 25, _("&Sound mixer"));
-          cpumonitor_check = new Fl_Check_Button(189, 33, 160, 25, _("&Processor load graph"));
+          showdesktop_check = new Fl_Check_Button(9, 8, 175, 25, _("Show &desktop button"));
+          workspace_check = new Fl_Check_Button(9, 33, 175, 25, _("Wor&kspace switcher"));
+          qlb_check = new Fl_Check_Button(9, 58, 175, 25, _("&Quick launch bar"));
+          runbrowser_check = new Fl_Check_Button(189, 8, 200, 25, _("&Command line"));
+          soundmixer_check = new Fl_Check_Button(189, 58, 200, 25, _("&Sound mixer"));
+          cpumonitor_check = new Fl_Check_Button(189, 33, 200, 25, _("&Processor load graph"));
           o->end();
         }
-         {Fl_Group* o = new Fl_Group(5, 133, 395, 35, _("Autohide"));
+         {Fl_Group* o = new Fl_Group(5, 133, 395, 35, _("Other options"));
           o->box(FL_ENGRAVED_BOX);
           o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
-          autohide_check = new Fl_Check_Button(5, 5, 385, 25, _("&Automatically hide panel"));
+          autohide_check = new Fl_Check_Button(5, 5, 184, 25, _("&Automatically hide panel"));
+          username_check = new Fl_Check_Button(189, 5, 184, 25, _("Show &username"));
           ;
           o->end();
         }
@@ -124,7 +126,7 @@ int main (int argc, char **argv) {
         }
         o->end();
       }
-       {Fl_Group* o = new Fl_Group(1, 25, 401, 212, _("&Workspaces"));
+       {Fl_Group* o = new Fl_Group(1, 25, 401, 209, _("&Workspaces"));
         o->hide();
          {Fl_Value_Slider* o = ws_slider = new Fl_Value_Slider(145, 10, 255, 20, _("&Number of workspaces: "));
           o->type(Fl_Value_Slider::HORIZONTAL|Fl_Slider::TICK_BELOW);
@@ -176,7 +178,7 @@ int main (int argc, char **argv) {
         }
         o->end();
       }
-       {Fl_Group* o = new Fl_Group(1, 25, 401, 212, _("&Utilities"));
+       {Fl_Group* o = new Fl_Group(1, 25, 401, 209, _("&Utilities"));
         o->hide();
          {Fl_Group* o = new Fl_Group(5, 20, 395, 188, _("Handlers programs"));
           o->box(FL_ENGRAVED_BOX);
@@ -213,6 +215,7 @@ int main (int argc, char **argv) {
       o->end();
     }
     o->end();
+    o->resizable(o);
   }
   read_config();
   update_workspaces();
