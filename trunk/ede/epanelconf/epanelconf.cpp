@@ -58,7 +58,7 @@ static void cb_Browse(Fl_Button*, void*) {
 ;}
 Fl_Input* terminalProgram;
 
-static void cb_Br(Fl_Button*, void*) {
+static void cb_B(Fl_Button*, void*) {
   char *file_types = _("Executables (*.*), *, All files (*.*), *");
   const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
   if (fileName) { 
@@ -67,7 +67,7 @@ static void cb_Br(Fl_Button*, void*) {
 ;}
 Fl_Input* vcProgram;
 
-static void cb_Browse1(Fl_Button*, void*) {
+static void cb_Br(Fl_Button*, void*) {
   char *file_types = _("Executables (*.*), *, All files (*.*), *");
   const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
   if (fileName) { 
@@ -76,7 +76,7 @@ static void cb_Browse1(Fl_Button*, void*) {
 ;}
 Fl_Input* tdProgram;
 
-static void cb_Br1(Fl_Button*, void*) {
+static void cb_Brow(Fl_Button*, void*) {
   char *file_types = _("Executables (*.*), *, All files (*.*), *");
   const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
   if (fileName) 
@@ -115,9 +115,12 @@ int main (int argc, char **argv) {
          {Fl_Group* o = new Fl_Group(5, 133, 395, 35, _("Autohide"));
           o->box(FL_ENGRAVED_BOX);
           o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
-          autohide_check = new Fl_Check_Button(5, 5, 385, 25, _("&Automaticaly hide panel"));
+          autohide_check = new Fl_Check_Button(5, 5, 385, 25, _("&Automatically hide panel"));
           ;
           o->end();
+        }
+         {Fl_Box* o = new Fl_Box(9, 173, 385, 35, _("NOTE: To apply changes, restart the panel (e.g. by logging out)"));
+          o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
         }
         o->end();
       }
@@ -181,26 +184,26 @@ int main (int argc, char **argv) {
            {Fl_Input* o = browserProgram = new Fl_Input(10, 22, 285, 23, _("&Internet browser:"));
             o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
           }
-           {Fl_Button* o = new Fl_Button(300, 20, 80, 25, _("&Browse..."));
+           {Fl_Button* o = new Fl_Button(304, 20, 80, 25, _("&Browse..."));
             o->callback((Fl_Callback*)cb_Browse);
           }
            {Fl_Input* o = terminalProgram = new Fl_Input(10, 67, 285, 23, _("&Terminal:"));
             o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
           }
-           {Fl_Button* o = new Fl_Button(300, 65, 80, 25, _("Br&owse..."));
-            o->callback((Fl_Callback*)cb_Br);
+           {Fl_Button* o = new Fl_Button(304, 65, 80, 25, _("B&rowse..."));
+            o->callback((Fl_Callback*)cb_B);
           }
            {Fl_Input* o = vcProgram = new Fl_Input(9, 110, 285, 23, _("&Volume control program:"));
             o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
           }
-           {Fl_Button* o = new Fl_Button(304, 108, 80, 25, _("&Browse..."));
-            o->callback((Fl_Callback*)cb_Browse1);
+           {Fl_Button* o = new Fl_Button(304, 108, 80, 25, _("Br&owse..."));
+            o->callback((Fl_Callback*)cb_Br);
           }
            {Fl_Input* o = tdProgram = new Fl_Input(9, 155, 285, 23, _("Time and &date program:"));
             o->align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
           }
-           {Fl_Button* o = new Fl_Button(304, 153, 80, 25, _("Br&owse..."));
-            o->callback((Fl_Callback*)cb_Br1);
+           {Fl_Button* o = new Fl_Button(304, 153, 80, 25, _("Brow&se..."));
+            o->callback((Fl_Callback*)cb_Brow);
           }
           ;
           o->end();

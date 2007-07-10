@@ -15,8 +15,7 @@ decl {\#include <efltk/Fl_Config.h>} {}
 
 decl {\#include <efltk/Fl_Locale.h>} {} 
 
-decl {\#include <edeconf.h>} {selected
-} 
+decl {\#include <edeconf.h>} {} 
 
 decl {\#include "util.h"} {} 
 
@@ -27,7 +26,7 @@ Function {} {open
   code {fl_init_locale_support("epanelconf", PREFIX"/share/locale");} {}
   Fl_Window panelWindow {
     label {Panel settings} open
-    xywh {265 115 405 274} resizable visible
+    xywh {274 114 405 274} resizable visible
   } {
     Fl_Button {} {
       label {&Apply}
@@ -44,7 +43,7 @@ send_workspaces();}
       xywh {0 2 403 238} color 0xfffffffe
     } {
       Fl_Group {} {
-        label {&Options} open
+        label {&Options} open selected
         xywh {1 25 401 212}
       } {
         Fl_Group {} {
@@ -82,9 +81,13 @@ send_workspaces();}
           extra_code {;}
         } {
           Fl_Check_Button autohide_check {
-            label {&Automaticaly hide panel}
+            label {&Automatically hide panel}
             xywh {5 5 385 25}
           }
+        }
+        Fl_Box {} {
+          label {NOTE: To apply changes, restart the panel (e.g. by logging out)}
+          xywh {9 173 385 35} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE
         }
       }
       Fl_Group {} {
@@ -171,27 +174,27 @@ const char *fileName = fl_select_file(0, file_types, _("File selection..."));
 if (fileName) { 
   browserProgram->value(fileName);
 }}
-            private xywh {300 20 80 25}
+            private xywh {304 20 80 25}
           }
           Fl_Input terminalProgram {
             label {&Terminal:}
             xywh {10 67 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
           }
           Fl_Button {} {
-            label {Br&owse...}
+            label {B&rowse...}
             callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
 const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
 if (fileName) { 
   terminalProgram->value(fileName);
 }}
-            private xywh {300 65 80 25}
+            private xywh {304 65 80 25}
           }
           Fl_Input vcProgram {
             label {&Volume control program:}
             xywh {9 110 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
           }
           Fl_Button {} {
-            label {&Browse...}
+            label {Br&owse...}
             callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
 const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
 if (fileName) { 
@@ -204,7 +207,7 @@ if (fileName) {
             xywh {9 155 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
           }
           Fl_Button {} {
-            label {Br&owse...}
+            label {Brow&se...}
             callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
 const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
 if (fileName) 
