@@ -20,6 +20,7 @@
 #include <efltk/Fl_Tabs.h>
 #include <efltk/Fl_Group.h>
 #include <efltk/Fl_Check_Button.h>
+#include <efltk/Fl_Box.h>
 #include <efltk/Fl_Value_Slider.h>
 #include <efltk/Fl_Input.h>
 

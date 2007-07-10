@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-10 14:52+0200\n"
+"POT-Creation-Date: 2007-07-10 15:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,81 +73,93 @@ msgid "Autohide"
 msgstr ""
 
 #: epanelconf.cpp:118
-msgid "&Automaticaly hide panel"
+msgid "&Automatically hide panel"
 msgstr ""
 
-#: epanelconf.cpp:124
+#: epanelconf.cpp:122
+msgid "NOTE: To apply changes, restart the panel (e.g. by logging out)"
+msgstr ""
+
+#: epanelconf.cpp:127
 msgid "&Workspaces"
 msgstr ""
 
-#: epanelconf.cpp:126
+#: epanelconf.cpp:129
 msgid "&Number of workspaces: "
 msgstr ""
 
-#: epanelconf.cpp:136
+#: epanelconf.cpp:139
 msgid "Workspace names:"
 msgstr ""
 
-#: epanelconf.cpp:139
+#: epanelconf.cpp:142
 msgid "WS &1:"
 msgstr ""
 
-#: epanelconf.cpp:143
+#: epanelconf.cpp:146
 msgid "WS &2:"
 msgstr ""
 
-#: epanelconf.cpp:147
+#: epanelconf.cpp:150
 msgid "WS &3:"
 msgstr ""
 
-#: epanelconf.cpp:151
+#: epanelconf.cpp:154
 msgid "WS &4:"
 msgstr ""
 
-#: epanelconf.cpp:155
+#: epanelconf.cpp:158
 msgid "WS &5:"
 msgstr ""
 
-#: epanelconf.cpp:159
+#: epanelconf.cpp:162
 msgid "WS &6:"
 msgstr ""
 
-#: epanelconf.cpp:163
+#: epanelconf.cpp:166
 msgid "WS &7:"
 msgstr ""
 
-#: epanelconf.cpp:167
+#: epanelconf.cpp:170
 msgid "WS &8:"
 msgstr ""
 
-#: epanelconf.cpp:176
+#: epanelconf.cpp:179
 msgid "&Utilities"
 msgstr ""
 
-#: epanelconf.cpp:178
+#: epanelconf.cpp:181
 msgid "Handlers programs"
 msgstr ""
 
-#: epanelconf.cpp:181
+#: epanelconf.cpp:184
 msgid "&Internet browser:"
 msgstr ""
 
-#: epanelconf.cpp:184 epanelconf.cpp:196
+#: epanelconf.cpp:187
 msgid "&Browse..."
 msgstr ""
 
-#: epanelconf.cpp:187
+#: epanelconf.cpp:190
 msgid "&Terminal:"
 msgstr ""
 
-#: epanelconf.cpp:190 epanelconf.cpp:202
-msgid "Br&owse..."
+#: epanelconf.cpp:193
+msgid "B&rowse..."
 msgstr ""
 
-#: epanelconf.cpp:193
+#: epanelconf.cpp:196
 msgid "&Volume control program:"
 msgstr ""
 
 #: epanelconf.cpp:199
+msgid "Br&owse..."
+msgstr ""
+
+#: epanelconf.cpp:202
 msgid "Time and &date program:"
+msgstr ""
+
+#: epanelconf.cpp:205
+msgid "Brow&se..."
 msgstr ""
