@@ -242,7 +242,7 @@ void KeyboardChooser::draw()
 	if (!active_r()) {
 		flags = FL_INACTIVE;
 		color = this->color();
-	} else if (belowmouse()) {
+	} else if (belowmouse() || m_open) {
 		flags = FL_HIGHLIGHT;
 		color = highlight_color();
 		if (!color) color = this->color();

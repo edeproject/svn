@@ -67,33 +67,36 @@ int MainMenu::calculate_height() const
     return menuheight;
 }
 
+int MainMenu::handle(int e) {
+	switch (e) {
+		case FL_ENTER:
+		case FL_LEAVE:
+			redraw();
+	}
+	return Fl_Menu_Button::handle(e);
+}
+
 void MainMenu::draw()
 {
     Fl_Boxtype box = this->box();
     Fl_Flags flags;
     Fl_Color color = this->color();
     Fl_Color lcolor = label_color();
+
     if (!active_r())
-    {
         flags = FL_INACTIVE;
-    }
-    else if (m_open) {
-        flags = FL_HIGHLIGHT|FL_VALUE;
+    else if (m_open)
+        flags = FL_VALUE;
+    else
+        flags = 0;
+
+    if (belowmouse()) {
+        flags = flags|FL_HIGHLIGHT;
         color = fl_lighter(color);
         lcolor = fl_lighter(label_color());
         if(!color) color = this->color();
         if(!lcolor) color = this->label_color();
-    }
-    else if (belowmouse()) {
-        flags = FL_HIGHLIGHT;
-        color = fl_lighter(color);
-        lcolor = fl_lighter(label_color());
-        if(!color) color = this->color();
-        if(!lcolor) color = this->label_color();        
     } 
-    else {
-        flags = 0;
-    }
     box->draw(0, 0, this->w(), this->h(), color, flags);
 
     int X=0, Y=0, W=w(), H=h();

@@ -25,6 +25,7 @@ public:
     int popup(int X, int Y, int W, int H);
 
     void draw();
+    int handle(int event);
     void layout();
 
     void init_entries();
