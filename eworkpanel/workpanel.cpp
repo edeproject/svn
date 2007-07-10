@@ -106,7 +106,7 @@ int Fl_Update_Window::handle(int event)
 		else 
 			position(initX, initY);
 
-		take_focus();
+//		take_focus();
 		return 1;
 
 	case FL_LEAVE:
@@ -114,7 +114,7 @@ int Fl_Update_Window::handle(int event)
 			position(initX, initY+h()-2);
 			if(shown()) Fl_WM::set_window_strut(fl_xid(mPanelWindow), 0, 0, 0, 2);
 		}
-		throw_focus();
+//		throw_focus();
 		return 1;
 	}
 
