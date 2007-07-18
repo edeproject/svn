@@ -215,7 +215,7 @@ int main (int argc, char **argv) {
       o->end();
     }
     o->end();
-    o->resizable(o);
+//    o->resizable(o);
   }
   read_config();
   update_workspaces();
