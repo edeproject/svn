@@ -163,7 +163,7 @@ int main (int argc, char **argv) {
       o->end();
     }
     o->end();
-    o->resizable(o);
+//    o->resizable(o);
   }
   w->show(argc, argv);
   return  Fl::run();

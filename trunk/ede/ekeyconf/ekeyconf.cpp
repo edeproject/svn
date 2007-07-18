@@ -130,7 +130,7 @@ rtcut-setting mode:\n   Click the mouse on this again, or on some other field.")
 		}
 		o->set_modal();
 		o->end();
-		o->resizable(o);
+//		o->resizable(o);
 	}
 	populatelist(action);
 	shortcut->svalue = getshortcutfor("Next window");
