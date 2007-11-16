@@ -1,0 +1,147 @@
+# French translation of ede.
+# Copyright (C) 2007 THE ede'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the ede package.
+# emmanuel coutant <ecoutan@cegetel.net>, 2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: ede 1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-01-07 14:49+0100\n"
+"PO-Revision-Date: 2007-01-07 20:26+0100\n"
+"Last-Translator: emmanuel coutant <ecoutan@cegetel.net>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: ewmconf/ewmconf.cpp:95
+msgid "Themes (*.theme), *.theme, All files (*.*), *"
+msgstr "Thèmes (*.theme), *.theme, Tous fichiers (*.*), *"
+
+#: ewmconf/ewmconf.cpp:98
+msgid "Themes..."
+msgstr "Thèmes..."
+
+#: ewmconf/ewmconf.cpp:145
+msgid "Window manager settings"
+msgstr "Configuration du gestionnaire de fenêtre"
+
+#: ewmconf/ewmconf.cpp:149
+msgid "&Titlebar"
+msgstr "&Barre de titre"
+
+#: ewmconf/ewmconf.cpp:151
+msgid "Text align:"
+msgstr "Alignement:"
+
+#: ewmconf/ewmconf.cpp:153
+msgid "Left"
+msgstr "Gauche"
+
+#: ewmconf/ewmconf.cpp:154
+msgid "Right"
+msgstr "Droite"
+
+#: ewmconf/ewmconf.cpp:155
+msgid "Center"
+msgstr "Centre"
+
+#: ewmconf/ewmconf.cpp:159
+msgid "Height:"
+msgstr "Hauteur:"
+
+#: ewmconf/ewmconf.cpp:167
+msgid "Titlebar label color: "
+msgstr "Couleur du titre inactif:"
+
+#: ewmconf/ewmconf.cpp:173
+msgid "Titlebar color: "
+msgstr "Couleur de la barre de titre inactive:"
+
+#: ewmconf/ewmconf.cpp:180
+msgid "Titlebar active label color: "
+msgstr "Couleur du titre actif:"
+
+#: ewmconf/ewmconf.cpp:186
+msgid "Titlebar active color: "
+msgstr "Couleur de la barre de titre active:"
+
+#: ewmconf/ewmconf.cpp:194
+msgid "Box type:"
+msgstr "Type de fenêtre:"
+
+#: ewmconf/ewmconf.cpp:197
+msgid "Flat"
+msgstr "Plate"
+
+#: ewmconf/ewmconf.cpp:198
+msgid "Horizontal shade"
+msgstr "Dégradé"
+
+#: ewmconf/ewmconf.cpp:199
+msgid "Thin down"
+msgstr ""
+
+#: ewmconf/ewmconf.cpp:200
+msgid "Up box"
+msgstr ""
+
+#: ewmconf/ewmconf.cpp:201
+msgid "Down box"
+msgstr ""
+
+#: ewmconf/ewmconf.cpp:202
+msgid "Plastic"
+msgstr "Plastique"
+
+#: ewmconf/ewmconf.cpp:206
+msgid "&Use theme"
+msgstr "&Utiliser le thème"
+
+#: ewmconf/ewmconf.cpp:210
+msgid "Path:"
+msgstr "Dossier:"
+
+#: ewmconf/ewmconf.cpp:215
+msgid "..."
+msgstr ""
+
+#: ewmconf/ewmconf.cpp:219 ewmconf/ewmconf.cpp:222 ewmconf/ewmconf.cpp:249
+msgid "label"
+msgstr "Titre"
+
+#: ewmconf/ewmconf.cpp:227
+msgid "&Resizing"
+msgstr "&Redimensionnement"
+
+#: ewmconf/ewmconf.cpp:230
+msgid "Animate size changes"
+msgstr "Animer les changements de taille"
+
+#: ewmconf/ewmconf.cpp:235
+msgid "Speed:"
+msgstr "Vitesse:"
+
+#: ewmconf/ewmconf.cpp:250
+msgid "Show window content while resizing"
+msgstr "Voir le contenu lors du redimmensionnement"
+
+#: ewmconf/ewmconf.cpp:258
+msgid "&OK"
+msgstr "&OK"
+
+#: ewmconf/ewmconf.cpp:262
+msgid "&Apply"
+msgstr "A&ppliquer"
+
+#: ewmconf/ewmconf.cpp:265
+msgid "&Cancel"
+msgstr "A&nnuler"
+
+#: ewmconf/ewmconf.cpp:280
+msgid "Choose color"
+msgstr "Choisissez une couleur"
+
