@@ -3,7 +3,7 @@
  *
  * About dialog
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2006 EDE Authors.
+ * Copyright (c) 2000-2007 EDE Authors.
  *
  * This program is licenced under terms of the 
  * GNU General Public Licence version 2 or newer.
@@ -88,7 +88,7 @@ void AboutDialog(Fl_Widget*, void*)
 
 	Fl_Box* vers = new Fl_Box(75, 50, 285, 20, _("version "PACKAGE_VERSION));
 	vers->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-	Fl_Box* copyright = new Fl_Box(75, 85, 285, 20, "Copyright (c) EDE Authors 2000-2006");
+	Fl_Box* copyright = new Fl_Box(75, 85, 285, 20, "Copyright (c) EDE Authors 2000-2007");
 	copyright->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
 
 	Fl_Box* lic = new Fl_Box(75, 110, 285, 50, _("This program is licenced under terms of \
