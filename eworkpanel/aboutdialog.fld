@@ -29,7 +29,7 @@ Function {} {} {
       xywh {200 185 80 25}
     }
     Fl_Box {} {
-      label {Copyright (c) EDE Authors 2000-2006}
+      label {Copyright (c) EDE Authors 2000-2007}
       xywh {75 85 285 20} align FL_ALIGN_LEFT|FL_ALIGN_INSIDE
     }
     Fl_Box {} {
