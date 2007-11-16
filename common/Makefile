@@ -12,7 +12,7 @@ CPPFILES = aboutdialog.cpp
 TARGET   =
 
 
-POFILES = locale/de.po
+POFILES = locale/de.po locale/fr.po
 
 include ../makeinclude
 

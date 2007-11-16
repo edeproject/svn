@@ -1,6 +1,7 @@
 1.2
 * general
 - Added German translation by Ralf Eichinger (pixotec)
+- Added French translation by Emmanuel Coutant
 - Fix compilation warnings on 64-bit platforms caused by casting from 
 void* to int
 * elauncher

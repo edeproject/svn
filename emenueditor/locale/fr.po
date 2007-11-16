@@ -1,0 +1,160 @@
+# French translation of ede.
+# Copyright (C) 2007 THE ede'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the ede package.
+# emmanuel coutant <ecoutan@cegetel.net>, 2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: ede 1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-01-07 14:49+0100\n"
+"PO-Revision-Date: 2007-01-07 19:37+0100\n"
+"Last-Translator: emmanuel coutant <ecoutan@cegetel.net>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: emenueditor/emenueditor.cpp:48
+msgid "Executables (*.*), *, All files (*.*), *"
+msgstr "Exécutables (*.*), *, Tous fichiers (*.*), *"
+
+#: emenueditor/emenueditor.cpp:49
+msgid "File selection ..."
+msgstr "Sélection de fichier..."
+
+#: emenueditor/emenueditor.cpp:62
+msgid "You need to be root to edit the system menu!"
+msgstr "Vous devez être superutilisateur pour éditer le menu système!"
+
+#: emenueditor/emenueditor.cpp:69
+msgid "Select directory with menu"
+msgstr "Sélectionnez un répertoire avec un menu"
+
+#: emenueditor/emenueditor.cpp:86
+msgid "Menu editor"
+msgstr "Editeur de menu"
+
+#: emenueditor/emenueditor.cpp:90
+msgid "&File"
+msgstr "&Fichier"
+
+#: emenueditor/emenueditor.cpp:92
+msgid "&User menu"
+msgstr "Menu &Utilisateur"
+
+#: emenueditor/emenueditor.cpp:97
+msgid "&System menu"
+msgstr "&Menu système"
+
+#: emenueditor/emenueditor.cpp:102
+msgid "&Custom..."
+msgstr "&Personnaliser"
+
+#: emenueditor/emenueditor.cpp:108
+msgid "&Quit"
+msgstr "&Quitter"
+
+#: emenueditor/emenueditor.cpp:115
+msgid "&Help"
+msgstr "&Aide"
+
+#: emenueditor/emenueditor.cpp:117
+msgid "&About"
+msgstr "A &propos"
+
+#: emenueditor/emenueditor.cpp:125
+msgid "Programs:"
+msgstr "Programmes:"
+
+#: emenueditor/emenueditor.cpp:127
+msgid "Click on the submenu or on the item you want"
+msgstr "Cliquez sur le sous-menu ou le lanceur que vous voulez"
+
+#: emenueditor/emenueditor.cpp:135
+msgid "New submenu"
+msgstr "Nouveau dossier"
+
+#: emenueditor/emenueditor.cpp:138
+msgid "Delete submenu"
+msgstr "Supprimer le dossier"
+
+#: emenueditor/emenueditor.cpp:141
+msgid "New item"
+msgstr "Nouveau lanceur"
+
+#: emenueditor/emenueditor.cpp:144
+msgid "Edit Item"
+msgstr "Editer le lanceur"
+
+#: emenueditor/emenueditor.cpp:147
+msgid "Delete item"
+msgstr "Supprimer le lanceur"
+
+#: emenueditor/emenueditor.cpp:219
+msgid "Please, enter the name of the menu item."
+msgstr "Entrez le nom du lanceur de menu."
+
+#: emenueditor/emenueditor.cpp:249
+msgid "Icons (*.png), *.png, All files (*.*), *"
+msgstr "Icônes (*.png), *.png, Tous fichiers (*.*), *"
+
+#: emenueditor/emenueditor.cpp:250
+msgid "Choose icon file..."
+msgstr "Choisissez l'icône.."
+
+#: emenueditor/emenueditor.cpp:262
+msgid "Edit item"
+msgstr "Editer le lanceur"
+
+#: emenueditor/emenueditor.cpp:264
+msgid "Filename:"
+msgstr "Nom de fichier:"
+
+#: emenueditor/emenueditor.cpp:267
+msgid "Name in the menu:"
+msgstr "Nom dans le menu:"
+
+#: emenueditor/emenueditor.cpp:270
+msgid "Command to execute:"
+msgstr "Commande à exécuter:"
+
+#: emenueditor/emenueditor.cpp:274
+msgid "Bro&wse..."
+msgstr "Pa&rcourir..."
+
+#: emenueditor/emenueditor.cpp:278
+msgid "Icon filename:"
+msgstr "Nom de fichier de l'icône:"
+
+#: emenueditor/emenueditor.cpp:282
+msgid "&Save"
+msgstr "&Enregistrer"
+
+#: emenueditor/emenueditor.cpp:286
+msgid "&Cancel"
+msgstr "&Annuler"
+
+#: emenueditor/emenueditor.cpp:290
+msgid "&Browse..."
+msgstr "&Parcourir..."
+
+#: emenueditor/emenueditor.cpp:297
+msgid "New folder"
+msgstr "Nouveau dossier"
+
+#: emenueditor/emenueditor.cpp:343
+msgid "Please enter name of the new submenu:"
+msgstr "Entrez le nom du nouveau sous-menu:"
+
+#: emenueditor/emenueditor.cpp:350
+msgid "Cannot create submenu!"
+msgstr "Impossible de créer le sous-menu!"
+
+#: emenueditor/emenueditor.cpp:416
+msgid ""
+"You should delete all the items from the submenu, before you can delete it!"
+msgstr "Vous devez supprimer tous les lanceurs du sous-menu avant de le supprimer!"
+

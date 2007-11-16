@@ -15,6 +15,7 @@ POFILES = locale/ru.po\
 			locale/sk.po\
 			locale/hu.po\
 			locale/de.po\
+			locale/fr.po
 
 include ../makeinclude
 

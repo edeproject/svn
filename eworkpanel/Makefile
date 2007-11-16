@@ -8,7 +8,19 @@
 # GNU General Public Licence version 2 or newer.
 # See COPYING for details.
 
-CPPFILES = aboutdialog.cpp logoutdialog.cpp panelbutton.cpp keyboardchooser.cpp taskbutton.cpp workpanel.cpp item.cpp cpumonitor.cpp batterymonitor.cpp dock.cpp mainmenu.cpp mainmenu_scan.cpp
+CPPFILES = aboutdialog.cpp\
+		   logoutdialog.cpp\
+		   panelbutton.cpp\
+		   keyboardchooser.cpp\
+		   taskbutton.cpp\
+		   workpanel.cpp\
+		   item.cpp\
+		   cpumonitor.cpp\
+		   batterymonitor.cpp\
+		   dock.cpp\
+		   mainmenu.cpp\
+		   mainmenu_scan.cpp
+
 TARGET   = eworkpanel
 
 POFILES = locale/ru.po\
@@ -16,6 +28,7 @@ POFILES = locale/ru.po\
 			locale/sk.po\
 			locale/hu.po\
 			locale/de.po\
+			locale/fr.po
 
 include ../makeinclude
 
