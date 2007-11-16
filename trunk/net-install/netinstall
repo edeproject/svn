@@ -28,13 +28,12 @@ VERSION="0.2"
 
 ######################################################
 
-EDE_PACKAGE="ede-1.1.tar.bz2"
-EDE_SUM="acb1a82ac79ee2000bf50b204d81ab89"
+EDE_PACKAGE="ede-1.2.tar.gz"
+EDE_SUM="7bffdd825c6a32f3c99e081f2e3a4c73"
 EDE_PATCH=""
 
-EFLTK_PACKAGE="efltk-2.0.6.tar.bz2"
-EFLTK_SUM="125c1deade9da94453758fa3cdac1c6a"
-EFLTK_PATCH="efltk-2.0.6.patch"
+EFLTK_PACKAGE="efltk-2.0.7.tar.gz"
+EFLTK_SUM="f0300fd2fec47d4b05823297032ddb9f"
 
 # make sure url ends with '/'
 PATCHES_URL="http://ede.sf.net/patches/"
@@ -49,9 +48,11 @@ EFLTKFLAGS_INTERNAL=" --disable-unixODBC --disable-mysql"
 
 # make sure links ends with '/'
 MIRRORS="
-http://heanet.dl.sourceforge.net/sourceforge/ede/
-http://superb-east.dl.sourceforge.net/sourceforge/
-http://mesh.dl.sourceforge.net/sourceforge/ede/"
+http://switch.dl.sourceforge.net/sourceforge/ede/
+http://easynews.dl.sourceforge.net/sourceforge/ede/
+http://optusnet.dl.sourceforge.net/sourceforge/ede/
+http://jaist.dl.sourceforge.net/sourceforge/ede/
+http://ufpr.dl.sourceforge.net/sourceforge/ede/"
 
 ######################################################
 
@@ -62,8 +63,8 @@ FIND="/usr/bin/which"
 
 PATCH="`$FIND patch` -t -p0"
 
-# bz2 is prefered
 EXTRACT_BZ2="tar -xjpf"
+# gz is prefered
 EXTRACT_GZ="tar -xzpf"
 
 # some vars which users can override
@@ -90,21 +91,18 @@ fi
 
 ######################################################
 
-ealert()
-{
+ealert() {
 	echo "!! $1"
 }
 
-eprint()
-{
+eprint() {
 	echo ": $1"
 }
 
 # modify this according to needs for patchings
 # patch -t -p0 < efltk-2.0.6.patch
 # diff -uNr efltk/ efltksvn/ > efltk-2.0.6.patch
-patch_files()
-{
+patch_files() {
 	patch_name=$1
 	patch_url=$2
 	dir_to_patch=$3
@@ -147,8 +145,7 @@ patch_files()
 }
 
 # see if we have all things that should be there
-prepare()
-{
+prepare() {
 	# check can we write in current directory
 	currdir=`pwd`
 	if [ ! -w "$currdir" ]; then
@@ -205,8 +202,7 @@ prepare()
 	fi
 }
 
-fetch_file()
-{
+fetch_file() {
 	pkg=$1
 
 	# check first is file downloaded
@@ -229,8 +225,7 @@ fetch_file()
 	exit 1
 }
 
-extract_file()
-{
+extract_file() {
 	pkg_name=$1
 	pkg_sum=$2
 
@@ -257,8 +252,7 @@ extract_file()
 	esac
 }
 
-compile_install()
-{
+compile_install() {
 	pkg_dir=$1
 	flags_internal=$2
 	flags_global=$3
@@ -290,8 +284,7 @@ compile_install()
 	cd ..
 }
 
-main()
-{
+main() {
 	echo ""
 	echo "::: Ede NetInstall $VERSION :::"
 	echo ""
@@ -303,9 +296,6 @@ main()
 
 	# first efltk
 	extract_file "$EFLTK_PACKAGE" "$EFLTK_SUM"
-
-	# patch efltk anyway
-	patch_files "$EFLTK_PATCH" "$PATCHES_URL" "$EFLTK_DIR"
 	compile_install "$EFLTK_DIR" "$EFLTKFLAGS_INTERNAL" "$EFLTKFLAGS"
 
 	# then ede
