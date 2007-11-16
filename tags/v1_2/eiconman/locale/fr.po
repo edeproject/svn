@@ -1,0 +1,224 @@
+# French translation of ede.
+# Copyright (C) 2007 THE ede'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the ede package.
+# emmanuel coutant <ecoutan@cegetel.net>, 2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: ede 1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-01-07 14:49+0100\n"
+"PO-Revision-Date: 2007-01-07 17:36+0100\n"
+"Last-Translator: emmanuel coutant <ecoutan@cegetel.net>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: eiconman/edeskconf.cpp:47
+msgid "Background settings"
+msgstr "Configuration du fond d'écran"
+
+#: eiconman/edeskconf.cpp:51
+msgid "Background"
+msgstr "Fond d'écran"
+
+#: eiconman/edeskconf.cpp:88
+msgid "C&olor..."
+msgstr "C&ouleur..."
+
+#: eiconman/edeskconf.cpp:96
+msgid "Use wallpaper"
+msgstr "Utiliser un papier peint"
+
+#: eiconman/edeskconf.cpp:100 eiconman/edeskconf.cpp:139
+msgid "label"
+msgstr ""
+
+#: eiconman/edeskconf.cpp:103
+msgid "Image:"
+msgstr "Image:"
+
+#: eiconman/edeskconf.cpp:108
+msgid "&Browse..."
+msgstr "&Parcourir"
+
+#: eiconman/edeskconf.cpp:111
+msgid "Opacity:"
+msgstr "Opacité:"
+
+#: eiconman/edeskconf.cpp:121
+msgid "Mode:"
+msgstr "Mode:"
+
+#: eiconman/edeskconf.cpp:123
+msgid "Center"
+msgstr "Centré"
+
+#: eiconman/edeskconf.cpp:126
+msgid "Stretch"
+msgstr "Redimensionné"
+
+#: eiconman/edeskconf.cpp:129
+msgid "Stretch (aspect)"
+msgstr "Etiré"
+
+#: eiconman/edeskconf.cpp:132
+msgid "Tiled"
+msgstr "Mozaique"
+
+#: eiconman/edeskconf.cpp:140
+msgid "&OK"
+msgstr "&OK"
+
+#: eiconman/edeskconf.cpp:143 eiconman/propdialog.cpp:123
+msgid "&Apply"
+msgstr "&Appliquer"
+
+#: eiconman/edeskconf.cpp:146
+msgid "&Cancel"
+msgstr "A&nnuler"
+
+#: eiconman/edeskicon.cpp:81
+msgid "&Open"
+msgstr "&Ouvrir"
+
+#: eiconman/edeskicon.cpp:85
+msgid "&Delete"
+msgstr "&Supprimer"
+
+#: eiconman/edeskicon.cpp:91
+msgid "&Properties"
+msgstr "&Propriétés"
+
+#: eiconman/edeskicon.cpp:462
+msgid "Name of the icon must be filled."
+msgstr ""
+
+#: eiconman/edeskicon.cpp:487
+msgid "Delete this icon?"
+msgstr "Effacer cet icône?"
+
+#: eiconman/edeskicon.cpp:493
+#, c-format
+msgid ""
+"Remove of the icon %s failed. You probably do not have write access to this "
+"file."
+msgstr "Suppression de l'icône %s impossible. Vous n'avez sûrement pas les droits d'écriture sur ce fichier."
+
+#: eiconman/edeskicon.cpp:502
+msgid "Enter the name of the new icon:"
+msgstr "Entrez le nom de l' icône"
+
+#: eiconman/edeskicon.cpp:525 eiconman/eiconman.cpp:237
+msgid "The icon with the same name already exists."
+msgstr "Une icône avec le même nom existe déjà."
+
+#: eiconman/edeskicon.cpp:582
+#, c-format
+msgid "%d bytes, %s"
+msgstr "%d octets, %s"
+
+#: eiconman/eiconman.cpp:108
+msgid "&New desktop item"
+msgstr "&Nouveau raccourci"
+
+#: eiconman/eiconman.cpp:112
+msgid "&Refresh"
+msgstr "&Rafraichir"
+
+#: eiconman/eiconman.cpp:118
+msgid "&Icons Settings "
+msgstr "Configuration des icônes"
+
+#: eiconman/eiconman.cpp:122
+msgid "&Background Settings"
+msgstr "Configuration du fond d'écran"
+
+#: eiconman/eiconman.cpp:719
+msgid ""
+"All Files, *,Png Images, *.png,Xpm Images, *.xpm,Jpeg Images, *.{jpg|jpeg},"
+"Gif Images, *.gif,Bmp Images, *.bmp"
+msgstr ""
+"Tous fichiers, *,Images png, *.png,Images xpm, *.xpm,Images jpeg, *.{jpg|jpeg},"
+"Images gif, *.gif,Images bmp, *.bmp"
+
+#: eiconman/eiconman.cpp:725
+msgid "Choose wallpaper:"
+msgstr "Choisissez le papier peint"
+
+#: eiconman/eiconman.cpp:762
+msgid "Choose color"
+msgstr "Choisissez la couleur"
+
+#: eiconman/propdialog.cpp:41
+msgid "Executables (*.*), *, All files (*.*), *"
+msgstr "Executables (*.*), *, Tous fichiers (*.*), *"
+
+#: eiconman/propdialog.cpp:42
+msgid "Open location..."
+msgstr "Ouvrir l'emplacement..."
+
+#: eiconman/propdialog.cpp:49
+msgid ""
+"Png images (*.png), *.png, Jpeg Images (*.jpeg), *.{jpeg|jpg}, Bmp Files (*."
+"bmp), *.bmp, Gif Files (*.gif), *.gif, Xpm Files (*.xpm), *.xpm, All files "
+"(*.*), *"
+msgstr ""
+"Images png (*.png), *.png, Images jpeg(*.jpeg), *.{jpeg|jpg}, Images bmp (*."
+"bmp), *.bmp, Images gif (*.gif), *.gif, Images xpm (*.xpm), *.xpm, Tous (*.*), *"
+
+#: eiconman/propdialog.cpp:50
+msgid "Icon file selection"
+msgstr "Sélection du nom de l'icône:"
+
+#: eiconman/propdialog.cpp:72
+msgid "Icon properties"
+msgstr "Configuration de l'icône"
+
+#: eiconman/propdialog.cpp:75
+msgid "Icon"
+msgstr "Icône"
+
+#: eiconman/propdialog.cpp:79
+msgid "Name:"
+msgstr "Nom:"
+
+#: eiconman/propdialog.cpp:82
+msgid "Size:"
+msgstr "Taille:"
+
+#: eiconman/propdialog.cpp:85
+msgid "Command:"
+msgstr "Commande:"
+
+#: eiconman/propdialog.cpp:100
+msgid "Settings"
+msgstr "Configuration"
+
+#: eiconman/propdialog.cpp:102
+msgid "Link file:"
+msgstr "Fichier lié:"
+
+#: eiconman/propdialog.cpp:106
+msgid "Icon name:"
+msgstr "Nom de l'icône:"
+
+#: eiconman/propdialog.cpp:109
+msgid "Location to open:"
+msgstr "Emplacement à ouvrir:"
+
+#: eiconman/propdialog.cpp:112 eiconman/propdialog.cpp:119
+msgid "..."
+msgstr ""
+
+#: eiconman/propdialog.cpp:116
+msgid "Icon filename:"
+msgstr "Nom du fichier icône:"
+
+#: eiconman/propdialog.cpp:130
+msgid "&Close"
+msgstr "&Fermer"
+

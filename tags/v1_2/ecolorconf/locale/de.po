@@ -1,0 +1,185 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2006 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the EDE package.
+# Ralf Eichinger <ralf.eichinger@pixotec.de>, 2006.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ecolorconf 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-12-12 21:03+0100\n"
+"PO-Revision-Date: 2006-12-13 08:05+0100\n"
+"Last-Translator: Ralf Eichinger <ralf.eichinger@pixotec.de>\n"
+"Language-Team: German <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ecolorconf/ecolorconf.cpp:90
+msgid "Colors and fonts settings"
+msgstr "Farb- und Schrift-Einstellungen"
+
+#: ecolorconf/ecolorconf.cpp:96
+msgid "Default colors"
+msgstr "Standardfarben"
+
+#: ecolorconf/ecolorconf.cpp:99
+msgid "Widgets"
+msgstr "Bedienelemente"
+
+#: ecolorconf/ecolorconf.cpp:104
+msgid "Label"
+msgstr "Beschriftung"
+
+#: ecolorconf/ecolorconf.cpp:109
+msgid "Sel. back."
+msgstr "Hintergrund Auswahl"
+
+#: ecolorconf/ecolorconf.cpp:114
+msgid "Selection"
+msgstr "Auswahl"
+
+#: ecolorconf/ecolorconf.cpp:119 ecolorconf/ecolorconf.cpp:124
+msgid "Highlight"
+msgstr "Hervorhebung"
+
+#: ecolorconf/ecolorconf.cpp:129
+msgid "Text"
+msgstr "Text"
+
+#: ecolorconf/ecolorconf.cpp:134 ecolorconf/ecolorconf.cpp:139
+msgid "Background"
+msgstr "Hintergrund"
+
+#: ecolorconf/ecolorconf.cpp:146
+msgid "Tooltips"
+msgstr "Tooltips"
+
+#: ecolorconf/ecolorconf.cpp:149
+msgid "Tooltip color"
+msgstr "Tooltip Farbe"
+
+#: ecolorconf/ecolorconf.cpp:154
+msgid "Tooltip text color"
+msgstr "Tooltip Textfarbe"
+
+#: ecolorconf/ecolorconf.cpp:159 ecolorconf/ecolorconf.cpp:198
+msgid "Enable effects"
+msgstr "Effekte aktivieren"
+
+#: ecolorconf/ecolorconf.cpp:160
+msgid "Enabled"
+msgstr "Aktiviert"
+
+#: ecolorconf/ecolorconf.cpp:161 ecolorconf/ecolorconf.cpp:200
+msgid "Effect type:"
+msgstr "Effekttyp"
+
+#: ecolorconf/ecolorconf.cpp:163 ecolorconf/ecolorconf.cpp:202
+msgid "None"
+msgstr "Keiner"
+
+#: ecolorconf/ecolorconf.cpp:164 ecolorconf/ecolorconf.cpp:203
+msgid "Animation"
+msgstr "Animation"
+
+#: ecolorconf/ecolorconf.cpp:165 ecolorconf/ecolorconf.cpp:204
+msgid "Fading"
+msgstr ""
+
+#: ecolorconf/ecolorconf.cpp:168 ecolorconf/ecolorconf.cpp:208
+msgid "Delay:"
+msgstr "Verzögerung"
+
+#: ecolorconf/ecolorconf.cpp:171
+msgid "Fonts"
+msgstr "Schriften"
+
+#: ecolorconf/ecolorconf.cpp:173 ecolorconf/ecolorconf.cpp:176
+msgid "..."
+msgstr "..."
+
+#: ecolorconf/ecolorconf.cpp:179 ecolorconf/ecolorconf.cpp:183
+msgid "label"
+msgstr "Beschriftung"
+
+#: ecolorconf/ecolorconf.cpp:187
+msgid "Label font:"
+msgstr "Schrift Beschriftung"
+
+#: ecolorconf/ecolorconf.cpp:190
+msgid "Text font:"
+msgstr "Schrift Text"
+
+#: ecolorconf/ecolorconf.cpp:196
+msgid "Menus"
+msgstr "Menüs"
+
+#: ecolorconf/ecolorconf.cpp:199
+msgid "Enable subwindow effects"
+msgstr "Aktiviere Unterfenster Effekte"
+
+#: ecolorconf/ecolorconf.cpp:207
+msgid "Speed:"
+msgstr "Geschwindigkeit:"
+
+#: ecolorconf/ecolorconf.cpp:211
+msgid "Others"
+msgstr "Sonstiges"
+
+#: ecolorconf/ecolorconf.cpp:213
+msgid "Enable MDI animation"
+msgstr "Aktiviere MDI Animation"
+
+#: ecolorconf/ecolorconf.cpp:214
+msgid "MDI opaque animation"
+msgstr "MDI transparente Animation"
+
+#: ecolorconf/ecolorconf.cpp:215
+msgid "Enable images state effect"
+msgstr "Aktiviere Bildstatus Effekte"
+
+#: ecolorconf/ecolorconf.cpp:222
+msgid "&Save as..."
+msgstr "&Speichern unter..."
+
+#: ecolorconf/ecolorconf.cpp:225
+msgid "Ap&ply colors to all programs"
+msgstr "&Farben für alle Programme übernehmen"
+
+#: ecolorconf/ecolorconf.cpp:229
+msgid "Schemes:"
+msgstr "Schema:"
+
+#: ecolorconf/ecolorconf.cpp:239 ecolorconf/efontdialog.cpp:256
+msgid "&OK"
+msgstr "&OK"
+
+#: ecolorconf/ecolorconf.cpp:242
+msgid "&Apply"
+msgstr "&Übernehmen"
+
+#: ecolorconf/ecolorconf.cpp:245 ecolorconf/efontdialog.cpp:259
+msgid "&Cancel"
+msgstr "&Abbrechen"
+
+#: ecolorconf/ecolorconf.cpp:261
+msgid "Choose color"
+msgstr "Wählen Sie die Farbe"
+
+#: ecolorconf/ecolorutils.cpp:301
+msgid "Color and label color are the same. Edit colors first."
+msgstr "Die Farbe und die Beschriftungsfarbe sind gleich. Bearbeiten Sie zuerst die Farben."
+
+#: ecolorconf/ecolorutils.cpp:347
+msgid "Save scheme as:"
+msgstr "Schema speichern als:"
+
+#: ecolorconf/ecolorutils.cpp:347
+msgid "New scheme"
+msgstr "Neues Schema"
+
+#: ecolorconf/efontdialog.cpp:230
+msgid "Select font..."
+msgstr "Wählen Sie die Schrift..."
