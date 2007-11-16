@@ -15,15 +15,8 @@
 #include <efltk/Fl_Images.h>
 #include <edeconf.h>
 
-#include "icons/up.xpm"
-#include "icons/folder.xpm"
-#include "icons/item.xpm"
-
 #include "emenueditor.h"
 #include "../common/aboutdialog.h"
-
-static Fl_Image item_pix = *Fl_Image::read_xpm(0, (const char**)item_xpm);
-static Fl_Image folder_pix = *Fl_Image::read_xpm(0, (const char**)folder_xpm);
 
 Fl_Window 	*edit_window = 0;
 Fl_FileBrowser  *programs_browser;
