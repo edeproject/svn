@@ -4,6 +4,7 @@
 
 struct EdbusConnImpl {
 	DBusConnection* conn;
+	bool is_shared;
 };
 
 EdbusConnection::EdbusConnection() : dc(NULL) {
@@ -18,6 +19,7 @@ bool EdbusConnection::connect(EdbusConnectionType ctype) {
 	if(dc == NULL) {
 		dc = new EdbusConnImpl;
 		dc->conn = NULL;
+		dc->is_shared = false;
 	}
 
 	DBusBusType type;
@@ -35,6 +37,7 @@ bool EdbusConnection::connect(EdbusConnectionType ctype) {
 	}
 
 	dc->conn = dbus_bus_get(type, &err);
+	dc->is_shared = true;
 
 	if(dbus_error_is_set(&err)) {
 		printf("Connection error: %s\n", err.message);
@@ -48,10 +51,9 @@ bool EdbusConnection::connect(EdbusConnectionType ctype) {
 }
 
 bool EdbusConnection::disconnect(void) {
-	/*
-	 * only non-shared connection is allowed to be closed 
-	 * dbus_connection_close(dc->conn); 
-	 */
+	/* only non-shared connections are allowed to be closed */
+	if(!dc->is_shared && dc->conn)
+		dbus_connection_close(dc->conn); 
 	return true;
 }
 
@@ -141,12 +143,17 @@ int main() {
 	EdbusMessage msg;
 	msg.create_method_call("test.method.server", "/test/method/Object", "test.method.Type", "Method");
 	msg.append("foo");
+	msg.append(34);
+
+	printf("%s %s %s %s\n", msg.interface(), msg.path(), msg.member(), msg.signature());
 
 	EdbusMessage ret;
 
+	/*
 	client.send(msg);
 	while(client.wait(3000))
 		puts("tick");
+	*/
 /*
 	if(client.send_with_reply_and_block(msg, 20, ret))
 		puts("Got reply");

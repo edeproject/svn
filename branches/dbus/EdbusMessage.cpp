@@ -212,6 +212,50 @@ void EdbusMessage::clear(void) {
 	dm->msg = NULL;
 }
 
+void EdbusMessage::path(const char* np) {
+	dbus_message_set_path(dm->msg, np);
+}
+
+const char* EdbusMessage::path(void) const {
+	return dbus_message_get_path(dm->msg);
+}
+
+void EdbusMessage::interface(const char* ni) {
+	dbus_message_set_interface(dm->msg, ni);
+}
+
+const char* EdbusMessage::interface(void) const {
+	return dbus_message_get_interface(dm->msg);
+}
+
+void EdbusMessage::destination(const char* nd) {
+	dbus_message_set_destination(dm->msg, nd);
+}
+
+const char* EdbusMessage::destination(void) {
+	return dbus_message_get_destination(dm->msg);
+}
+
+void EdbusMessage::member(const char* nm) {
+	dbus_message_set_member(dm->msg, nm);
+}
+
+const char* EdbusMessage::member(void) {
+	return dbus_message_get_member(dm->msg);
+}
+
+bool EdbusMessage::sender(const char* ns) {
+	dbus_message_set_sender(dm->msg, ns);
+}
+
+const char* EdbusMessage::sender(void) {
+	dbus_message_get_sender(dm->msg);
+}
+
+const char* EdbusMessage::signature(void) {
+	return dbus_message_get_signature(dm->msg);
+}
+
 void EdbusMessage::append(const char* val) {
 	dbus_message_append_args(dm->msg, DBUS_TYPE_STRING, &val, DBUS_TYPE_INVALID);
 }

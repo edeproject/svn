@@ -62,7 +62,26 @@ class EdbusMessage {
 		void create_signal(const char* path, const char* interface, const char* name);
 		void create_method_call(const char* service, const char* path, const char* interface, const char* method);
 		void create_reply(const EdbusMessage& replying_to);
+
 		void clear(void);
+
+		void path(const char* np);
+		const char* path(void) const;
+
+		void interface(const char* ni);
+		const char* interface(void) const;
+
+		void destination(const char* nd);
+		const char* destination(void);
+
+		void member(const char* nm);
+		const char* member(void);
+
+		bool sender(const char* ns);
+		const char* sender(void);
+
+		const char* signature(void);
+
 		void append(const char* val);
 		void append(bool val);
 		void append(char val);
