@@ -64,6 +64,8 @@ EdbusValueType EdbusMessageIterator::type(void) {
 	int ret = dbus_message_iter_get_arg_type(impl->iter);
 
 	switch(ret) {
+		case DBUS_TYPE_BOOLEAN:
+			return EDBUS_TYPE_BOOL;
 		case DBUS_TYPE_INT32:
 			return EDBUS_TYPE_INT;
 		case DBUS_TYPE_UINT32:
@@ -102,7 +104,11 @@ char EdbusMessageIterator::get_char(void) {
 }
 
 bool EdbusMessageIterator::get_bool(void) {
-	return get_int();
+	assert(type() == EDBUS_TYPE_BOOL);
+
+	dbus_bool_t val;
+	dbus_message_iter_get_basic(impl->iter, &val);
+	return val;
 }
 
 long EdbusMessageIterator::get_long(void) {
@@ -129,9 +135,10 @@ double EdbusMessageIterator::get_double(void) {
 	return val;
 }
 
-char* EdbusMessageIterator::get_string(void) {
-	// TODO
-	return NULL;
+const char* EdbusMessageIterator::get_string(void) {
+	const char* v;
+	dbus_message_iter_get_basic(impl->iter, &v);
+	return v;
 }
 
 
@@ -202,6 +209,18 @@ void EdbusMessage::create_reply(const EdbusMessage& replying_to) {
 	}
 
 	dm->msg = dbus_message_new_method_return(replying_to.dm->msg);
+}
+
+void EdbusMessage::create_error_reply(const EdbusMessage& replying_to, const char* errmsg) {
+	if(!dm) {
+		dm = new EdbusMessageImpl;
+		dm->msg = NULL;
+	} else {
+		/* destroy previously create message */
+		clear();
+	}
+
+	dm->msg = dbus_message_new_error(replying_to.dm->msg, DBUS_ERROR_FAILED, errmsg);
 }
 
 void EdbusMessage::clear(void) {

@@ -8,6 +8,7 @@ struct EdbusMessageIteratorImpl;
 struct DBusMessage;
 
 enum EdbusValueType {
+	EDBUS_TYPE_BOOL,
 	EDBUS_TYPE_INT,
 	EDBUS_TYPE_UINT,
 	EDBUS_TYPE_LONG,
@@ -40,7 +41,9 @@ class EdbusMessageIterator {
 		long get_long(void);
 		unsigned long get_ulong(void);
 		double get_double(void);
-		char* get_string(void);
+
+		/* TODO: this should return edelib::String */
+		const char* get_string(void);
 };
 
 class EdbusMessage {
@@ -62,6 +65,7 @@ class EdbusMessage {
 		void create_signal(const char* path, const char* interface, const char* name);
 		void create_method_call(const char* service, const char* path, const char* interface, const char* method);
 		void create_reply(const EdbusMessage& replying_to);
+		void create_error_reply(const EdbusMessage& replying_to, const char* errmsg);
 
 		void clear(void);
 
