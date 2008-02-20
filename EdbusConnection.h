@@ -1,11 +1,17 @@
 #ifndef __EDBUSCONNECTION_H__
-#define __DEBUSCONNECTION_H__
+#define __EDBUSCONNECTION_H__
 
 #include "EdbusMessage.h"
 
 enum EdbusConnectionType {
 	EDBUS_SYSTEM,
 	EDBUS_SESSION
+};
+
+enum EdbusNameMode {
+	EDBUS_NAME_NO_REPLACE        = 0,
+	EDBUS_NAME_ALLOW_REPLACE     = 1,
+	EDBUS_NAME_REPLACE_EXISTITNG = 2
 };
 
 struct EdbusConnImpl;
@@ -19,11 +25,16 @@ class EdbusConnection {
 
 		bool connect(EdbusConnectionType ctype);
 		bool disconnect(void);
-		bool send_signal(const char* path, const char* interface, const char* name, const char* content);
 		bool send(const EdbusMessage& content);
 
 		/* used to call remote methods and wait reply from them */
 		bool send_with_reply_and_block(const EdbusMessage& content, int timeout, EdbusMessage& ret);
+
+		/* try to set readable name; flags are or-ed */
+		bool request_name(const char* name, int mode = EDBUS_NAME_NO_REPLACE);
+
+		/* get unique name for this connection (can be NULL) */
+		const char* unique_name(void);
 
 		int wait(int timout_milliseconds);
 };

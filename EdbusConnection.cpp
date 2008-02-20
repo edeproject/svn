@@ -54,36 +54,19 @@ bool EdbusConnection::disconnect(void) {
 	/* only non-shared connections are allowed to be closed */
 	if(!dc->is_shared && dc->conn)
 		dbus_connection_close(dc->conn); 
+	dc->conn = NULL;
 	return true;
 }
 
-bool EdbusConnection::send_signal(const char* path, const char* interface, const char* name, const char* content) {
-	DBusMessage* msg;
-	bool ret;
-	dbus_uint32_t serial;
-
-	msg = dbus_message_new_signal(path, interface, name);
-	dbus_message_append_args(msg, DBUS_TYPE_STRING, &content, DBUS_TYPE_INVALID);
-
-	int i = 555;
-	dbus_message_append_args(msg, DBUS_TYPE_INT32, &i, DBUS_TYPE_INVALID);
-
-	if(!dbus_connection_send(dc->conn, msg, &serial)) {
-		printf("Failed signal sending\n");
-		ret = false;
-	} else
-		ret = true;
-
-	dbus_message_unref(msg);
-	return ret;
-}
-
 bool EdbusConnection::send(const EdbusMessage& content) {
+	if(!dc || !dc->conn)
+		return false;
+
 	bool ret;
 	dbus_uint32_t serial;
 
 	if(!dbus_connection_send(dc->conn, content.message(), &serial)) {
-		printf("Failed signal sending\n");
+		printf("Message sending failed\n");
 		ret = false;
 	} else
 		ret = true;
@@ -93,6 +76,9 @@ bool EdbusConnection::send(const EdbusMessage& content) {
 }
 
 bool EdbusConnection::send_with_reply_and_block(const EdbusMessage& content, int timeout, EdbusMessage& ret) {
+	if(!dc || !dc->conn)
+		return false;
+
 	DBusMessage* reply;
 	DBusError err;
 
@@ -110,54 +96,41 @@ bool EdbusConnection::send_with_reply_and_block(const EdbusMessage& content, int
 	return true;
 }
 
+bool EdbusConnection::request_name(const char* name, int mode) {
+	if(!dc || !dc->conn)
+		return false;
+
+	/* TODO: this should be assertion */
+	if(mode < 0)
+		return false;
+
+	int flags = 0;
+	if(mode & EDBUS_NAME_ALLOW_REPLACE)
+		flags |= DBUS_NAME_FLAG_ALLOW_REPLACEMENT;
+	if(mode & EDBUS_NAME_REPLACE_EXISTITNG)
+		flags |= DBUS_NAME_FLAG_REPLACE_EXISTING;
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	dbus_bus_request_name(dc->conn, name, flags, &err);
+
+	if(dbus_error_is_set(&err)) {
+		printf("Name request error: %s, %s\n", err.name, err.message);
+		dbus_error_free(&err);
+		return false;
+	}
+
+	return true;
+}
+
+const char* EdbusConnection::unique_name(void) {
+	if(!dc || !dc->conn)
+		return NULL;
+	return dbus_bus_get_unique_name(dc->conn);
+}
+
 int EdbusConnection::wait(int timout_milliseconds) {
 	return dbus_connection_read_write_dispatch(dc->conn, timout_milliseconds);
 }
 
-int main() {
-	EdbusConnection client;
-	if(!client.connect(EDBUS_SESSION)) {
-		puts("Can't connect to session bus");
-		return false;
-	}
-
-	//client.send_signal("/test/signal/Object", "test.signal.Type", "Test", "bla");
-#if 0
-	EdbusMessage msg;
-	msg.create_signal("/test/signal/Object", "test.signal.Type", "Test");
-	msg.append("xxx xxx xxx");
-	msg.append(66);
-	msg.append(66);
-	msg.append(66);
-
-	EdbusMessage::iterator it = msg.begin(), it_end = msg.end();
-	while(it != it_end) {
-		if(it.type() == EDBUS_TYPE_INT)
-			printf("%i\n", it.get_int());
-		++it;
-	}
-
-	client.send_signal(msg);
-#endif
-
-	EdbusMessage msg;
-	msg.create_method_call("test.method.server", "/test/method/Object", "test.method.Type", "Method");
-	msg.append("foo");
-	msg.append(34);
-
-	printf("%s %s %s %s\n", msg.interface(), msg.path(), msg.member(), msg.signature());
-
-	EdbusMessage ret;
-
-	/*
-	client.send(msg);
-	while(client.wait(3000))
-		puts("tick");
-	*/
-/*
-	if(client.send_with_reply_and_block(msg, 20, ret))
-		puts("Got reply");
-*/
-
-	return 0;
-}
