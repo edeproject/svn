@@ -36,6 +36,11 @@ class EdbusConnection {
 		/* get unique name for this connection (can be NULL) */
 		const char* unique_name(void);
 
+		void add_signal_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data);
+		void add_method_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data);
+
+		void setup_listener(void);
+
 		int wait(int timout_milliseconds);
 };
 

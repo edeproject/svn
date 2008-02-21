@@ -1,11 +1,30 @@
 #include "EdbusConnection.h"
 #include <dbus/dbus.h>
 #include <stdio.h>
+#include <assert.h>
 
 struct EdbusConnImpl {
 	DBusConnection* conn;
 	bool is_shared;
 };
+
+static DBusHandlerResult edbus_signal_filter(DBusConnection* connection, DBusMessage* msg, void* data) {
+	assert(data != NULL);
+
+	// TODO: when connection is not available, DBUS_HANDLER_RESULT_NOT_YET_HANDLED should be returned
+	int mtype = dbus_message_get_type(msg);
+	if(mtype == DBUS_MESSAGE_TYPE_SIGNAL) {
+		puts("Got signal");
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if(mtype == DBUS_MESSAGE_TYPE_METHOD_CALL) {
+		puts("Got method call");
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
 
 EdbusConnection::EdbusConnection() : dc(NULL) {
 }
@@ -129,6 +148,47 @@ const char* EdbusConnection::unique_name(void) {
 		return NULL;
 	return dbus_bus_get_unique_name(dc->conn);
 }
+
+void EdbusConnection::setup_listener(void) {
+	if(!dc || !dc->conn)
+		return;
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	dbus_bus_add_match(dc->conn, "type='signal'", &err);
+
+	if(dbus_error_is_set(&err)) {
+		printf("Signal match failed: %s, %s\n", err.name, err.message);
+		dbus_error_free(&err);
+		return;
+	}
+
+	const char* name = unique_name();
+	if(name) {
+		// TODO: edelib:String here
+		char buff[1024];
+		sprintf(buff, "destination='%s'", name);
+
+		dbus_bus_add_match(dc->conn, buff, &err);
+
+		if(dbus_error_is_set(&err)) {
+			printf("Destination match failed: %s, %s\n", err.name, err.message);
+			dbus_error_free(&err);
+			return;
+		}
+	} else
+		puts("Unable to get unique name");
+
+	dbus_connection_add_filter(dc->conn, edbus_signal_filter, this, 0);
+}
+
+void EdbusConnection::add_signal_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data) {
+}
+
+void EdbusConnection::add_method_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data) {
+}
+
 
 int EdbusConnection::wait(int timout_milliseconds) {
 	return dbus_connection_read_write_dispatch(dc->conn, timout_milliseconds);
