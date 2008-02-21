@@ -1,6 +1,29 @@
 #include "EdbusConnection.h"
 #include <stdio.h>
 
+int main() {
+	EdbusConnection cl;
+	if(!cl.connect(EDBUS_SESSION)) {
+		puts("Can't connect to session bus");
+		return 1;
+	}
+
+	EdbusMessage msg;
+
+	msg.create_signal("/org/equinoxproject/Signal", "org.equinoxproject.SignalType", "Signal");
+	msg.append("hello");
+
+	cl.send(msg);
+
+	msg.clear();
+	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
+			"org.equinoxproject.Type", "Method");
+	msg.append(34);
+	cl.send(msg);
+
+	return 0;
+}
+
 int main2() {
 	EdbusConnection cl;
 	if(!cl.connect(EDBUS_SYSTEM)) {
@@ -28,7 +51,7 @@ int main2() {
 	return 0;
 }
 
-int main() {
+int main1() {
 	EdbusConnection client;
 	if(!client.connect(EDBUS_SESSION)) {
 		puts("Can't connect to session bus");
