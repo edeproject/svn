@@ -3,27 +3,43 @@
 #include <stdio.h>
 #include <assert.h>
 
+typedef int (*EdbusCallback)(const EdbusMessage*, void*);
+
 struct EdbusConnImpl {
 	DBusConnection* conn;
-	bool is_shared;
+	bool            is_shared;
+
+	EdbusCallback   signal_cb;
+	void*           signal_cb_data;
+
+	EdbusCallback   method_call_cb;
+	void*           method_call_cb_data;
 };
 
 static DBusHandlerResult edbus_signal_filter(DBusConnection* connection, DBusMessage* msg, void* data) {
 	assert(data != NULL);
+	assert(msg != NULL);
 
 	// TODO: when connection is not available, DBUS_HANDLER_RESULT_NOT_YET_HANDLED should be returned
+	
+	EdbusConnImpl* dc = (EdbusConnImpl*)data;
+	
 	int mtype = dbus_message_get_type(msg);
+	int ret = 0;
+
 	if(mtype == DBUS_MESSAGE_TYPE_SIGNAL) {
-		puts("Got signal");
-		return DBUS_HANDLER_RESULT_HANDLED;
+		if(dc->signal_cb) {
+			EdbusMessage m(msg);
+			ret = dc->signal_cb(&m, dc->signal_cb_data);
+		}
+	} else if(mtype == DBUS_MESSAGE_TYPE_METHOD_CALL) {
+		if(dc->method_call_cb) {
+			EdbusMessage m(msg);
+			ret = dc->method_call_cb(&m, dc->method_call_cb_data);
+		}
 	}
 
-	if(mtype == DBUS_MESSAGE_TYPE_METHOD_CALL) {
-		puts("Got method call");
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	return ((ret > 0) ? DBUS_HANDLER_RESULT_HANDLED : DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
 EdbusConnection::EdbusConnection() : dc(NULL) {
@@ -39,6 +55,12 @@ bool EdbusConnection::connect(EdbusConnectionType ctype) {
 		dc = new EdbusConnImpl;
 		dc->conn = NULL;
 		dc->is_shared = false;
+
+		dc->signal_cb = NULL;
+		dc->signal_cb_data = NULL;
+
+		dc->method_call_cb = NULL;
+		dc->method_call_cb_data = NULL;
 	}
 
 	DBusBusType type;
@@ -71,9 +93,21 @@ bool EdbusConnection::connect(EdbusConnectionType ctype) {
 
 bool EdbusConnection::disconnect(void) {
 	/* only non-shared connections are allowed to be closed */
+	/*
 	if(!dc->is_shared && dc->conn)
 		dbus_connection_close(dc->conn); 
+	*/
+	if(dc->conn)
+		dbus_connection_unref(dc->conn);
+
 	dc->conn = NULL;
+	dc->is_shared = false;
+
+	dc->signal_cb = NULL;
+	dc->signal_cb_data = NULL;
+
+	dc->method_call_cb = NULL;
+	dc->method_call_cb_data = NULL;
 	return true;
 }
 
@@ -180,17 +214,29 @@ void EdbusConnection::setup_listener(void) {
 	} else
 		puts("Unable to get unique name");
 
-	dbus_connection_add_filter(dc->conn, edbus_signal_filter, this, 0);
+	dbus_connection_add_filter(dc->conn, edbus_signal_filter, dc, 0);
 }
 
-void EdbusConnection::add_signal_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data) {
+void EdbusConnection::signal_callback(int (*cb)(const EdbusMessage*, void*), void* data) {
+	if(!dc || !dc->conn)
+		return;
+
+	dc->signal_cb = cb;
+	dc->signal_cb_data = data;
 }
 
-void EdbusConnection::add_method_callback(const char* match, int (*cb)(const EdbusMessage*, void*), void* data) {
-}
+void EdbusConnection::method_callback(int (*cb)(const EdbusMessage*, void*), void* data) {
+	if(!dc || !dc->conn)
+		return;
 
+	dc->method_call_cb = cb;
+	dc->method_call_cb_data = data;
+}
 
 int EdbusConnection::wait(int timout_milliseconds) {
 	return dbus_connection_read_write_dispatch(dc->conn, timout_milliseconds);
+}
+
+void EdbusConnection::setup_listener_with_fltk(void) {
 }
 

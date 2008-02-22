@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <stdio.h>
+
 struct EdbusMessageImpl {
 	DBusMessage* msg;
 };
@@ -145,7 +147,7 @@ const char* EdbusMessageIterator::get_string(void) {
 EdbusMessage::EdbusMessage() : dm(NULL) {
 }
 
-EdbusMessage::EdbusMessage(DBusMessage* m) {
+EdbusMessage::EdbusMessage(DBusMessage* m) : dm(NULL) {
 	create(m);
 }
 
@@ -163,51 +165,37 @@ DBusMessage* EdbusMessage::message(void) const {
 	return dm->msg;
 }
 
-void EdbusMessage::create(DBusMessage* m) {
-	if(!dm) {
-		dm = new EdbusMessageImpl;
-		dm->msg = NULL;
-	} else {
-		/* destroy previously create message */
-		clear();
-	}
+#define CREATE_OR_CLEAR(m)                      \
+do {                                            \
+	if(!m) {                                    \
+		m = new EdbusMessageImpl;               \
+		m->msg = NULL;                          \
+	} else {                                    \
+		/* destroy previously create message */ \
+		clear();                                \
+	}                                           \
+} while(0)
 
+
+void EdbusMessage::create(DBusMessage* m) {
+	CREATE_OR_CLEAR(dm);
 	dm->msg = m;
+	/* increase counter or libdbus will scream with assertion */
+	dm->msg = dbus_message_ref(dm->msg);
 }
 
 void EdbusMessage::create_signal(const char* path, const char* interface, const char* name) {
-	if(!dm) {
-		dm = new EdbusMessageImpl;
-		dm->msg = NULL;
-	} else {
-		/* destroy previously create message */
-		clear();
-	}
-
+	CREATE_OR_CLEAR(dm);
 	dm->msg = dbus_message_new_signal(path, interface, name);
 }
 
 void EdbusMessage::create_method_call(const char* service, const char* path, const char* interface, const char* method) {
-	if(!dm) {
-		dm = new EdbusMessageImpl;
-		dm->msg = NULL;
-	} else {
-		/* destroy previously create message */
-		clear();
-	}
-
+	CREATE_OR_CLEAR(dm);
 	dm->msg = dbus_message_new_method_call(service, path, interface, method);
 }
 
 void EdbusMessage::create_reply(const EdbusMessage& replying_to) {
-	if(!dm) {
-		dm = new EdbusMessageImpl;
-		dm->msg = NULL;
-	} else {
-		/* destroy previously create message */
-		clear();
-	}
-
+	CREATE_OR_CLEAR(dm);
 	dm->msg = dbus_message_new_method_return(replying_to.dm->msg);
 }
 
@@ -226,9 +214,11 @@ void EdbusMessage::create_error_reply(const EdbusMessage& replying_to, const cha
 void EdbusMessage::clear(void) {
 	if(!dm)
 		return;
-	if(dm->msg)
+
+	if(dm->msg != NULL) {
 		dbus_message_unref(dm->msg);
-	dm->msg = NULL;
+		dm->msg = NULL;
+	}
 }
 
 void EdbusMessage::path(const char* np) {
@@ -251,7 +241,7 @@ void EdbusMessage::destination(const char* nd) {
 	dbus_message_set_destination(dm->msg, nd);
 }
 
-const char* EdbusMessage::destination(void) {
+const char* EdbusMessage::destination(void) const {
 	return dbus_message_get_destination(dm->msg);
 }
 
@@ -259,7 +249,7 @@ void EdbusMessage::member(const char* nm) {
 	dbus_message_set_member(dm->msg, nm);
 }
 
-const char* EdbusMessage::member(void) {
+const char* EdbusMessage::member(void) const {
 	return dbus_message_get_member(dm->msg);
 }
 
@@ -267,11 +257,11 @@ bool EdbusMessage::sender(const char* ns) {
 	dbus_message_set_sender(dm->msg, ns);
 }
 
-const char* EdbusMessage::sender(void) {
+const char* EdbusMessage::sender(void) const {
 	dbus_message_get_sender(dm->msg);
 }
 
-const char* EdbusMessage::signature(void) {
+const char* EdbusMessage::signature(void) const {
 	return dbus_message_get_signature(dm->msg);
 }
 
