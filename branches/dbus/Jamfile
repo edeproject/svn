@@ -1,5 +1,5 @@
 
-C++FLAGS += -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
+C++FLAGS += -g3 -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
 OPITM = ;
 
 Library libedbus : EdbusMessage.cpp EdbusConnection.cpp ;

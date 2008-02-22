@@ -76,15 +76,15 @@ class EdbusMessage {
 		const char* interface(void) const;
 
 		void destination(const char* nd);
-		const char* destination(void);
+		const char* destination(void) const;
 
 		void member(const char* nm);
-		const char* member(void);
+		const char* member(void) const;
 
 		bool sender(const char* ns);
-		const char* sender(void);
+		const char* sender(void) const;
 
-		const char* signature(void);
+		const char* signature(void) const;
 
 		void append(const char* val);
 		void append(bool val);
