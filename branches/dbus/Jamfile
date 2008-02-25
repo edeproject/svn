@@ -4,7 +4,9 @@ OPITM = ;
 
 Library libedbus : EdbusMessage.cpp EdbusConnection.cpp ;
 
-LINKLIBS += -L. -ledbus -ldbus-1 -lsupc++ ;
+FLTKLIBS = -lfltk -ldl -lm -lXext -lX11 ;
+
+LINKLIBS += -L. -ledbus -ldbus-1 $(FLTKLIBS) -lstdc++ ;
 
 Main dc : dc.cpp ;
 Main srv : srv.cpp ;

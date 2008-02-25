@@ -19,6 +19,7 @@ struct EdbusConnImpl;
 class EdbusConnection {
 	private:
 		EdbusConnImpl* dc;
+		void setup_filter(void);
 	public:
 		EdbusConnection();
 		~EdbusConnection();
@@ -28,7 +29,7 @@ class EdbusConnection {
 		bool send(const EdbusMessage& content);
 
 		/* used to call remote methods and wait reply from them */
-		bool send_with_reply_and_block(const EdbusMessage& content, int timeout, EdbusMessage& ret);
+		bool send_with_reply_and_block(const EdbusMessage& content, int timeout_ms, EdbusMessage& ret);
 
 		/* try to set readable name; flags are or-ed */
 		bool request_name(const char* name, int mode = EDBUS_NAME_NO_REPLACE);
@@ -42,7 +43,7 @@ class EdbusConnection {
 		void setup_listener(void);
 		void setup_listener_with_fltk(void);
 
-		int wait(int timout_milliseconds);
+		int wait(int timout_ms);
 };
 
 #endif

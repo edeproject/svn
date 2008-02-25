@@ -200,14 +200,7 @@ void EdbusMessage::create_reply(const EdbusMessage& replying_to) {
 }
 
 void EdbusMessage::create_error_reply(const EdbusMessage& replying_to, const char* errmsg) {
-	if(!dm) {
-		dm = new EdbusMessageImpl;
-		dm->msg = NULL;
-	} else {
-		/* destroy previously create message */
-		clear();
-	}
-
+	CREATE_OR_CLEAR(dm);
 	dm->msg = dbus_message_new_error(replying_to.dm->msg, DBUS_ERROR_FAILED, errmsg);
 }
 
