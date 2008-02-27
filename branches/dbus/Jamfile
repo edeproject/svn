@@ -10,3 +10,5 @@ LINKLIBS += -L. -ledbus -ldbus-1 $(FLTKLIBS) -lstdc++ ;
 
 Main dc : dc.cpp ;
 Main srv : srv.cpp ;
+
+Main dd : EdbusData.cpp ;
