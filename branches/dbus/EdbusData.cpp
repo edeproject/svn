@@ -107,8 +107,50 @@ EdbusData::~EdbusData() {
 	delete impl;
 }
 
-EdbusDataType EdbusData::type() {
+EdbusDataType EdbusData::type() const {
 	return impl->type;
+}
+
+bool EdbusData::operator==(const EdbusData& other) {
+	if(&other == this)
+		return true;
+
+	if(type() != other.type())
+		return false;
+
+	switch(type()) {
+		case EDBUS_TYPE_INVALID:
+			return true;
+		case EDBUS_TYPE_BYTE:
+			return impl->value.v_byte == other.impl->value.v_byte;
+		case EDBUS_TYPE_BOOL:
+			return impl->value.v_bool == other.impl->value.v_bool;
+		case EDBUS_TYPE_INT16:
+			return impl->value.v_int16 == other.impl->value.v_int16;
+		case EDBUS_TYPE_INT32:
+			return impl->value.v_int32 == other.impl->value.v_int32;
+		case EDBUS_TYPE_INT64:
+			return impl->value.v_int64 == other.impl->value.v_int64;
+		case EDBUS_TYPE_DOUBLE:
+			return impl->value.v_double == other.impl->value.v_double;
+		case EDBUS_TYPE_STRING:
+			/* TODO: use edelib::String here */
+			if(impl->value.v_pointer && other.impl->value.v_pointer) {
+				const char* v1 = (const char*)impl->value.v_pointer;
+				const char* v2 = (const char*)other.impl->value.v_pointer;
+				return (strcmp(v1, v2) == 0);
+			} else
+				return false;
+		case EDBUS_TYPE_OBJECT_PATH:
+		case EDBUS_TYPE_SIGNATURE:
+		case EDBUS_TYPE_ARRAY:
+		case EDBUS_TYPE_STRUCT:
+		case EDBUS_TYPE_VARIANT:
+			/* TODO */
+			return false;
+	}
+
+	return false;
 }
 
 int main() {
@@ -124,6 +166,14 @@ int main() {
 	for(; first != last; ++first)
 		printf("%i ", (*first).type());
 	puts("");
+
+	EdbusData d1(2);
+	EdbusData d2(2);
+	EdbusData d3(5);
+	EdbusData d4("Some sample");
+	EdbusData d5("Sample some");
+
+	printf("%i %i %i %i %i\n", d1 == d2, d1 == d2, d1 == d3, d1 == d5, d4 == d5);
 
 	return 0;
 }
