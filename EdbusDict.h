@@ -3,17 +3,13 @@
 
 #include "EdbusData.h"
 
-struct EdbusDictEntry {
-	EdbusData key;
-	EdbusData value;
-};
-
 struct EdbusDictPrivate;
 
 class EdbusDict {
 	private:
 		EdbusDictPrivate* impl;
 		void dispose(void);
+		void list_dispose(void);
 		void unhook(void);
 	public:
 		EdbusDict();
@@ -22,6 +18,8 @@ class EdbusDict {
 		~EdbusDict();
 
 		void push_back(const EdbusData& key, const EdbusData& value);
+		void clear(void);
+		unsigned int size(void);
 		void remove(const EdbusData& key);
 		EdbusData find(const EdbusData& key);
 };
