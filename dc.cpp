@@ -1,6 +1,8 @@
-#include "EdbusConnection.h"
 #include <stdio.h>
+#include "EdbusConnection.h"
+#include "EdbusDict.h"
 
+#if 0
 int main() {
 	EdbusConnection cl;
 	if(!cl.connect(EDBUS_SESSION)) {
@@ -11,46 +13,70 @@ int main() {
 	EdbusMessage msg;
 
 	msg.create_signal("/org/equinoxproject/Signal", "org.equinoxproject.SignalType", "Signal");
-	msg.append("hello");
+	msg << "Hello";
 
 	cl.send(msg);
 
 	msg.clear();
 	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
 			"org.equinoxproject.Type", "Method");
-	msg.append(34);
+	msg << 34;
+
 	cl.send(msg);
 
 	return 0;
 }
+#endif
 
-int main2() {
+#if 0
+int main() {
 	EdbusConnection cl;
 	if(!cl.connect(EDBUS_SYSTEM)) {
 		puts("No system connection");
 		return 1;
 	}
 
-		//void create_method_call(const char* service, const char* path, const char* interface, const char* method);
 	EdbusMessage msg;
 	msg.create_method_call("org.freedesktop.Hal", 
 			"/org/freedesktop/Hal/devices/computer", "org.freedesktop.DBus.Introspectable", "Introspect");
-			//"org.freedesktop.DBus.Introspectable.Introspect");
 
 	EdbusMessage reply;
 	cl.send_with_reply_and_block(msg, 1000, reply);
-	printf("Got signature: %s\n", reply.signature());
 
 	EdbusMessage::iterator it = reply.begin(), it_end = reply.end();
 	while(it != it_end) {
-		if(it.type() == EDBUS_TYPE_STRING)
-			printf("got string: %s", it.get_string());
+		if((*it).is_string())
+			printf("%s", (*it).to_string());
 		++it;
 	}
 
 	return 0;
 }
+#endif
 
+int main() {
+	EdbusVariant v;
+	v.value = EdbusData::from_int32(34);
+
+	EdbusData d = EdbusData::from_variant(v);
+	printf("%s\n", d.signature());
+
+	EdbusVariant vv = d.to_variant();
+	vv.value = EdbusData::from_variant(v);
+
+	d = EdbusData::from_variant(vv);
+	printf("%s\n", d.signature());
+
+	printf("%i\n", d.is_variant());
+
+	v = d.to_variant();
+
+	printf("%i\n", v.value.is_variant());
+
+	return 0;
+}
+
+#if 0
 int main1() {
 	EdbusConnection client;
 	if(!client.connect(EDBUS_SESSION)) {
@@ -120,3 +146,4 @@ int main1() {
 
 	return 0;
 }
+#endif

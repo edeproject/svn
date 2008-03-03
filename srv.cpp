@@ -1,8 +1,7 @@
-#include "EdbusConnection.h"
 #include <stdio.h>
-
 #include <Fl/Fl_Window.h>
 #include <Fl/Fl.h>
+#include "EdbusConnection.h"
 
 int signal_cb(const EdbusMessage* m, void*) {
 	printf("Got signal: %s : %s : %s\n", m->path(), m->interface(), m->member());
@@ -28,7 +27,6 @@ int main() {
 
 	srv.signal_callback(signal_cb, 0);
 	srv.method_callback(method_cb, 0);
-
 
 	Fl_Window* win = new Fl_Window(100, 100, "bla bla");
 

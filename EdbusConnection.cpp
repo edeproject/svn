@@ -1,10 +1,11 @@
-#include "EdbusConnection.h"
-#include <dbus/dbus.h>
 #include <stdio.h>
 #include <assert.h>
 #include <list>
 
 #include <FL/Fl.h>
+#include <dbus/dbus.h>
+
+#include "EdbusConnection.h"
 
 typedef int (*EdbusCallback)(const EdbusMessage*, void*);
 typedef std::list<DBusWatch*> WatchList;
@@ -200,6 +201,7 @@ static dbus_bool_t edbus_add_timeout(DBusTimeout* timeout, void* data) {
 
 	printf("added timeout to %i ms\n", interval);
 	Fl::add_timeout(interval / 1000, timeout_cb, data);
+	return 1;
 }
 
 static void edbus_remove_timeout(DBusTimeout* timeout, void* data) {

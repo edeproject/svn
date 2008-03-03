@@ -1,27 +1,16 @@
 #ifndef __EDBUSMESSAGE_H__
 #define __DEBUSMESSAGE_H__
 
+#include "EdbusData.h"
+
 class  EdbusConnection;
 struct EdbusMessageImpl;
 struct EdbusMessageIteratorImpl;
-
 struct DBusMessage;
-
-enum EdbusValueType {
-	EDBUS_TYPE_BOOL,
-	EDBUS_TYPE_INT,
-	EDBUS_TYPE_UINT,
-	EDBUS_TYPE_LONG,
-	EDBUS_TYPE_ULONG,
-	EDBUS_TYPE_DOUBLE,
-	EDBUS_TYPE_STRING,
-	EDBUS_TYPE_INVALID
-};
 
 class EdbusMessageIterator {
 	private:
 		EdbusMessageIteratorImpl* impl;
-
 	public:
 		EdbusMessageIterator();
 		EdbusMessageIterator(const EdbusMessageIterator& it);
@@ -31,32 +20,22 @@ class EdbusMessageIterator {
 		EdbusMessageIterator& operator++();
 		bool operator==(const EdbusMessageIterator& it);
 		bool operator!=(const EdbusMessageIterator& it) { return !operator==(it); }
-
-		EdbusValueType type(void);
-
-		int get_int(void);
-		unsigned int get_uint(void);
-		char get_char(void);
-		bool get_bool(void);
-		long get_long(void);
-		unsigned long get_ulong(void);
-		double get_double(void);
-
-		/* TODO: this should return edelib::String */
-		const char* get_string(void);
+		const EdbusData& operator*(void) const;
 };
 
 class EdbusMessage {
-	private:
-		friend class EdbusConnection;
-
-		EdbusMessageImpl* dm;
-		DBusMessage* message(void) const;
-
 	public:
 		typedef EdbusMessageIterator iterator;
 
+	private:
+		friend class EdbusConnection;
+		EdbusMessageImpl* dm;
+		DBusMessage* message(void) const;
+
+		EdbusMessage& operator=(const EdbusMessage&);
+	public:
 		EdbusMessage();
+		EdbusMessage(const EdbusMessage& m);
 		EdbusMessage(DBusMessage* m);
 		~EdbusMessage();
 
@@ -68,6 +47,10 @@ class EdbusMessage {
 		void create_error_reply(const EdbusMessage& replying_to, const char* errmsg);
 
 		void clear(void);
+
+		bool is_signal(void);
+		bool is_method_call(void);
+		bool is_error_reply(const char* errmsg);
 
 		void path(const char* np);
 		const char* path(void) const;
@@ -81,23 +64,22 @@ class EdbusMessage {
 		void member(const char* nm);
 		const char* member(void) const;
 
-		bool sender(const char* ns);
+		void sender(const char* ns);
 		const char* sender(void) const;
 
 		const char* signature(void) const;
 
-		void append(const char* val);
-		void append(bool val);
-		void append(char val);
-		void append(int val);
-		void append(unsigned int val);
-		void append(long val);
-		void append(unsigned long val);
-		void append(double val);
+		void append(const EdbusData& data);
 
-		iterator begin(void) const;
-		iterator end(void) const;
+		iterator begin(void);
+		iterator end(void);
+		unsigned int size(void);
 };
+
+inline EdbusMessage& operator<<(EdbusMessage& m, const EdbusData& val) {
+	m.append(val);
+	return m;
+}
 
 #endif
 
