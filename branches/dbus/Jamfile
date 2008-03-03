@@ -1,8 +1,9 @@
 
-C++FLAGS += -g3 -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
+C++FLAGS = -Wall -g3 -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
 OPITM = ;
 
-Library libedbus : EdbusMessage.cpp EdbusConnection.cpp ;
+Library libedbus : EdbusObjectPath.cpp EdbusData.cpp EdbusDict.cpp EdbusMessage.cpp EdbusConnection.cpp ;
+#Library libedbus : EdbusData.cpp EdbusMessage.cpp EdbusConnection.cpp ;
 
 FLTKLIBS = -lfltk -ldl -lm -lXext -lX11 ;
 
@@ -10,5 +11,4 @@ LINKLIBS += -L. -ledbus -ldbus-1 $(FLTKLIBS) -lstdc++ ;
 
 Main dc : dc.cpp ;
 Main srv : srv.cpp ;
-
-Main dd : EdbusData.cpp ;
+Main dict : dict.cpp ;
