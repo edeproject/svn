@@ -21,6 +21,19 @@ struct EdbusDictPrivate {
 	unsigned int ref;
 };
 
+static EdbusDictEntry* find_entry_by_key(EntryList& lst, const EdbusData& key) {
+	EntryListIter it = lst.begin(), it_end = lst.end();
+
+	while(it != it_end) {
+		if((*it)->key == key)
+			return (*it);
+
+		++it;
+	}
+
+	return NULL;
+}
+
 EdbusDict::EdbusDict() : impl(0) {
 	impl = new EdbusDictPrivate;
 	impl->ref = 1;
@@ -56,9 +69,9 @@ void EdbusDict::dispose(void) {
 	if(!impl)
 		return;
 
-	list_dispose();
 	puts("dispose");
 
+	list_dispose();
 	delete impl;
 	impl = 0;
 }
@@ -92,7 +105,6 @@ void EdbusDict::unhook(void) {
 	 * edelib::list does not have implemented copy operator
 	 * and that is the way I like
 	 */
-
 	if(impl->lst.size() > 0) {
 		EntryListIter it = impl->lst.begin(), it_end = impl->lst.end();
 		EdbusDictEntry* entry;
@@ -116,11 +128,25 @@ void EdbusDict::push_back(const EdbusData& key, const EdbusData& value) {
 		return;
 
 	unhook();
-	
-	EdbusDictEntry* entry = new EdbusDictEntry;
-	entry->key = key;
-	entry->value = value;
-	impl->lst.push_back(entry);
+
+	/*
+	 * If entry with the same key already exists, just replace value. Opposite
+	 * add as new entry.
+	 *
+	 * Not efficient at all, but this will assure dict contains unique keys.
+	 * Dbus specs tolerates dupicate keys in dict, but it can mark data parts
+	 * with them as invalid.
+	 */
+	EdbusDictEntry* e = find_entry_by_key(impl->lst, key);
+
+	if(!e) {
+		e = new EdbusDictEntry;
+		e->key = key;
+		e->value = value;
+		impl->lst.push_back(e);
+	} else {
+		e->value = value;
+	}
 }
 
 void EdbusDict::clear(void) {
@@ -147,15 +173,9 @@ void EdbusDict::remove(const EdbusData& key) {
 }
 
 EdbusData EdbusDict::find(const EdbusData& key) {
-	EntryListIter it = impl->lst.begin(), it_end = impl->lst.end();
+	EdbusDictEntry* e = find_entry_by_key(impl->lst, key);
+	if(!e)
+		return EdbusData::from_invalid();
 
-	while(it != it_end) {
-		if((*it)->key == key) {
-			return (*it)->value;
-		}
-
-		++it;
-	}
-
-	return EdbusData::from_invalid();
+	return EdbusData(e->value);
 }

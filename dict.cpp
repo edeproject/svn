@@ -32,8 +32,11 @@ int main() {
 
 	dict2.push_back("key", 34);
 	dict2.push_back("key2", 4);
+	dict2.push_back("key2", 5);
 
 	printf("%i %i\n", dict.size(), dict2.size());
+	e1 = dict2.find("key2");
+	printf("%i\n", e1.to_int32());
 
 	return 0;
 }

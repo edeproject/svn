@@ -3,14 +3,21 @@
 
 #include "EdbusData.h"
 
+#ifndef SKIP_DOCS
 struct EdbusDictPrivate;
+#endif
 
+/**
+ * \class EdbusDict
+ * \brief Represents a dictionary-like container
+ */
 class EdbusDict {
 	private:
 		EdbusDictPrivate* impl;
 		void dispose(void);
 		void list_dispose(void);
 		void unhook(void);
+
 	public:
 		EdbusDict();
 		EdbusDict(const EdbusDict&);
