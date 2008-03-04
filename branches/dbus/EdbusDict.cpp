@@ -69,8 +69,6 @@ void EdbusDict::dispose(void) {
 	if(!impl)
 		return;
 
-	puts("dispose");
-
 	list_dispose();
 	delete impl;
 	impl = 0;
@@ -93,8 +91,6 @@ void EdbusDict::unhook(void) {
 
 	if(impl->ref == 1)
 		return;
-
-	puts("unhook");
 
 	EdbusDictPrivate* new_one = new EdbusDictPrivate;
 	new_one->ref = 1;
@@ -134,7 +130,7 @@ void EdbusDict::push_back(const EdbusData& key, const EdbusData& value) {
 	 * add as new entry.
 	 *
 	 * Not efficient at all, but this will assure dict contains unique keys.
-	 * Dbus specs tolerates dupicate keys in dict, but it can mark data parts
+	 * Dbus specs tolerates duplicate keys in dict, but it can mark data parts
 	 * with them as invalid.
 	 */
 	EdbusDictEntry* e = find_entry_by_key(impl->lst, key);
