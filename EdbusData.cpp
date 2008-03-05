@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "EdbusData.h"
+#include "EdbusDict.h"
 
 struct EdbusDataPrivate {
 	uint32_t      refs;
@@ -137,7 +138,21 @@ EdbusData::EdbusData(const EdbusVariant& val) {
 	sprintf(varint_sig, "v%s", s);
 
 	impl->sig = varint_sig;
+
+	/* make a shallow copy */
 	impl->value.v_pointer = new EdbusVariant(val);
+}
+
+EdbusData::EdbusData(const EdbusDict& val) {
+	impl = new EdbusDataPrivate;
+	impl->refs = 1;
+	impl->type = EDBUS_TYPE_DICT;
+
+	/* TODO */
+	impl->sig = NULL;
+
+	/* make a shallow copy */
+	impl->value.v_pointer = new EdbusDict(val);
 }
 
 EdbusData::EdbusData(const EdbusData& other) {
@@ -250,8 +265,14 @@ EdbusObjectPath EdbusData::to_object_path(void) const {
 
 EdbusVariant EdbusData::to_variant(void) const {
 	assert(is_variant() == true);
-	/* copy variant */
+	/* copy variant (a shallow copy) */
 	return EdbusVariant((*(EdbusVariant*)impl->value.v_pointer));
+}
+
+EdbusDict EdbusData::to_dict(void) const {
+	assert(is_dict() == true);
+	/* copy dict (a shallow copy) */
+	return EdbusDict((*(EdbusDict*)impl->value.v_pointer));
 }
 
 bool EdbusData::operator==(const EdbusData& other) {

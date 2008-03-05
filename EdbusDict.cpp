@@ -175,3 +175,28 @@ EdbusData EdbusDict::find(const EdbusData& key) {
 
 	return EdbusData(e->value);
 }
+
+bool EdbusDict::operator==(const EdbusDict& other) {
+	if(&other == this)
+		return true;
+
+	if(impl->lst.size() != other.impl->lst.size())
+		return false;
+
+	EntryListIter it = impl->lst.begin(), it_end = impl->lst.end();
+	EntryListIter it2 = other.impl->lst.begin();
+
+	while(it != it_end) {
+		/* 
+		 * EdbusData::operator==() will handle the cases when keys and
+		 * values are different types
+		 */
+		if(((*it)->key != (*it2)->key) || ((*it)->value != (*it2)->value))
+			return false;
+
+		++it;
+		++it2;
+	}
+
+	return true;
+}
