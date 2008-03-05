@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <FL/Enumerations.h>
+
 #include "EdbusConnection.h"
 #include "EdbusDict.h"
 
-#if 0
 int main() {
 	EdbusConnection cl;
 	if(!cl.connect(EDBUS_SESSION)) {
@@ -18,15 +20,25 @@ int main() {
 	cl.send(msg);
 
 	msg.clear();
-	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
-			"org.equinoxproject.Type", "Method");
-	msg << 34;
 
+	puts("Changing color of window to FL_RED");
+
+	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
+			"org.equinoxproject.Type", "ChangeBackground");
+	msg << EdbusData::from_int16(FL_RED);
+	cl.send(msg);
+
+	sleep(3);
+
+	puts("Changing color of window to FL_GRAY");
+
+	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
+			"org.equinoxproject.Type", "ChangeBackground");
+	msg << EdbusData::from_int16(FL_GRAY);
 	cl.send(msg);
 
 	return 0;
 }
-#endif
 
 #if 0
 int main() {
@@ -54,6 +66,7 @@ int main() {
 }
 #endif
 
+#if 0
 int main() {
 	EdbusVariant v;
 	v.value = EdbusData::from_int32(34);
@@ -75,6 +88,7 @@ int main() {
 
 	return 0;
 }
+#endif
 
 #if 0
 int main1() {

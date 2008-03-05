@@ -38,5 +38,18 @@ int main() {
 	e1 = dict2.find("key2");
 	printf("%i\n", e1.to_int32());
 
+	dict.clear();
+	dict2.clear();
+
+	dict.push_back(3, 3);
+	dict.push_back(1, 3);
+	dict.push_back(2, 3);
+
+	dict2.push_back("xx", 3);
+	dict2.push_back(1, 3);
+	dict2.push_back(2, 3);
+
+	printf("dict == dict2 %i %i %i\n", dict == dict2, dict.size(), dict2.size());
+
 	return 0;
 }

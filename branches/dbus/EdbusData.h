@@ -33,6 +33,7 @@ enum EdbusDataType {
 struct EdbusDataPrivate;
 #endif
 
+class  EdbusDict;
 struct EdbusVariant;
 
 /**
@@ -53,6 +54,28 @@ struct EdbusVariant;
  *
  * The best way to check what current type is, is to use one of is_XYZ members
  * (e.g. for bool is_bool() or for double is_double()).
+ *
+ * When data is assigned to EdbusData, it can implicitly resolve data type
+ * (e.g. strings, integers or EdbusObjectPath), but in case of similar types, 
+ * things can a bit strange at first look. To better explain this, let say
+ * you assign <em>5</em> as value like:
+ * \code
+ *   EdbusData d = 5;
+ * \endcode
+ *
+ * What is <em>d</em> type? byte_t, int16_t, uint16_t, int32_t, uint32_t, int64_t and
+ * uint64_t can holds this value; by default, a compiler will use constructor
+ * with int32_t and <em>d</em> will be that type. This let-things-done-by-compiler
+ * stuff can introduce a strange bugs, so static <em>from_</em> members are given to
+ * make life easier for compiler, like:
+ * \code
+ *   EdbusData d = EdbusData::from_int32(5);
+ *   // or to force it inot uint16_t
+ *   EdbusData d = EdbusData::from_uint16(5);
+ * \encode
+ *
+ * \note D-BUS signature for above types is different and sending int32_t to the service
+ * that expects uint16_t will probably result rejecting whole message!
  */
 class EdbusData {
 	private:
@@ -124,6 +147,11 @@ class EdbusData {
 		 * Construct object with EdbusVariant type
 		 */
 		EdbusData(const EdbusVariant& val);
+
+		/**
+		 * Construct object with EdbusDict type
+		 */
+		EdbusData(const EdbusDict& val);
 
 		/**
 		 * Construct object with already constructed object.
@@ -215,6 +243,11 @@ class EdbusData {
 		EdbusVariant to_variant(void) const;
 
 		/**
+		 * Returns a EdbusDict value if it holds
+		 */
+		EdbusDict to_dict(void) const;
+
+		/**
 		 * Assign existing object
 		 */
 		EdbusData& operator=(const EdbusData& other);
@@ -300,6 +333,11 @@ class EdbusData {
 		bool is_variant(void) const { return type() == EDBUS_TYPE_VARIANT; }
 
 		/**
+		 * Returns true if object currently holds a EdbusDict value
+		 */
+		bool is_dict(void) const { return type() == EDBUS_TYPE_DICT; }
+
+		/**
 		 * Returns true if given object is basic type.
 		 * Basic types (to D-BUS) are all EdbusDataType types except
 		 * array, structure, dict and variant
@@ -378,6 +416,11 @@ class EdbusData {
 		 * Creates object with EdbusVariant value
 		 */
 		static EdbusData from_variant(const EdbusVariant& val) { return EdbusData(val); }
+
+		/**
+		 * Creates object with EdbusDict value
+		 */
+		static EdbusData from_dict(const EdbusDict& val) { return EdbusData(val); }
 };
 
 /**

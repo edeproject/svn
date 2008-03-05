@@ -54,7 +54,7 @@ class EdbusDict {
 		EdbusDict(const EdbusDict&);
 
 		/**
-		 * Copies from the given other dict
+		 * Assign other dict content
 		 */
 		EdbusDict& operator=(const EdbusDict&);
 
@@ -78,7 +78,7 @@ class EdbusDict {
 		void clear(void);
 
 		/**
-		 * Returns size of dict content
+		 * Returns size of dict content. This is a constant operation
 		 */
 		unsigned int size(void);
 
@@ -99,6 +99,16 @@ class EdbusDict {
 		 * \param key is key//value pair to be searched
 		 */
 		EdbusData find(const EdbusData& key);
+
+		/**
+		 * Compares if two dicts are equal
+		 */
+		bool operator==(const EdbusDict& other);
+
+		/**
+		 * Compares if two dicts are not equal
+		 */
+		bool operator!=(const EdbusDict& other) { return !operator==(other); }
 };
 
 #endif

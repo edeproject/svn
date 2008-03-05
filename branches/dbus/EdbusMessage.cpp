@@ -16,9 +16,11 @@ struct EdbusMessageIteratorImpl {
 	bool             end;
 };
 
+/* marshall from EdbusData type to DBus type */
 static void to_dbus_type(DBusMessage* msg, const EdbusData& data) {
 	if(data.is_bool()) {
-		const dbus_bool_t v = data.to_bool(); /* so DBus knows real size */
+		/* force it so DBus knows real size */
+		const dbus_bool_t v = data.to_bool();
 		dbus_message_append_args(msg, DBUS_TYPE_BOOLEAN, &v, DBUS_TYPE_INVALID);
 	} else if(data.is_byte()) {
 		byte_t v = data.to_byte();
@@ -47,6 +49,7 @@ static void to_dbus_type(DBusMessage* msg, const EdbusData& data) {
 	}
 }
 
+/* unmarshall from DBus type to EdbusData type */
 static void from_dbus_type(DBusMessageIter* iter, EdbusData& data) {
 	int dtype = dbus_message_iter_get_arg_type(iter);
 
@@ -291,14 +294,14 @@ void EdbusMessage::append(const EdbusData& data) {
 	to_dbus_type(dm->msg, data);
 }
 
-EdbusMessage::iterator EdbusMessage::begin(void) {
+EdbusMessage::iterator EdbusMessage::begin(void) const {
 	if(!dm)
 		return iterator();
 	else
 		return iterator(dm->msg);
 }
 
-EdbusMessage::iterator EdbusMessage::end(void) {
+EdbusMessage::iterator EdbusMessage::end(void) const {
 	return iterator();
 }
 
