@@ -180,6 +180,10 @@ void EdbusData::dispose(void) {
 		/* variant uses new operator */
 		EdbusVariant* v = (EdbusVariant*)impl->value.v_pointer;
 		delete v;
+	} else if(impl->type == EDBUS_TYPE_DICT) {
+		/* dict uses new operator */
+		EdbusDict* d = (EdbusDict*)impl->value.v_pointer;
+		delete d;
 	}
 
 	if(impl->sig)
