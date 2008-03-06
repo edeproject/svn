@@ -168,6 +168,19 @@ void EdbusDict::append(const EdbusData& key, const EdbusData& value) {
 	if(!EdbusData::basic_type(key))
 		return;
 
+	/*
+	 * Assure all keys are the same type. The same applies with the values.
+	 * This is done by checking first added entry, if exists. 
+	 * We can accept keys (or values) with different types, but D-BUS does not
+	 * like it.
+	 */
+	if(impl->lst.size() > 0) {
+		if(key.type() != key_type() || value.type() != value_type()) {
+			puts("Key or value is different type than I already have. Ignoring...");
+			return;
+		}
+	}
+
 	unhook();
 
 	/*
@@ -242,6 +255,20 @@ bool EdbusDict::operator==(const EdbusDict& other) {
 	return true;
 }
 
+EdbusDataType EdbusDict::key_type(void) {
+	assert(impl->lst.size() > 0 && "Can't get key type on empty container");
+
+	EntryListIter it = impl->lst.begin();
+	return (*it)->key.type();
+}
+
+EdbusDataType EdbusDict::value_type(void) {
+	assert(impl->lst.size() > 0 && "Can't get value type on empty container");
+
+	EntryListIter it = impl->lst.begin();
+	return (*it)->value.type();
+}
+
 EdbusDict::iterator EdbusDict::begin() const {
 	impl->iterator_current = impl->lst.begin();
 	return EdbusDictIterator(*this);
@@ -254,5 +281,4 @@ EdbusDict::iterator EdbusDict::end() const {
 unsigned int EdbusDict::size(void) {
 	return impl->lst.size();
 }
-
 
