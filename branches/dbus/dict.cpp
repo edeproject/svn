@@ -3,9 +3,9 @@
 
 int main() {
 	EdbusDict dict;
-	dict.push_back(3, "foo");
-	dict.push_back(2, "baz");
-	dict.push_back(1, "taz");
+	dict.append(3, "foo");
+	dict.append(2, "baz");
+	dict.append(1, "taz");
 
 	EdbusDict dict2 = dict;
 
@@ -30,9 +30,9 @@ int main() {
 
 	printf("%i %i\n", e1.is_valid(), e2.is_valid());
 
-	dict2.push_back("key", 34);
-	dict2.push_back("key2", 4);
-	dict2.push_back("key2", 5);
+	dict2.append("key", 34);
+	dict2.append("key2", 4);
+	dict2.append("key2", 5);
 
 	printf("%i %i\n", dict.size(), dict2.size());
 	e1 = dict2.find("key2");
@@ -41,15 +41,24 @@ int main() {
 	dict.clear();
 	dict2.clear();
 
-	dict.push_back(3, 3);
-	dict.push_back(1, 3);
-	dict.push_back(2, 3);
+	dict.append(3, 3);
+	dict.append(1, 3);
+	dict.append(2, 3);
 
-	dict2.push_back("xx", 3);
-	dict2.push_back(1, 3);
-	dict2.push_back(2, 3);
+	dict2.append("xx", 3);
+	dict2.append("yy", 66);
+	dict2.append("zz", 9);
 
 	printf("dict == dict2 %i %i %i\n", dict == dict2, dict.size(), dict2.size());
+
+	puts("here---");
+	EdbusDict::iterator it = dict2.begin(), it_end;
+	it_end = dict2.end();
+
+	while(it != it_end) {
+		printf("key: %s value: %i\n", (*it).key.to_string(), (*it).value.to_int32());
+		++it;
+	}
 
 	return 0;
 }
