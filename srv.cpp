@@ -12,6 +12,7 @@ int signal_cb(const EdbusMessage* m, void*) {
 int method_cb(const EdbusMessage* m, void* w) {
 	Fl_Window* win = (Fl_Window*)w;
 	printf("Got call: %s : %s : %s\n", m->path(), m->interface(), m->member());
+	printf("Message signature is: %s\n", m->signature());
 
 	if(strcmp(m->member(), "ChangeBackground") == 0) {
 		EdbusMessage::iterator it = m->begin();

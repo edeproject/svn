@@ -4,11 +4,6 @@
 
 #include "EdbusDict.h"
 
-struct EdbusDictEntry {
-	EdbusData key;
-	EdbusData value;
-};
-
 /* 
  * store them as pointers since list will require an empty constructor
  * which will construct (by default) invalid types
@@ -19,6 +14,13 @@ typedef std::list<EdbusDictEntry*>::iterator EntryListIter;
 struct EdbusDictPrivate {
 	EntryList lst;
 	unsigned int ref;
+
+	/* 
+	 * Only used by EdbusDictIterator. I know this sucks, but
+	 * it will prevent adding another EdbusDictIteratorPrivate class
+	 * and additional allocations it carries
+	 */
+	EntryListIter iterator_current;
 };
 
 static EdbusDictEntry* find_entry_by_key(EntryList& lst, const EdbusData& key) {
@@ -32,6 +34,49 @@ static EdbusDictEntry* find_entry_by_key(EntryList& lst, const EdbusData& key) {
 	}
 
 	return NULL;
+}
+
+EdbusDictIterator::EdbusDictIterator() : dict(0), end(true) { }
+
+EdbusDictIterator::EdbusDictIterator(const EdbusDict& d) : dict(0), end(false) {
+	/* throw away constness */
+	dict = (EdbusDict*)&d;
+}
+
+EdbusDictIterator::EdbusDictIterator(const EdbusDictIterator& other) : dict(0), end(false) { 
+	/* throw away constness */
+	dict = (EdbusDict*)&other.dict;
+	end = other.end;
+}
+
+EdbusDictIterator& EdbusDictIterator::operator=(const EdbusDictIterator& other) {
+	/* throw away constness */
+	dict = (EdbusDict*)&other.dict;
+	end = other.end;
+	return *this;
+}
+
+EdbusDictIterator& EdbusDictIterator::operator++(void) {
+	if(end)
+		return *this;
+
+	++(dict->impl->iterator_current);
+
+	if(dict->impl->iterator_current == dict->impl->lst.end())
+		end = true;
+	return *this;
+}
+
+const EdbusDictEntry& EdbusDictIterator::operator*(void) const {
+	return *(*(dict->impl->iterator_current));
+}
+
+bool EdbusDictIterator::operator==(const EdbusDictIterator& other) {
+	if(end == true)
+		return true;
+	if(end == other.end)
+		return true;
+	return false;
 }
 
 EdbusDict::EdbusDict() : impl(0) {
@@ -119,7 +164,7 @@ void EdbusDict::unhook(void) {
 	impl = new_one;
 }
 
-void EdbusDict::push_back(const EdbusData& key, const EdbusData& value) {
+void EdbusDict::append(const EdbusData& key, const EdbusData& value) {
 	if(!EdbusData::basic_type(key))
 		return;
 
@@ -148,10 +193,6 @@ void EdbusDict::push_back(const EdbusData& key, const EdbusData& value) {
 void EdbusDict::clear(void) {
 	unhook();
 	list_dispose();
-}
-
-unsigned int EdbusDict::size(void) {
-	return impl->lst.size();
 }
 
 void EdbusDict::remove(const EdbusData& key) {
@@ -200,3 +241,18 @@ bool EdbusDict::operator==(const EdbusDict& other) {
 
 	return true;
 }
+
+EdbusDict::iterator EdbusDict::begin() const {
+	impl->iterator_current = impl->lst.begin();
+	return EdbusDictIterator(*this);
+}
+
+EdbusDict::iterator EdbusDict::end() const {
+	return EdbusDictIterator();
+}
+
+unsigned int EdbusDict::size(void) {
+	return impl->lst.size();
+}
+
+
