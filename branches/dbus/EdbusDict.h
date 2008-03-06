@@ -38,14 +38,44 @@ class EdbusDictIterator {
 		bool end;
 
 	public:
+		/**
+		 * Creates an empty iterator
+		 */
 		EdbusDictIterator();
+
+		/**
+		 * Creates an iterator from EdbusDict object
+		 */
 		EdbusDictIterator(const EdbusDict& dict);
+
+		/**
+		 * Creates an iterator from other EdbusDictIterator object
+		 */
 		EdbusDictIterator(const EdbusDictIterator&);
+
+		/**
+		 * Assign iterator value from other object
+		 */
 		EdbusDictIterator& operator=(const EdbusDictIterator&);
+
+		/**
+		 * Prefix increament
+		 */
 		EdbusDictIterator& operator++(void);
+
+		/**
+		 * Access to EdbusDictEntry value
+		 */
 		const EdbusDictEntry& operator*(void) const;
 
+		/**
+		 * Check if two iterators are equal
+		 */
 		bool operator==(const EdbusDictIterator& other);
+
+		/**
+		 * Check if two iterators are not equal
+		 */
 		bool operator!=(const EdbusDictIterator& other) { return !operator==(other); }
 };
 
@@ -61,8 +91,8 @@ class EdbusDictIterator {
  * add another pair with already added key (or to use better term: assign
  * a new value with aleady known key), previous value will be overriden.
  *
- * \note
- * Adding (or updating) pairs (via push_back()) is not efficient like
+ * \note 
+ * Adding (or updating) pairs (via append()) is not efficient like
  * in e.g. STL map; it is more or less linear operation assuring uniqueness;
  * D-BUS protocol can tolerate, but not prefer duplicate keys in dictionary.
  * Dict's in D-BUS are often used to contain a small number of elements so
@@ -77,6 +107,26 @@ class EdbusDictIterator {
  * If you try to add non-basic D-BUS type as key, it will be ignored.
  * \todo This should be assertion
  *
+ * Each instance of EdbusDict object will have the same types for the keys and the
+ * same types for the values. This means that if you add in freshly created 
+ * EdbusDict object a key as int32_t and value as string, all further
+ * adding is expecting that types too. On other hand, if you try to add a key with
+ * different type (in dict that already have few keys with e.g. int32_t), entry (key and
+ * value) will be ignored.
+ *
+ * This will summarize the thing:
+ * \code
+ *   EdbusDict d;
+ *   d.append(EdbusData::to_string("foo"), EdbusData::to_int32(4));
+ *   // now d will accept only keys of type string and values of type int32_t
+ *
+ *   // ok, it will be added
+ *   d.append(EdbusData::to_string("baz"), EdbusData::to_int32(5));
+ *
+ *   // not ok, values are different type; it will not be added
+ *   d.append(EdbusData::to_string("baz"), EdbusData::to_bool(true));
+ * \endcode
+ *
  * Besides using find() to get a content, you can use iterator too \see EdbusDictIterator.
  * Iterator points to the EdbusDictEntry which have two members, each EdbusData type. This means
  * that you should use <em>is_</em> members to check key and value types.
@@ -84,8 +134,8 @@ class EdbusDictIterator {
  * This is a sample of listing dict content, without type checks:
  * \code
  *   EdbusDict d;
- *   d.push_back("foo", 4);
- *   d.push_back("baz", 12);
+ *   d.append("foo", 4);
+ *   d.append("baz", 12);
  *
  *   EdbusDict::iterator it = d.begin(), it_end = d.end();
  *   while(it != it_end) {
@@ -171,6 +221,16 @@ class EdbusDict {
 		 * Compares if two dicts are not equal
 		 */
 		bool operator!=(const EdbusDict& other) { return !operator==(other); }
+
+		/**
+		 * Returns type of keys stored in dict
+		 */
+		EdbusDataType key_type(void);
+
+		/**
+		 * returns type of values stored in dict
+		 */
+		EdbusDataType value_type(void);
 
 		/**
 		 * Returns iterator at the dict start. It points to the first element

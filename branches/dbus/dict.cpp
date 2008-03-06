@@ -43,7 +43,7 @@ int main() {
 
 	dict.append(3, 3);
 	dict.append(1, 3);
-	dict.append(2, 3);
+	dict.append('c', 3); // must not be accepted
 
 	dict2.append("xx", 3);
 	dict2.append("yy", 66);

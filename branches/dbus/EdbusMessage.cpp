@@ -87,28 +87,13 @@ static void to_dbus_type(DBusMessageIter* msg_it, const EdbusData& data) {
 	}
 }
 
-static void to_dbus_type_from_complex_type(DBusMessageIter* parent_it, const EdbusData& data) {
-	assert(data.is_dict() || data.is_variant() || data.is_array() || data.is_struct());
-
+static void to_dbus_type_from_dict(DBusMessageIter* parent_it, const EdbusData& data) {
+	assert(data.is_dict());
 	/* complex types uses sub iterators */
 	DBusMessageIter sub;
-
-	if(data.is_dict()) {
-		EdbusDict d = data.to_dict();
-		EdbusDict::iterator it = d.begin(), it_end = d.end();
-
-		/* for dicts and structs signature parameter must be NULL */
-		dbus_message_iter_open_container(parent_it, DBUS_TYPE_DICT_ENTRY, NULL, &sub);
-
-		while(it != it_end) {
-			to_dbus_type(parent_it, (*it).key);
-			to_dbus_type(parent_it, (*it).value);
-
-			++it;
-		}
-
-		dbus_message_iter_close_container(parent_it, &sub);
-	}
+	/* TODO validate max size of signature or use edelib::String here */
+	char sig[256];
+	//snprintf(sig, sizeof(sig), "%s%s%s%s", 
 }
 
 /* unmarshall from DBus type to EdbusData type */
@@ -358,8 +343,8 @@ void EdbusMessage::append(const EdbusData& data) {
 
 	if(EdbusData::basic_type(data))
 		to_dbus_type(&it, data);
-	else
-		to_dbus_type_from_complex_type(&it, data);
+	else if(data.is_dict())
+		to_dbus_type_from_dict(&it, data);
 
 	printf("appending, message signature is: %s\n", signature());
 }
