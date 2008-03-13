@@ -60,5 +60,18 @@ int main() {
 		++it;
 	}
 
+	/*
+	 * test for empty dict
+	 * TODO: add this to the suite too
+	 */
+	EdbusDict dd;
+
+	it = dd.begin(), it_end = dd.end();
+	while(it != it_end) {
+		printf("key: %i value: %i\n", (*it).key.type(), (*it).value.type());
+		++it;
+	}
+
+
 	return 0;
 }

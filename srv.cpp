@@ -12,12 +12,19 @@ int signal_cb(const EdbusMessage* m, void*) {
 }
 
 int method_cb(const EdbusMessage* m, void* w) {
+	if(!m) {
+		puts("Got NULL?");
+		return 1;
+	}
+
 	Fl_Window* win = (Fl_Window*)w;
 	printf("Got call: %s : %s : %s\n", m->path(), m->interface(), m->member());
 	printf("Message signature is: %s\n", m->signature());
+	printf("Message size s: %i\n", m->size());
 
 	if(strcmp(m->member(), "ChangeBackground") == 0) {
-		EdbusMessage::iterator it = m->begin(), it_end = m->end();
+		EdbusMessage::const_iterator it = m->begin(), it_end = m->end();
+
 		for(; it != it_end; ++it) {
 			if((*it).is_int16()) {
 				int c = (*it).to_int16();
@@ -28,6 +35,8 @@ int method_cb(const EdbusMessage* m, void* w) {
 			if((*it).is_dict()) {
 				EdbusDict dict = (*it).to_dict();
 				EdbusDict::iterator dict_it = dict.begin(), dict_it_end = dict.end();
+
+				printf("dict size is %i\n", dict.size());
 
 				for(; dict_it != dict_it_end; ++dict_it) {
 					if((*dict_it).key.is_string())

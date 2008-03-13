@@ -318,7 +318,13 @@ bool EdbusData::operator==(const EdbusData& other) {
 		case EDBUS_TYPE_OBJECT_PATH:
 		case EDBUS_TYPE_ARRAY:
 		case EDBUS_TYPE_STRUCT:
-		case EDBUS_TYPE_DICT:
+
+		case EDBUS_TYPE_DICT: {
+			EdbusDict* d1 = (EdbusDict*)impl->value.v_pointer;
+			EdbusDict* d2 = (EdbusDict*)impl->value.v_pointer;
+			return *d1 == *d2;
+	  	}
+
 		case EDBUS_TYPE_VARIANT:
 			/* TODO */
 			return false;

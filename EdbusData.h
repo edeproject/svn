@@ -431,5 +431,4 @@ struct EdbusVariant {
 	EdbusData value;
 };
 
-
 #endif
