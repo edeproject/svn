@@ -12,3 +12,4 @@ LINKLIBS += -L. -ledbus -ldbus-1 $(FLTKLIBS) -lstdc++ ;
 Main dc : dc.cpp ;
 Main srv : srv.cpp ;
 Main dict : dict.cpp ;
+Main hal : hal.cpp ;

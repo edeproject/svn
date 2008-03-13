@@ -199,6 +199,7 @@ void EdbusDict::append(const EdbusData& key, const EdbusData& value) {
 		e->value = value;
 		impl->lst.push_back(e);
 	} else {
+		puts("duplicate !!!");
 		e->value = value;
 	}
 }
@@ -270,6 +271,10 @@ EdbusDataType EdbusDict::value_type(void) {
 }
 
 EdbusDict::iterator EdbusDict::begin() const {
+	/* make sure to check size */
+	if(impl->lst.size() == 0)
+		return EdbusDictIterator();
+
 	impl->iterator_current = impl->lst.begin();
 	return EdbusDictIterator(*this);
 }

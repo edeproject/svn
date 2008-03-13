@@ -10,13 +10,6 @@ struct EdbusMessageImpl {
 	DBusMessage* msg;
 };
 
-struct EdbusMessageIteratorImpl {
-	DBusMessageIter* iter;
-	DBusMessage*     msg;
-	EdbusData        holder;
-	bool             end;
-};
-
 static const char* from_edbusdata_type_to_dbus_type_string(EdbusDataType t) {
 	switch(t) {
 		case EDBUS_TYPE_BYTE:
@@ -54,7 +47,7 @@ static const char* from_edbusdata_type_to_dbus_type_string(EdbusDataType t) {
 	}
 
 	/* should be never reached in valid code */
-	printf("Got unknown (%i) type. Marking it as invalid\n", t);
+	printf("Got unknown (%i) type. Marking it as invalid...\n", t);
 	return 0;
 }
 
@@ -63,35 +56,64 @@ static void to_dbus_iter_from_basic_type(DBusMessageIter* msg_it, const EdbusDat
 		/* force it so DBus knows real size */
 		const dbus_bool_t v = data.to_bool();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_BOOLEAN, &v);
-	} else if(data.is_byte()) {
+		return;
+	}
+	
+	if(data.is_byte()) {
 		byte_t v = data.to_byte();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_BYTE, &v);
-	} else if(data.is_int16()) {
+		return;
+	} 
+	
+	if(data.is_int16()) {
 		int16_t v = data.to_int16();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_INT16, &v);
-	} else if(data.is_uint16()) {
+		return;
+	} 
+	
+	if(data.is_uint16()) {
 		uint16_t v = data.to_uint16();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_UINT16, &v);
-	} else if(data.is_int32()) {
+		return;
+	} 
+	
+	if(data.is_int32()) {
 		int32_t v = data.to_int32();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_INT32, &v);
-	} else if(data.is_uint32()) {
+		return;
+	} 
+	
+	if(data.is_uint32()) {
 		uint32_t v = data.to_uint32();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_UINT32, &v);
-	} else if(data.is_int64()) {
+		return;
+	} 
+	
+	if(data.is_int64()) {
 		int64_t v = data.to_int64();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_INT64, &v);
-	} else if(data.is_uint64()) {
+		return;
+	} 
+	
+	if(data.is_uint64()) {
 		uint64_t v = data.to_uint64();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_UINT64, &v);
-	} else if(data.is_double()) {
+		return;
+	} 
+	
+	if(data.is_double()) {
 		double v = data.to_double();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_DOUBLE, &v);
-	} else if(data.is_string()) {
+		return;
+	} 
+	
+	if(data.is_string()) {
 		const char* v = data.to_string();
 		dbus_message_iter_append_basic(msg_it, DBUS_TYPE_STRING, &v);
-	} else
-		printf("Warning: got %i type as basic type but it is wrong. Ignoring...\n", data.type());
+		return;
+	} 
+
+	printf("Warning: got %i type as basic type but it is wrong. Ignoring...\n", data.type());
 }
 
 static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& data) {
@@ -140,7 +162,6 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 		 * value is EdbusDict type or other complex data
 		 */
 		to_dbus_iter_from_basic_type(&dict_entry_iter, (*it).value);
-
 		dbus_message_iter_close_container(&sub, &dict_entry_iter);
 	}
 
@@ -234,115 +255,57 @@ static void from_dbus_iter_to_edbusdata_type(DBusMessageIter* iter, EdbusData& d
 			/* check type of array entries */
 			if(dbus_message_iter_get_arg_type(&array_iter) == DBUS_TYPE_INVALID) {
 				puts("Invalid in dict array !?");
+
 				/* if fails, construct empty dict */
 				EdbusDict empty;
 				data = EdbusData::from_dict(empty);
 				return;
 			}
 
-			DBusMessageIter dict_entry_iter;
-			dbus_message_iter_recurse(&array_iter, &dict_entry_iter);
+			EdbusDict ret;
+			EdbusData key, value;
 
 			/* 
-			 * check validity of dict enty in array before
-			 * we dive into it
+			 * Now iterate over the array and iterate over each array
+			 * item to get key/value pair. Although key is always a basic DBus type,
+			 * for simplification we will recurse to from_dbus_iter_to_edbusdata_type().
+			 *
+			 * Value can be another dict or else, so recursion is needed
 			 */
-			if(dbus_message_iter_get_arg_type(&dict_entry_iter) == DBUS_TYPE_INVALID) {
-				puts("Invalid in dict entry inside array !?");
-				/* empty dict */
-				EdbusDict empty;
-				data = EdbusData::from_dict(empty);
-				return;
+			while(dbus_message_iter_get_arg_type(&array_iter) == DBUS_TYPE_DICT_ENTRY) {
+				DBusMessageIter kv;
+
+				dbus_message_iter_recurse(&array_iter, &kv);
+
+				if(dbus_message_iter_get_arg_type(&kv) != DBUS_TYPE_INVALID) {
+					from_dbus_iter_to_edbusdata_type(&kv, key);
+
+					/* expected next item is value so increate iterator to it */
+					dbus_message_iter_next(&kv);
+
+					if(dbus_message_iter_get_arg_type(&kv) != DBUS_TYPE_INVALID) {
+						from_dbus_iter_to_edbusdata_type(&kv, value);
+
+						/* got key and value, store it then */
+						ret.append(key, value);
+					}
+				}
+
+				dbus_message_iter_next(&array_iter);
 			}
 
-			EdbusDict ret;
-
-			EdbusData key;
-			EdbusData value;
-
-			do {
-				//assert(dbus_message_iter_has_next(&array_iter));
-				do {
-					//assert(dbus_message_iter_has_next(&dict_entry_iter));
-
-					from_dbus_iter_to_edbusdata_type(&dict_entry_iter, key);
-					from_dbus_iter_to_edbusdata_type(&dict_entry_iter, value);
-
-					ret.append(key, value);
-
-				} while(dbus_message_iter_next(&dict_entry_iter));
-			} while(dbus_message_iter_next(&array_iter));
-
 			data = EdbusData::from_dict(ret);
+			return;
 		}
 	}
-}
-
-EdbusMessageIterator::EdbusMessageIterator() {
-	impl = new EdbusMessageIteratorImpl;
-	impl->iter = NULL;
-	impl->msg = NULL;
-	impl->holder = EdbusData::from_invalid();
-	impl->end = true;
-}
-
-EdbusMessageIterator::EdbusMessageIterator(DBusMessage* msg) {
-	impl = new EdbusMessageIteratorImpl;
-	impl->msg = msg;
-	impl->iter = (DBusMessageIter*)malloc(sizeof(DBusMessageIter));
-
-	dbus_message_iter_init(msg, impl->iter);
-
-	if(!impl->iter) {
-		puts("No iterator???");
-		impl->end = true;
-	} else 
-		impl->end = false;
-}
-
-EdbusMessageIterator::~EdbusMessageIterator() {
-	free(impl->iter);
-	delete impl;
-	impl = NULL;
-}
-
-EdbusMessageIterator& EdbusMessageIterator::operator++() {
-	if(impl->end)
-		return *this;
-
-	if(!dbus_message_iter_next(impl->iter))
-		impl->end = true;
-	return *this;
-}
-
-bool EdbusMessageIterator::operator==(const EdbusMessageIterator& other) {
-	if(impl->end == true)
-		return true;
-
-	if(impl->end == other.impl->end)
-		return true;
-
-	return false;
-}
-
-const EdbusData& EdbusMessageIterator::operator*(void) const {
-	if(impl->iter)
-		from_dbus_iter_to_edbusdata_type(impl->iter, impl->holder);
-
-	/* will return invalid anyway if dbus_message_iter_init() failed */
-	return impl->holder;
 }
 
 
 EdbusMessage::EdbusMessage() : dm(NULL) {
 }
 
-EdbusMessage::EdbusMessage(DBusMessage* m) : dm(NULL) {
-	create(m);
-}
-
-EdbusMessage::EdbusMessage(const EdbusMessage& m) {
-	create(m.message());
+EdbusMessage::EdbusMessage(DBusMessage* msg) : dm(NULL) {
+	from_dbus_message(msg);
 }
 
 EdbusMessage::~EdbusMessage() {
@@ -351,12 +314,6 @@ EdbusMessage::~EdbusMessage() {
 
 	clear();
 	delete dm;
-}
-
-DBusMessage* EdbusMessage::message(void) const {
-	if(!dm)
-		return NULL;
-	return dm->msg;
 }
 
 #define CREATE_OR_CLEAR(m)                      \
@@ -371,11 +328,50 @@ do {                                            \
 } while(0)
 
 
-void EdbusMessage::create(DBusMessage* m) {
+void EdbusMessage::from_dbus_message(DBusMessage* m) {
 	CREATE_OR_CLEAR(dm);
+
 	dm->msg = m;
 	/* increase counter or libdbus will scream with assertion */
 	dm->msg = dbus_message_ref(dm->msg);
+
+	DBusMessageIter iter;
+	if(!dbus_message_iter_init(dm->msg, &iter)) {
+		puts("Can't init iterator");
+		return;
+	}
+
+	int t;
+	while((t = dbus_message_iter_get_arg_type(&iter)) != DBUS_TYPE_INVALID) {
+		EdbusData d;
+
+		from_dbus_iter_to_edbusdata_type(&iter, d);
+		msg_content.push_back(d);
+
+		dbus_message_iter_next(&iter);
+	}
+}
+
+DBusMessage* EdbusMessage::to_dbus_message(void) const {
+	assert(dm != NULL);
+	assert(dm->msg != NULL);
+
+	DBusMessageIter iter;
+	dbus_message_iter_init_append(dm->msg, &iter);
+
+	EdbusMessage::const_iterator it = begin(), it_end = end();
+	while(it != it_end) {
+		if(EdbusData::basic_type(*it))
+			to_dbus_iter_from_basic_type(&iter, *it);
+		else if((*it).is_dict())
+			to_dbus_iter_from_dict(&iter, *it);
+		else
+			puts("For now, unsupported type");
+		
+		++it;
+	}
+
+	return dm->msg;
 }
 
 void EdbusMessage::create_signal(const char* path, const char* interface, const char* name) {
@@ -406,16 +402,18 @@ void EdbusMessage::clear(void) {
 		dbus_message_unref(dm->msg);
 		dm->msg = NULL;
 	}
+
+	msg_content.clear();
 }
 
 bool EdbusMessage::is_signal(void) {
-	if(!dm)
+	if(!dm || !dm->msg)
 		return false;
 	return dbus_message_is_signal(dm->msg, interface(), member());
 }
 
 bool EdbusMessage::is_method_call(void) {
-	if(!dm)
+	if(!dm || !dm->msg)
 		return false;
 	return dbus_message_is_method_call(dm->msg, interface(), member());
 }
@@ -427,86 +425,78 @@ bool EdbusMessage::is_error_reply(const char* errmsg) {
 }
 
 void EdbusMessage::path(const char* np) {
+	if(!dm || !dm->msg)
+		return;
+
 	dbus_message_set_path(dm->msg, np);
 }
 
 const char* EdbusMessage::path(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_path(dm->msg);
 }
 
 void EdbusMessage::interface(const char* ni) {
+	if(!dm || !dm->msg)
+		return;
+
 	dbus_message_set_interface(dm->msg, ni);
 }
 
 const char* EdbusMessage::interface(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_interface(dm->msg);
 }
 
 void EdbusMessage::destination(const char* nd) {
+	if(!dm || !dm->msg)
+		return;
+
 	dbus_message_set_destination(dm->msg, nd);
 }
 
 const char* EdbusMessage::destination(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_destination(dm->msg);
 }
 
 void EdbusMessage::member(const char* nm) {
+	if(!dm || !dm->msg)
+		return;
+
 	dbus_message_set_member(dm->msg, nm);
 }
 
 const char* EdbusMessage::member(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_member(dm->msg);
 }
 
 void EdbusMessage::sender(const char* ns) {
+	if(!dm || !dm->msg)
+		return;
+
 	dbus_message_set_sender(dm->msg, ns);
 }
 
 const char* EdbusMessage::sender(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_sender(dm->msg);
 }
 
 const char* EdbusMessage::signature(void) const {
+	if(!dm || !dm->msg)
+		return NULL;
+
 	return dbus_message_get_signature(dm->msg);
 }
-
-void EdbusMessage::append(const EdbusData& data) {
-	/* TODO assert check */
-	if(!dm)
-		return;
-
-	/* append to the DBusMessage via appending iterator*/
-	DBusMessageIter it;
-	dbus_message_iter_init_append(dm->msg, &it);
-
-	if(EdbusData::basic_type(data))
-		to_dbus_iter_from_basic_type(&it, data);
-	else if(data.is_dict())
-		to_dbus_iter_from_dict(&it, data);
-
-	printf("appending, message signature is: %s\n", signature());
-}
-
-EdbusMessage::iterator EdbusMessage::begin(void) const {
-	if(!dm)
-		return iterator();
-	else
-		return iterator(dm->msg);
-}
-
-EdbusMessage::iterator EdbusMessage::end(void) const {
-	return iterator();
-}
-
-unsigned int EdbusMessage::size(void) {
-	EdbusMessage::iterator it = begin(), it_end = end();
-	unsigned int ret = 0;
-
-	while(it != it_end) {
-		++ret;
-		++it;
-	}
-
-	return ret;
-}
-

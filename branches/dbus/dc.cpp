@@ -28,6 +28,9 @@ int main() {
 
 	EdbusDict dict;
 	dict.append("key1", "val1");
+	dict.append("key2", "val2");
+	dict.append("key3", "val3");
+	dict.append("key4", "val4");
 
 	msg << EdbusData::from_int16(FL_RED) << EdbusData::from_dict(dict);
 	cl.send(msg);
@@ -38,6 +41,7 @@ int main() {
 
 	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
 			"org.equinoxproject.Type", "ChangeBackground");
+
 	msg << EdbusData::from_int16(FL_GRAY);
 	cl.send(msg);
 

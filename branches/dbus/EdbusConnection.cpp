@@ -250,7 +250,7 @@ void EdbusConnection::setup_filter(void) {
 	if(name) {
 		/* TODO: edelib:String here */
 		char buff[1024];
-		sprintf(buff, "destination='%s'", name);
+		snprintf(buff, sizeof(buff), "destination='%s'", name);
 
 		dbus_bus_add_match(dc->conn, buff, &err);
 
@@ -354,7 +354,13 @@ bool EdbusConnection::send(const EdbusMessage& content) {
 	bool ret;
 	dbus_uint32_t serial;
 
-	if(!dbus_connection_send(dc->conn, content.message(), &serial)) {
+	DBusMessage* msg = content.to_dbus_message();
+	if(!msg) {
+		printf("Can't convert to DBusMessage\n");
+		return false;
+	}
+
+	if(!dbus_connection_send(dc->conn, msg, &serial)) {
 		printf("Message sending failed\n");
 		ret = false;
 	} else
@@ -368,12 +374,18 @@ bool EdbusConnection::send_with_reply_and_block(const EdbusMessage& content, int
 	if(!dc || !dc->conn)
 		return false;
 
-	DBusMessage* reply;
+	DBusMessage* reply, *msg;
 	DBusError err;
 
 	dbus_error_init(&err);
 
-	reply = dbus_connection_send_with_reply_and_block(dc->conn, content.message(), timeout_ms, &err);
+	msg = content.to_dbus_message();
+	if(!msg) {
+		printf("Can't convert to DBusMessage\n");
+		return false;
+	}
+
+	reply = dbus_connection_send_with_reply_and_block(dc->conn, msg, timeout_ms, &err);
 
 	if(dbus_error_is_set(&err)) {
 		printf("Sending error: %s, %s\n", err.name, err.message);
@@ -381,7 +393,7 @@ bool EdbusConnection::send_with_reply_and_block(const EdbusMessage& content, int
 		return false;
 	}
 
-	ret.create(reply);
+	ret.from_dbus_message(reply);
 	return true;
 }
 

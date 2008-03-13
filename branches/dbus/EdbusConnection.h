@@ -20,6 +20,10 @@ class EdbusConnection {
 	private:
 		EdbusConnImpl* dc;
 		void setup_filter(void);
+
+		EdbusConnection(const EdbusConnection&);
+		EdbusConnection& operator=(const EdbusConnection&);
+
 	public:
 		EdbusConnection();
 		~EdbusConnection();

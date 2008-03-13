@@ -2,75 +2,11 @@
 #define __DEBUSMESSAGE_H__
 
 #include "EdbusData.h"
+#include <list>
 
 class  EdbusConnection;
 struct EdbusMessageImpl;
-struct EdbusMessageIteratorImpl;
 struct DBusMessage;
-
-/**
- * \class EdbusMessageIterator
- * \brief Iterator for EdbusMessage
- *
- * This class allows you to access the content of EdbusMessage object.
- * With it, you will be able to retrieve or skip a parts of EdbusMessage object.
- *
- * EdbusMessageIterator is <em>const</em> iterator; you will be able to
- * get a content from EdbusMessage, but not to modify it or remove (I wasn't able
- * to find a convinient way to directly modify dbus message).
- *
- * If you want to change content of EdbusMessage, you will have to copy interested
- * data in new EdbusMessage object appending changed one. The same applies for removing.
- *
- * \note You should not use this class directly; use <em>EdbusMessage::iterator</em> instead
- */
-class EdbusMessageIterator {
-	private:
-		EdbusMessageIteratorImpl* impl;
-
-	public:
-		/**
-		 * Creates an empty iterator
-		 */
-		EdbusMessageIterator();
-
-		/**
-		 * Creates an iterator from other EdbusMessageIterator object
-		 */
-		EdbusMessageIterator(const EdbusMessageIterator& it);
-
-		/**
-		 * Creates an iterator from DBusMessage. This function exists for
-		 * easier internal usage; you should not use it directly
-		 */
-		EdbusMessageIterator(DBusMessage* dm);
-
-		/**
-		 * Clears iterator data
-		 */
-		~EdbusMessageIterator();
-
-		/**
-		 * Prefix; increase iterator by one
-		 */
-		EdbusMessageIterator& operator++();
-
-		/**
-		 * Compare if two iterators are equal
-		 */
-		bool operator==(const EdbusMessageIterator& it);
-
-		/**
-		 * Compare if two iterators are not equal
-		 */
-		bool operator!=(const EdbusMessageIterator& it) { return !operator==(it); }
-
-		/**
-		 * Dereference iterator; with it you get access to the content
-		 * iterator currently points to
-		 */
-		const EdbusData& operator*(void) const;
-};
 
 /**
  * \class EdbusMessage
@@ -122,7 +58,6 @@ class EdbusMessageIterator {
  *
  * Let say you received above message and wants to get a content from it. You will do it like:
  * \code
- *   // this will probably be changed to const_iterator
  *   EdbusMessage::iterator it = m.begin(), it_end = m.end();
  *
  *   for(; it != it_end; ++it) {
@@ -137,28 +72,34 @@ class EdbusMessageIterator {
  *   }
  * \endcode
  *
- * As you will see from EdbusMessageIterator documentation, this is constant iterator: you will not
- * be able to modify existing data in message, nor to remove it. You have to create a new message and
- * manually copy interested content (\see EdbusMessageIterator for info about this limitation).
- *
- * On other hand, you can add a new data to existing message without copying it.
+ * Changing (or removing) already present data inside EdbusMessage is done via iterator. With this you
+ * can e.g. modify received message and send it again. 
  */
-class EdbusMessage {
-	public:
-		/**
-		 * Declare EdbusMessage iterator
-		 * \todo This should be const_iterator
-		 */
-		typedef EdbusMessageIterator iterator;
 
+class EdbusMessage {
 	private:
 		friend class EdbusConnection;
-		EdbusMessageImpl* dm;
-		DBusMessage* message(void) const;
 
+		EdbusMessageImpl* dm;
+		std::list<EdbusData> msg_content;
+
+		void from_dbus_message(DBusMessage* m);
+		DBusMessage* to_dbus_message(void) const;
+
+		EdbusMessage(const EdbusMessage&);
 		EdbusMessage& operator=(const EdbusMessage&);
 
 	public:
+		/**
+		 * Declare EdbusMessage iterator
+		 */
+		typedef std::list<EdbusData>::iterator iterator;
+
+		/**
+		 * Declare EdbusMessage const iterator
+		 */
+		typedef std::list<EdbusData>::const_iterator const_iterator;
+
 		/**
 		 * Create an empty EdbusMessage object. Nothing will be allocated
 		 * until you call one of the <em>create_</em> members. Until that, message
@@ -167,26 +108,15 @@ class EdbusMessage {
 		EdbusMessage();
 
 		/**
-		 * Create an EdbusMessage object from already created one
-		 */
-		EdbusMessage(const EdbusMessage& m);
-
-		/**
 		 * Create an EdbusMessage from DBusMessage. This is used to simplify
 		 * internals and you should not use it directly
 		 */
-		EdbusMessage(DBusMessage* m);
+		EdbusMessage(DBusMessage* msg);
 
 		/**
 		 * Clears internal data
 		 */
 		~EdbusMessage();
-
-		/**
-		 * Create an EdbusMessage from DBusMessage. This is used to simplify
-		 * internals and you should not use it directly
-		 */
-		void create(DBusMessage* m);
 
 		/**
 		 * Create a signal message
@@ -244,21 +174,25 @@ class EdbusMessage {
 
 		/**
 		 * Set object path for destination
+		 * It will do nothing if one of the <em>create_</em> members are called before
 		 */
 		void path(const char* np);
 
 		/**
 		 * Get object path for destination
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* path(void) const;
 
 		/**
-		 * Set interface name for destination
+		 * Set interface name for destination. 
+		 * It will do nothing if one of the <em>create_</em> members are not called before
 		 */
 		void interface(const char* ni);
 
 		/**
 		 * Get interface name for destination
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* interface(void) const;
 
@@ -268,22 +202,28 @@ class EdbusMessage {
 		 * The destination is the name of another connection on the bus 
 		 * and may be either the unique name assigned by the bus to each 
 		 * connection, or a well-known name specified in advance
+		 *
+		 * It will do nothing if one of the <em>create_</em> members are not called before
 		 */
 		void destination(const char* nd);
 
 		/**
 		 * Get a message destination
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* destination(void) const;
 
 		/**
 		 * Set method name to be called.
 		 * \note This function can be used to set signal name too
+		 *
+		 * It will do nothing if one of the <em>create_</em> members are not called before
 		 */
 		void member(const char* nm);
 
 		/**
 		 * Get method or signal name from message
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* member(void) const;
 
@@ -292,6 +232,8 @@ class EdbusMessage {
 		 *
 		 * The sender must be a valid bus name as defined in the D-Bus 
 		 * specification
+		 *
+		 * It will do nothing if one of the <em>create_</em> members are not called before
 		 */
 		void sender(const char* ns);
 
@@ -300,36 +242,50 @@ class EdbusMessage {
 		 * message, or NULL if unknown or inapplicable.
 		 *
 		 * The sender is filled in by the message bus.
+		 *
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* sender(void) const;
 
 		/**
 		 * Returns the signature of this message. You will not need this
 		 * unless you know what returned value means
+		 *
+		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */
 		const char* signature(void) const;
 
 		/**
 		 * Append EdbusData object in message
 		 */
-		void append(const EdbusData& data);
+		void append(const EdbusData& data) { msg_content.push_back(data); }
 
 		/**
 		 * Returns iterator at the message start. It points to the first element
 		 */
-		iterator begin(void) const;
+		iterator begin(void) { return msg_content.begin(); }
+
+		/**
+		 * Returns const iterator at the message start. It points to the first element
+		 */
+		const_iterator begin(void) const { return msg_content.begin(); }
 
 		/**
 		 * Returns iterator at the message end. It <b>does not</b> points to
 		 * the last element, but element after the last, and you must not dereferce it
 		 */
-		iterator end(void) const;
+		iterator end(void) { return msg_content.end(); }
 
 		/**
-		 * Returns the size of EdbusMessage content. Beware that this function
-		 * runs in linear time.
+		 * Returns const iterator at the message end. It <b>does not</b> points to
+		 * the last element, but element after the last, and you must not dereferce it
 		 */
-		unsigned int size(void);
+		const_iterator end(void) const { return msg_content.end(); }
+
+		/**
+		 * Returns the size of EdbusMessage content
+		 */
+		unsigned int size(void) const { return msg_content.size(); }
 };
 
 /**
