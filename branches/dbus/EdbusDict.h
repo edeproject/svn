@@ -2,12 +2,7 @@
 #define __EDBUSDICT_H__
 
 #include "EdbusData.h"
-
-#ifndef SKIP_DOCS
-struct EdbusDictPrivate;
-#endif
-
-class EdbusDict;
+#include "EdbusContainer.h"
 
 /**
  * \class EdbusDictEntry
@@ -18,65 +13,20 @@ struct EdbusDictEntry {
 	EdbusData key;
 	/** value */
 	EdbusData value;
-};
 
-/**
- * \class EdbusDictIterator
- * \brief Allows iterating over EdbusDict
- *
- * With this class you can iterate over EdbusDict content. Dereferencing iterator
- * you will gain access to the EdbusDictEntry and it's members.
- *
- * This is a constant iterator, so you will not be able to change EdbusDict
- * content with it; you should use EdbusDict members instead.
- *
- * \note You should not use this class directly; use <em>EdbusDict::iterator</em> instead
- */
-class EdbusDictIterator {
-	private:
-		EdbusDict* dict;
-		bool end;
+	/** 
+	 * Check if two EdbusDictEntry objects are equal
+	 */
+	bool operator==(const EdbusDictEntry& other) {
+		if(key == other.key && value == other.value)
+			return true;
+		return false;
+	}
 
-	public:
-		/**
-		 * Creates an empty iterator
-		 */
-		EdbusDictIterator();
-
-		/**
-		 * Creates an iterator from EdbusDict object
-		 */
-		EdbusDictIterator(const EdbusDict& dict);
-
-		/**
-		 * Creates an iterator from other EdbusDictIterator object
-		 */
-		EdbusDictIterator(const EdbusDictIterator&);
-
-		/**
-		 * Assign iterator value from other object
-		 */
-		EdbusDictIterator& operator=(const EdbusDictIterator&);
-
-		/**
-		 * Prefix increament
-		 */
-		EdbusDictIterator& operator++(void);
-
-		/**
-		 * Access to EdbusDictEntry value
-		 */
-		const EdbusDictEntry& operator*(void) const;
-
-		/**
-		 * Check if two iterators are equal
-		 */
-		bool operator==(const EdbusDictIterator& other);
-
-		/**
-		 * Check if two iterators are not equal
-		 */
-		bool operator!=(const EdbusDictIterator& other) { return !operator==(other); }
+	/** 
+	 * Check if two EdbusDictEntry objects are not equal
+	 */
+	bool operator!=(const EdbusDictEntry& other) { return !operator==(other); }
 };
 
 /**
@@ -144,109 +94,79 @@ class EdbusDictIterator {
  *   }
  * \end
  */
-class EdbusDict {
-	private:
-		friend class EdbusDictIterator;
+struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
+	/**
+	 * Declares EdbusDict iterator
+	 */
+	typedef EdbusContainer<EdbusDictEntry>::iterator iterator;
 
-		EdbusDictPrivate* impl;
-		void dispose(void);
-		void list_dispose(void);
-		void unhook(void);
+	/**
+	 * Assign value with the key and add it. If key already exists,
+	 * previous value will be overriden with the new one.
+	 *
+	 * \param key is key in <em>basic</em> D-BUS type
+	 * \param value is any value EdbusData can hold
+	 */
+	void append(const EdbusData& key, const EdbusData& value);
 
-	public:
-		/**
-		 * Declare EdbusDict iterator
-		 * \todo This should be const_iterator
-		 */
-		typedef EdbusDictIterator iterator;
+	/**
+	 * Clear content
+	 */
+	void clear(void);
 
-		/**
-		 * Creates an empty dict
-		 */
-		EdbusDict();
+	/**
+	 * Remove value and key for the dict. If key is not found, it will
+	 * do nothing
+	 * 
+	 * \param key is key to be removed with it's value
+	 */
+	void remove(const EdbusData& key);
 
-		/**
-		 * Creates a dict from other dict
-		 */
-		EdbusDict(const EdbusDict&);
+	/**
+	 * Find and retrieve value associated with this key. If value is
+	 * not find, it will retrieve invalid EdbusData type (\see EdbusData for the
+	 * details about invalid (EDBUS_TYPE_INVALID) type)
+	 *
+	 * \return associated value or invalid type
+	 * \param key is key//value pair to be searched
+	 */
+	EdbusData find(const EdbusData& key);
 
-		/**
-		 * Assign other dict content
-		 */
-		EdbusDict& operator=(const EdbusDict&);
+	/**
+	 * Compares if two dicts are equal
+	 */
+	bool operator==(const EdbusDict& other);
 
-		/**
-		 * Destructor
-		 */
-		~EdbusDict();
+	/**
+	 * Compares if two dicts are not equal
+	 */
+	bool operator!=(const EdbusDict& other) { return !operator==(other); }
 
-		/**
-		 * Assign value with the key and add it. If key already exists,
-		 * previous value will be overriden with the new one.
-		 *
-		 * \param key is key in <em>basic</em> D-BUS type
-		 * \param value is any value EdbusData can hold
-		 */
-		void append(const EdbusData& key, const EdbusData& value);
+	/**
+	 * Returns type of keys stored in dict
+	 */
+	EdbusDataType key_type(void);
 
-		/**
-		 * Clear content
-		 */
-		void clear(void);
+	/**
+	 * Returns type of values stored in dict
+	 */
+	EdbusDataType value_type(void);
 
-		/**
-		 * Remove value and key for the dict. If key is not found, it will
-		 * do nothing
-		 * 
-		 * \param key is key to be removed with it's value
-		 */
-		void remove(const EdbusData& key);
+	/**
+	 * Returns iterator at the dict start. It points to the first element
+	 */
+	iterator begin(void) const;
 
-		/**
-		 * Find and retrieve value associated with this key. If value is
-		 * not find, it will retrieve invalid EdbusData type (\see EdbusData for the
-		 * details about invalid (EDBUS_TYPE_INVALID) type)
-		 *
-		 * \return associated value or invalid type
-		 * \param key is key//value pair to be searched
-		 */
-		EdbusData find(const EdbusData& key);
+	/**
+	 * Returns iterator at the dict end. It <b>does not</b> points to
+	 * the last element, but element after the last, and you must not dereferce it
+	 */
+	iterator end(void) const;
 
-		/**
-		 * Compares if two dicts are equal
-		 */
-		bool operator==(const EdbusDict& other);
-
-		/**
-		 * Compares if two dicts are not equal
-		 */
-		bool operator!=(const EdbusDict& other) { return !operator==(other); }
-
-		/**
-		 * Returns type of keys stored in dict
-		 */
-		EdbusDataType key_type(void);
-
-		/**
-		 * returns type of values stored in dict
-		 */
-		EdbusDataType value_type(void);
-
-		/**
-		 * Returns iterator at the dict start. It points to the first element
-		 */
-		iterator begin(void) const;
-
-		/**
-		 * Returns iterator at the dict end. It <b>does not</b> points to
-		 * the last element, but element after the last, and you must not dereferce it
-		 */
-		iterator end() const;
-
-		/**
-		 * Returns size of dict content. This is a constant operation
-		 */
-		unsigned int size(void);
-};
+	/**
+	 * Returns size of dict content. This is a constant operation
+	 */
+	unsigned int size(void) const;
+};	
 
 #endif

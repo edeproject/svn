@@ -10,6 +10,8 @@ struct EdbusMessageImpl {
 	DBusMessage* msg;
 };
 
+static void to_dbus_iter_from_edbusdata_type(DBusMessageIter* parent_it, const EdbusData& data);
+
 static const char* from_edbusdata_type_to_dbus_type_string(EdbusDataType t) {
 	switch(t) {
 		case EDBUS_TYPE_BYTE:
@@ -49,6 +51,34 @@ static const char* from_edbusdata_type_to_dbus_type_string(EdbusDataType t) {
 	/* should be never reached in valid code */
 	printf("Got unknown (%i) type. Marking it as invalid...\n", t);
 	return 0;
+}
+
+#include <string>
+
+static void build_signature(const EdbusData& data, std::string& sig) {
+	if(data.is_dict()) {
+		EdbusDict dd = data.to_dict();
+
+		if(dd.size() > 0) {
+			sig += DBUS_TYPE_ARRAY_AS_STRING;
+			sig += DBUS_DICT_ENTRY_BEGIN_CHAR;
+
+			EdbusDict::iterator it = dd.begin();
+			/* always basic */
+			sig += from_edbusdata_type_to_dbus_type_string((*it).key.type());
+
+			if(EdbusData::basic_type((*it).value))
+				sig += from_edbusdata_type_to_dbus_type_string((*it).value.type());
+			else {
+				/* recurse for more */
+				build_signature((*it).value, sig);
+			}
+
+			sig += DBUS_DICT_ENTRY_END_CHAR;
+		}
+	}
+
+	/* TODO: for list, array and variant*/
 }
 
 static void to_dbus_iter_from_basic_type(DBusMessageIter* msg_it, const EdbusData& data) {
@@ -122,7 +152,7 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 	EdbusDict dict = data.to_dict();
 	if(dict.size() < 1)
 		return;
-	
+
 	/*
 	 * TODO: check signature size in DBus spec (or use edelib::String here)
 	 *
@@ -132,7 +162,25 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 	 */
 	char sig[256];
 	const char* key_sig = from_edbusdata_type_to_dbus_type_string(dict.key_type());
-	const char* value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
+	//const char* value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
+#if 0	
+	const char* value_sig;
+	if(dict.value_type() == EDBUS_TYPE_DICT)
+		value_sig = "a{ss}";
+	else
+		value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
+#endif
+	const char* value_sig;
+	std::string ss;
+
+	if(dict.value_type() != EDBUS_TYPE_DICT && dict.value_type() != EDBUS_TYPE_STRUCT &&
+			dict.value_type() != EDBUS_TYPE_ARRAY && dict.value_type() != EDBUS_TYPE_VARIANT) {
+		value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
+	} else {
+		build_signature(dict, ss);
+		value_sig = ss.c_str();
+	}
+
 
 	/*
 	 * Dicts are serialized as array of dict entries. We first build signature for array
@@ -145,6 +193,8 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 			value_sig,
 			DBUS_DICT_ENTRY_END_CHAR);
 
+	printf("Signature: %s\n", sig);
+
 	DBusMessageIter sub;
 	dbus_message_iter_open_container(parent_it, DBUS_TYPE_ARRAY, sig, &sub);
 
@@ -154,18 +204,34 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 
 		dbus_message_iter_open_container(&sub, DBUS_TYPE_DICT_ENTRY, 0, &dict_entry_iter);
 
-		/* append key */
-		to_dbus_iter_from_basic_type(&dict_entry_iter, (*it).key);
-		/*
-		 * append value 
-		 * TODO: this should recurse into to_dbus_iter_from_dict() if
-		 * value is EdbusDict type or other complex data
+		/* 
+		 * append key; it is always basic type
+		 * TODO: here should be assertion check
 		 */
-		to_dbus_iter_from_basic_type(&dict_entry_iter, (*it).value);
+		to_dbus_iter_from_basic_type(&dict_entry_iter, (*it).key);
+
+		/* append value, can be any type */
+		to_dbus_iter_from_edbusdata_type(&dict_entry_iter, (*it).value);
+
 		dbus_message_iter_close_container(&sub, &dict_entry_iter);
 	}
 
 	dbus_message_iter_close_container(parent_it, &sub);
+}
+
+/* marshall from EdbusData type to DBus type via iterator */
+static void to_dbus_iter_from_edbusdata_type(DBusMessageIter* parent_it, const EdbusData& data) {
+	if(EdbusData::basic_type(data)) {
+		to_dbus_iter_from_basic_type(parent_it, data);
+		return;
+	}
+
+	if(data.is_dict()) {
+		to_dbus_iter_from_dict(parent_it, data);
+		return;
+	}
+
+	puts("Not yet implemented");
 }
 
 /* unmarshall from DBus type to EdbusData type */
@@ -361,13 +427,7 @@ DBusMessage* EdbusMessage::to_dbus_message(void) const {
 
 	EdbusMessage::const_iterator it = begin(), it_end = end();
 	while(it != it_end) {
-		if(EdbusData::basic_type(*it))
-			to_dbus_iter_from_basic_type(&iter, *it);
-		else if((*it).is_dict())
-			to_dbus_iter_from_dict(&iter, *it);
-		else
-			puts("For now, unsupported type");
-		
+		to_dbus_iter_from_edbusdata_type(&iter, *it);
 		++it;
 	}
 

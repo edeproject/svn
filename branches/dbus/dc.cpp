@@ -42,7 +42,12 @@ int main() {
 	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
 			"org.equinoxproject.Type", "ChangeBackground");
 
-	msg << EdbusData::from_int16(FL_GRAY);
+	EdbusDict dict2;
+	dict2.append("key1", dict);
+	dict2.append("key2", dict);
+	dict2.append("key3", dict);
+
+	msg << EdbusData::from_int16(FL_GRAY) << EdbusData::from_dict(dict2);
 	cl.send(msg);
 
 	return 0;
