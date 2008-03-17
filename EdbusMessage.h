@@ -153,9 +153,14 @@ class EdbusMessage {
 		void create_error_reply(const EdbusMessage& replying_to, const char* errmsg);
 
 		/**
-		 * Clears all EdbusMessage data and marks it as invalid
+		 * Clears all EdbusMessage data (including message headers with destination, type and etc.) 
+		 * and marks it as invalid. If you want to send this object again, make sure to re-create
+		 * it again with one of <em>create_</em> members.
+		 *
+		 * This is since DBus internally queues messages after they are sent (if there is need to 
+		 * re-send them again) there is no way to clear message content without destroying headers
 		 */
-		void clear(void);
+		void clear_all(void);
 
 		/**
 		 * Returns true if current message is signal type
@@ -249,7 +254,10 @@ class EdbusMessage {
 
 		/**
 		 * Returns the signature of this message. You will not need this
-		 * unless you know what returned value means
+		 * unless you know what returned value means.
+		 *
+		 * A signature will contain only reasonable content when you receive message
+		 * via one of the callbacks set inside EdbusConnection.
 		 *
 		 * It will return NULL if one of the <em>create_</em> members are not called before
 		 */

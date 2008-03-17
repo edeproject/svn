@@ -28,7 +28,7 @@ void EdbusDict::append(const EdbusData& key, const EdbusData& value) {
 	 * Dbus specs tolerates duplicate keys in dict, but it can mark data parts
 	 * with them as invalid.
 	 */
-	EdbusDict::iterator it = begin(), it_end = end();
+	EdbusDict::iterator it = impl->lst.begin(), it_end = impl->lst.end();
 	while(it != it_end) {
 		if((*it).key == key) {
 			(*it).value = value;
@@ -53,7 +53,7 @@ void EdbusDict::clear(void) {
 void EdbusDict::remove(const EdbusData& key) {
 	unhook();
 
-	EdbusDict::iterator it = begin(), it_end = end();
+	EdbusDict::iterator it = impl->lst.begin(), it_end = impl->lst.end();
 	while(it != it_end) {
 		if((*it).key == key) {
 			impl->lst.erase(it);
@@ -65,7 +65,7 @@ void EdbusDict::remove(const EdbusData& key) {
 }
 
 EdbusData EdbusDict::find(const EdbusData& key) {
-	EdbusDict::iterator it = begin(), it_end = end();
+	EdbusDict::const_iterator it = begin(), it_end = end();
 	while(it != it_end) {
 		if((*it).key == key)
 			return (*it).value;
@@ -82,8 +82,8 @@ bool EdbusDict::operator==(const EdbusDict& other) {
 	if(size() != other.size())
 		return false;
 
-	EdbusDict::iterator it = begin(), it_end = end();
-	EdbusDict::iterator it2 = other.begin();
+	EdbusDict::const_iterator it = begin(), it_end = end();
+	EdbusDict::const_iterator it2 = other.begin();
 	while(it != it_end) {
 		if((*it) != (*it2))
 			return false;
@@ -97,22 +97,33 @@ bool EdbusDict::operator==(const EdbusDict& other) {
 EdbusDataType EdbusDict::key_type(void) {
 	assert(size() > 0 && "Can't get key type on empty container");
 
-	EdbusDict::iterator it = begin();
+	EdbusDict::const_iterator it = begin();
 	return (*it).key.type();
 }
 
 EdbusDataType EdbusDict::value_type(void) {
 	assert(size() > 0 && "Can't get value type on empty container");
 
-	EdbusDict::iterator it = begin();
+	EdbusDict::const_iterator it = begin();
 	return (*it).value.type();
 }
 
-EdbusDict::iterator EdbusDict::begin(void) const {
+bool EdbusDict::value_type_is_container(void) {
+	assert(size() > 0 && "Can't get value type on empty container");
+
+	EdbusDict::const_iterator it = begin();
+	if(EdbusData::basic_type((*it).value))
+		return false;
+	if((*it).value.type() == EDBUS_TYPE_VARIANT)
+		return false;
+	return true;
+}
+
+EdbusDict::const_iterator EdbusDict::begin(void) const {
 	return impl->lst.begin();
 }
 
-EdbusDict::iterator EdbusDict::end(void) const {
+EdbusDict::const_iterator EdbusDict::end(void) const {
 	return impl->lst.end();
 }
 

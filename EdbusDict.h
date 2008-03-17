@@ -15,9 +15,9 @@ struct EdbusDictEntry {
 	EdbusData value;
 
 	/** 
-	 * Check if two EdbusDictEntry objects are equal
-	 */
-	bool operator==(const EdbusDictEntry& other) {
+ 	 * Check if two EdbusDictEntry objects are equal
+ 	 */
+	bool operator==(const EdbusDictEntry& other) const {
 		if(key == other.key && value == other.value)
 			return true;
 		return false;
@@ -26,7 +26,7 @@ struct EdbusDictEntry {
 	/** 
 	 * Check if two EdbusDictEntry objects are not equal
 	 */
-	bool operator!=(const EdbusDictEntry& other) { return !operator==(other); }
+	bool operator!=(const EdbusDictEntry& other) const { return !operator==(other); }
 };
 
 /**
@@ -98,7 +98,7 @@ struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
 	/**
 	 * Declares EdbusDict iterator
 	 */
-	typedef EdbusContainer<EdbusDictEntry>::iterator iterator;
+	typedef EdbusContainer<EdbusDictEntry>::const_iterator const_iterator;
 
 	/**
 	 * Assign value with the key and add it. If key already exists,
@@ -124,7 +124,7 @@ struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
 
 	/**
 	 * Find and retrieve value associated with this key. If value is
-	 * not find, it will retrieve invalid EdbusData type (\see EdbusData for the
+	 * not found, it will retrieve invalid EdbusData type (\see EdbusData for the
 	 * details about invalid (EDBUS_TYPE_INVALID) type)
 	 *
 	 * \return associated value or invalid type
@@ -153,15 +153,20 @@ struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
 	EdbusDataType value_type(void);
 
 	/**
+	 * Return true if value type is container (EdbusDict or EdbusList)
+	 */
+	bool value_type_is_container(void);
+
+	/**
 	 * Returns iterator at the dict start. It points to the first element
 	 */
-	iterator begin(void) const;
+	const_iterator begin(void) const;
 
 	/**
 	 * Returns iterator at the dict end. It <b>does not</b> points to
 	 * the last element, but element after the last, and you must not dereferce it
 	 */
-	iterator end(void) const;
+	const_iterator end(void) const;
 
 	/**
 	 * Returns size of dict content. This is a constant operation

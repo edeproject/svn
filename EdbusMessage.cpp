@@ -3,8 +3,11 @@
 #include <assert.h>
 #include <dbus/dbus.h>
 
+#include <string>
+
 #include "EdbusMessage.h"
 #include "EdbusDict.h"
+#include "EdbusList.h"
 
 struct EdbusMessageImpl {
 	DBusMessage* msg;
@@ -53,32 +56,70 @@ static const char* from_edbusdata_type_to_dbus_type_string(EdbusDataType t) {
 	return 0;
 }
 
-#include <string>
-
+/* 
+ * Builds a signature for subtypes, e.g. array, struct or dict elements.
+ * This function will be called on container subtypes, not container itself
+ */
 static void build_signature(const EdbusData& data, std::string& sig) {
 	if(data.is_dict()) {
 		EdbusDict dd = data.to_dict();
 
-		if(dd.size() > 0) {
-			sig += DBUS_TYPE_ARRAY_AS_STRING;
-			sig += DBUS_DICT_ENTRY_BEGIN_CHAR;
+		if(dd.size() < 1)
+			return;
 
-			EdbusDict::iterator it = dd.begin();
-			/* always basic */
-			sig += from_edbusdata_type_to_dbus_type_string((*it).key.type());
+		sig += DBUS_TYPE_ARRAY_AS_STRING;
+		sig += DBUS_DICT_ENTRY_BEGIN_CHAR;
 
-			if(EdbusData::basic_type((*it).value))
-				sig += from_edbusdata_type_to_dbus_type_string((*it).value.type());
+		EdbusDict::const_iterator it = dd.begin();
+		/* always basic */
+		sig += from_edbusdata_type_to_dbus_type_string((*it).key.type());
+
+		if(EdbusData::basic_type((*it).value))
+			sig += from_edbusdata_type_to_dbus_type_string((*it).value.type());
+		else {
+			/* recurse for more */
+			build_signature((*it).value, sig);
+		}
+
+		sig += DBUS_DICT_ENTRY_END_CHAR;
+	} else if(data.is_array()) {
+		EdbusList arr = data.to_array();
+
+		if(arr.size() < 1)
+			return;
+
+		sig += DBUS_TYPE_ARRAY_AS_STRING;
+		EdbusList::const_iterator it = arr.begin();
+		
+		if(EdbusData::basic_type(*it))
+			sig += from_edbusdata_type_to_dbus_type_string((*it).type());
+		else {
+			/* recurse for more */
+			build_signature((*it), sig);
+		}
+	} else if(data.is_struct()) {
+		EdbusList s = data.to_struct();
+
+		if(s.size() < 1)
+			return;
+
+		sig += DBUS_STRUCT_BEGIN_CHAR;
+		EdbusList::const_iterator it = s.begin(), it_end = s.end();
+
+		for(; it != it_end; ++it) {
+			if(EdbusData::basic_type(*it))
+				sig += from_edbusdata_type_to_dbus_type_string((*it).type());
 			else {
 				/* recurse for more */
-				build_signature((*it).value, sig);
+				build_signature((*it), sig);
 			}
-
-			sig += DBUS_DICT_ENTRY_END_CHAR;
 		}
-	}
 
-	/* TODO: for list, array and variant*/
+		sig += DBUS_STRUCT_END_CHAR;
+	} else {
+		/* here can be any other basic type and/or variant */
+		sig += from_edbusdata_type_to_dbus_type_string(data.type());
+	}
 }
 
 static void to_dbus_iter_from_basic_type(DBusMessageIter* msg_it, const EdbusData& data) {
@@ -143,13 +184,15 @@ static void to_dbus_iter_from_basic_type(DBusMessageIter* msg_it, const EdbusDat
 		return;
 	} 
 
-	printf("Warning: got %i type as basic type but it is wrong. Ignoring...\n", data.type());
+	assert(0 && "Got type as basic but it isn't");
 }
 
 static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& data) {
 	assert(data.is_dict());
 
 	EdbusDict dict = data.to_dict();
+
+	/* TODO: allow empty containers ??? */
 	if(dict.size() < 1)
 		return;
 
@@ -173,19 +216,26 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 	const char* value_sig;
 	std::string ss;
 
-	if(dict.value_type() != EDBUS_TYPE_DICT && dict.value_type() != EDBUS_TYPE_STRUCT &&
-			dict.value_type() != EDBUS_TYPE_ARRAY && dict.value_type() != EDBUS_TYPE_VARIANT) {
-		value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
-	} else {
-		build_signature(dict, ss);
+	if(dict.value_type_is_container()) {
+		/*
+		 * We already have correct header that represents dict array. Now
+		 * go and recurse into dict value container
+		 */
+		EdbusDict::const_iterator first = dict.begin();
+
+		build_signature((*first).value, ss);
 		value_sig = ss.c_str();
-	}
+	} else
+		value_sig = from_edbusdata_type_to_dbus_type_string(dict.value_type());
 
 
 	/*
 	 * Dicts are serialized as array of dict entries. We first build signature for array
 	 * elements, then iterate over EdbusDict entries and from key/value pairs construct a 
 	 * DBus dict entry then append that entry to the array
+	 *
+	 * A signature for dictionary will be 'a{TYPE TYPE}'. dbus_message_iter_open_container() will
+	 * append 'a' to the signature.
 	 */
 	snprintf(sig, sizeof(sig), "%c%s%s%c", 
 			DBUS_DICT_ENTRY_BEGIN_CHAR,
@@ -193,12 +243,12 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 			value_sig,
 			DBUS_DICT_ENTRY_END_CHAR);
 
-	printf("Signature: %s\n", sig);
+	printf("Dict entry signature: %s\n", sig);
 
 	DBusMessageIter sub;
 	dbus_message_iter_open_container(parent_it, DBUS_TYPE_ARRAY, sig, &sub);
 
-	EdbusDict::iterator it = dict.begin(), it_end = dict.end();
+	EdbusDict::const_iterator it = dict.begin(), it_end = dict.end();
 	for(; it != it_end; ++it) {
 		DBusMessageIter dict_entry_iter;
 
@@ -219,6 +269,94 @@ static void to_dbus_iter_from_dict(DBusMessageIter* parent_it, const EdbusData& 
 	dbus_message_iter_close_container(parent_it, &sub);
 }
 
+static void to_dbus_iter_from_array(DBusMessageIter* parent_it, const EdbusData& data) {
+	assert(data.is_array());
+
+	/*
+	 * Marshalling arrays is much simpler than e.g. dict; we already know all elements
+	 * are the same type. The only tricky case is when array elements are another array, dict
+	 * or struct so signature, where build_signature() comes in
+	 */
+	EdbusList arr = data.to_array();
+
+	/* TODO: allow empty containers ??? */
+	if(arr.size() < 1)
+		return;
+
+	EdbusList::const_iterator it = arr.begin(), it_end = arr.end();
+
+	const char* value_sig;
+	std::string ss;
+
+	if(arr.value_type_is_container()) {
+		build_signature(*it, ss);
+		value_sig = ss.c_str();
+	} else
+		value_sig = from_edbusdata_type_to_dbus_type_string(arr.value_type());
+
+
+	printf("Array entry signature: %s\n", value_sig);
+
+	/* 
+	 * dbus_message_iter_open_container() will by default append container
+	 * signature (at the start of signature array)
+	 */
+	DBusMessageIter sub;
+	dbus_message_iter_open_container(parent_it, DBUS_TYPE_ARRAY, value_sig, &sub);
+
+	while(it != it_end) {
+		to_dbus_iter_from_edbusdata_type(&sub, *it);
+		++it;
+	}
+
+	dbus_message_iter_close_container(parent_it, &sub);
+}
+
+static void to_dbus_iter_from_struct(DBusMessageIter* parent_it, const EdbusData& data) {
+	assert(data.is_struct());
+
+	EdbusList s = data.to_struct();
+	EdbusList::const_iterator it = s.begin(), it_end = s.end();
+
+	DBusMessageIter sub;
+	/* structs does not require signature for types they contains, the same as dicts */
+	dbus_message_iter_open_container(parent_it, DBUS_TYPE_STRUCT, NULL, &sub);
+
+	while(it != it_end) {
+		to_dbus_iter_from_edbusdata_type(&sub, *it);
+		++it;
+	}
+
+	dbus_message_iter_close_container(parent_it, &sub);
+}
+
+static void to_dbus_iter_from_variant(DBusMessageIter* parent_it, const EdbusData& data) {
+	assert(data.is_variant());
+
+	EdbusVariant var = data.to_variant();
+	/* hm... really needed ? */
+	if(!var.value.is_valid())
+		return;
+
+	const char* value_sig;
+	std::string ss;
+
+	if(!EdbusData::basic_type(var.value)) {
+		build_signature(var.value, ss);
+		value_sig = ss.c_str();
+	} else
+		value_sig = from_edbusdata_type_to_dbus_type_string(var.value.type());
+
+	printf("variant entry is %s\n", value_sig);
+
+	DBusMessageIter sub;
+	dbus_message_iter_open_container(parent_it, DBUS_TYPE_VARIANT, value_sig, &sub);
+
+	to_dbus_iter_from_edbusdata_type(&sub, var.value);
+
+	dbus_message_iter_close_container(parent_it, &sub);
+}
+
 /* marshall from EdbusData type to DBus type via iterator */
 static void to_dbus_iter_from_edbusdata_type(DBusMessageIter* parent_it, const EdbusData& data) {
 	if(EdbusData::basic_type(data)) {
@@ -231,7 +369,22 @@ static void to_dbus_iter_from_edbusdata_type(DBusMessageIter* parent_it, const E
 		return;
 	}
 
-	puts("Not yet implemented");
+	if(data.is_array()) {
+		to_dbus_iter_from_array(parent_it, data);
+		return;
+	}
+
+	if(data.is_struct()) {
+		to_dbus_iter_from_struct(parent_it, data);
+		return;
+	}
+
+	if(data.is_variant()) {
+		to_dbus_iter_from_variant(parent_it, data);
+		return;
+	}
+
+	assert(0 && "This should not be ever reached!");
 }
 
 /* unmarshall from DBus type to EdbusData type */
@@ -363,7 +516,54 @@ static void from_dbus_iter_to_edbusdata_type(DBusMessageIter* iter, EdbusData& d
 			data = EdbusData::from_dict(ret);
 			return;
 		}
+
+		/* not dictionary, then this is real array */
+		EdbusList arr = EdbusList::create_array();
+		EdbusData val;
+		DBusMessageIter array_it;
+
+		dbus_message_iter_recurse(iter, &array_it);
+
+		while(dbus_message_iter_get_arg_type(&array_it) != DBUS_TYPE_INVALID) {
+			from_dbus_iter_to_edbusdata_type(&array_it, val);
+			arr.append(val);
+
+			dbus_message_iter_next(&array_it);
+		}
+
+		data = EdbusData::from_array(arr);
+		return;
 	}
+
+	if(dtype == DBUS_TYPE_VARIANT) {
+		EdbusVariant var;
+		DBusMessageIter sub;
+
+		dbus_message_iter_recurse(iter, &sub);
+		from_dbus_iter_to_edbusdata_type(&sub, var.value);
+
+		data = EdbusData::from_variant(var);
+		return;
+	}
+
+	if(dtype == DBUS_TYPE_STRUCT) {
+		EdbusList s = EdbusList::create_struct();
+		EdbusData val;
+		DBusMessageIter struct_it;
+
+		dbus_message_iter_recurse(iter, &struct_it);
+		while(dbus_message_iter_get_arg_type(&struct_it) != DBUS_TYPE_INVALID) {
+			from_dbus_iter_to_edbusdata_type(&struct_it, val);	
+			s.append(val);
+
+			dbus_message_iter_next(&struct_it);
+		}
+
+		data = EdbusData::from_struct(s);
+		return;
+	}
+
+	assert(0 && "Got some unknown type from D-BUS ???");
 }
 
 
@@ -378,7 +578,7 @@ EdbusMessage::~EdbusMessage() {
 	if(!dm)
 		return;
 
-	clear();
+	clear_all();
 	delete dm;
 }
 
@@ -389,7 +589,7 @@ do {                                            \
 		m->msg = NULL;                          \
 	} else {                                    \
 		/* destroy previously create message */ \
-		clear();                                \
+		clear_all();                            \
 	}                                           \
 } while(0)
 
@@ -454,7 +654,7 @@ void EdbusMessage::create_error_reply(const EdbusMessage& replying_to, const cha
 	dm->msg = dbus_message_new_error(replying_to.dm->msg, DBUS_ERROR_FAILED, errmsg);
 }
 
-void EdbusMessage::clear(void) {
+void EdbusMessage::clear_all(void) {
 	if(!dm)
 		return;
 

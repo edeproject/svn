@@ -5,11 +5,11 @@
 
 #include "EdbusData.h"
 #include "EdbusDict.h"
+#include "EdbusList.h"
 
 struct EdbusDataPrivate {
 	uint32_t      refs;
 	EdbusDataType type;
-	char*         sig;   /* DBUS signature */
 
 	union {
 		bool     v_bool;
@@ -29,14 +29,12 @@ EdbusData::EdbusData() {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_INVALID;
-	impl->sig = NULL;
 }
 
 EdbusData::EdbusData(byte_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_BYTE;
-	impl->sig = strdup("y");
 	impl->value.v_byte = val;
 }
 
@@ -44,7 +42,6 @@ EdbusData::EdbusData(bool val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_BOOL;
-	impl->sig = strdup("b");
 	impl->value.v_bool = val;
 }
 
@@ -52,7 +49,6 @@ EdbusData::EdbusData(int16_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_INT16;
-	impl->sig = strdup("n");
 	impl->value.v_int16 = val;
 }
 
@@ -60,7 +56,6 @@ EdbusData::EdbusData(uint16_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_UINT16;
-	impl->sig = strdup("q");
 	impl->value.v_uint16 = val;
 }
 
@@ -68,7 +63,6 @@ EdbusData::EdbusData(int32_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_INT32;
-	impl->sig = strdup("i");
 	impl->value.v_int32 = val;
 }
 
@@ -76,7 +70,6 @@ EdbusData::EdbusData(uint32_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_UINT32;
-	impl->sig = strdup("u");
 	impl->value.v_uint32 = val;
 }
 
@@ -84,7 +77,6 @@ EdbusData::EdbusData(int64_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_INT64;
-	impl->sig = strdup("x");
 	impl->value.v_int64 = val;
 }
 
@@ -92,7 +84,6 @@ EdbusData::EdbusData(uint64_t val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_UINT64;
-	impl->sig = strdup("t");
 	impl->value.v_uint64 = val;
 }
 
@@ -100,7 +91,6 @@ EdbusData::EdbusData(double val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_DOUBLE;
-	impl->sig = strdup("d");
 	impl->value.v_double = val;
 }
 
@@ -108,7 +98,6 @@ EdbusData::EdbusData(const char* val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_STRING;
-	impl->sig = strdup("s");
 	impl->value.v_pointer = strdup(val);
 }
 
@@ -116,7 +105,6 @@ EdbusData::EdbusData(const EdbusObjectPath& val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_OBJECT_PATH;
-	impl->sig = strdup("o");
 	impl->value.v_pointer = strdup(val.path());
 }
 
@@ -124,20 +112,6 @@ EdbusData::EdbusData(const EdbusVariant& val) {
 	impl = new EdbusDataPrivate;
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_VARIANT;
-
-	/*
-	 * variant holds 'v' + OTHER_TYPE_SIGNATURE 
-	 * I'm not sure can variant hold invalid type so I will
-	 * (at least temporary) assert on this
-	 */
-	const char* s = val.value.signature();
-	assert(s != NULL && "Variant on invalid type is not supported yet");
-
-	unsigned int len = strlen(s);
-	char* varint_sig = (char*)malloc(len + 2);
-	sprintf(varint_sig, "v%s", s);
-
-	impl->sig = varint_sig;
 
 	/* make a shallow copy */
 	impl->value.v_pointer = new EdbusVariant(val);
@@ -148,11 +122,21 @@ EdbusData::EdbusData(const EdbusDict& val) {
 	impl->refs = 1;
 	impl->type = EDBUS_TYPE_DICT;
 
-	/* TODO */
-	impl->sig = NULL;
-
 	/* make a shallow copy */
 	impl->value.v_pointer = new EdbusDict(val);
+}
+
+EdbusData::EdbusData(const EdbusList& val) {
+	impl = new EdbusDataPrivate;
+	impl->refs = 1;
+
+	if(val.list_is_array())
+		impl->type = EDBUS_TYPE_ARRAY;
+	else
+		impl->type = EDBUS_TYPE_STRUCT;
+
+	/* make a shallow copy */
+	impl->value.v_pointer = new EdbusList(val);
 }
 
 EdbusData::EdbusData(const EdbusData& other) {
@@ -184,10 +168,10 @@ void EdbusData::dispose(void) {
 		/* dict uses new operator */
 		EdbusDict* d = (EdbusDict*)impl->value.v_pointer;
 		delete d;
+	} else if(impl->type == EDBUS_TYPE_ARRAY || impl->type == EDBUS_TYPE_STRUCT) {
+		EdbusList* l = (EdbusList*)impl->value.v_pointer;
+		delete l;
 	}
-
-	if(impl->sig)
-		free(impl->sig);
 
 	delete impl;
 	impl = 0;
@@ -206,10 +190,6 @@ EdbusData& EdbusData::operator=(const EdbusData& other) {
 
 EdbusDataType EdbusData::type() const {
 	return impl->type;
-}
-
-const char* EdbusData::signature(void) const {
-	return impl->sig;
 }
 
 byte_t EdbusData::to_byte(void) const {
@@ -279,7 +259,19 @@ EdbusDict EdbusData::to_dict(void) const {
 	return EdbusDict((*(EdbusDict*)impl->value.v_pointer));
 }
 
-bool EdbusData::operator==(const EdbusData& other) {
+EdbusList EdbusData::to_array(void) const {
+	assert(is_array() == true);
+	/* copy dict (a shallow copy) */
+	return EdbusList((*(EdbusList*)impl->value.v_pointer));
+}
+
+EdbusList EdbusData::to_struct(void) const {
+	assert(is_struct() == true);
+	/* copy dict (a shallow copy) */
+	return EdbusList((*(EdbusList*)impl->value.v_pointer));
+}
+
+bool EdbusData::operator==(const EdbusData& other) const {
 	if(&other == this)
 		return true;
 
@@ -315,9 +307,19 @@ bool EdbusData::operator==(const EdbusData& other) {
 				return (strcmp(v1, v2) == 0);
 			} else
 				return false;
-		case EDBUS_TYPE_OBJECT_PATH:
+
+		case EDBUS_TYPE_OBJECT_PATH: {
+			EdbusObjectPath* v1 = (EdbusObjectPath*)impl->value.v_pointer;
+			EdbusObjectPath* v2 = (EdbusObjectPath*)other.impl->value.v_pointer;
+			return *v1 == *v2;
+		}
+
 		case EDBUS_TYPE_ARRAY:
-		case EDBUS_TYPE_STRUCT:
+		case EDBUS_TYPE_STRUCT: {
+			EdbusList* v1 = (EdbusList*)impl->value.v_pointer;
+			EdbusList* v2 = (EdbusList*)other.impl->value.v_pointer;
+			return *v1 == *v2;
+		}
 
 		case EDBUS_TYPE_DICT: {
 			EdbusDict* d1 = (EdbusDict*)impl->value.v_pointer;
@@ -325,9 +327,11 @@ bool EdbusData::operator==(const EdbusData& other) {
 			return *d1 == *d2;
 	  	}
 
-		case EDBUS_TYPE_VARIANT:
-			/* TODO */
-			return false;
+		case EDBUS_TYPE_VARIANT: {
+			EdbusVariant* v1 = (EdbusVariant*)impl->value.v_pointer;
+			EdbusVariant* v2 = (EdbusVariant*)other.impl->value.v_pointer;
+			return v1->value == v2->value;
+		}
 	}
 
 	return false;
