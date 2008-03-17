@@ -52,7 +52,7 @@ int main() {
 	printf("dict == dict2 %i %i %i\n", dict == dict2, dict.size(), dict2.size());
 
 	puts("here---");
-	EdbusDict::iterator it = dict2.begin(), it_end;
+	EdbusDict::const_iterator it = dict2.begin(), it_end;
 	it_end = dict2.end();
 
 	while(it != it_end) {

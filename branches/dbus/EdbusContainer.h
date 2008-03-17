@@ -22,6 +22,9 @@ struct EdbusContainerImpl {
  *
  * This class should be used as base class so inherited classes can provide additional
  * funcionality.
+ *
+ * Inherited classes also must call unhook() member when one of their members is going
+ * to write in internal EdbusContainer container.
  */
 template <typename T>
 class EdbusContainer {

@@ -4,6 +4,18 @@
 
 #include "EdbusConnection.h"
 #include "EdbusDict.h"
+#include "EdbusList.h"
+
+struct sample_struct {
+	int         a;
+	char        b;
+	const char* c;
+};
+
+struct complex_struct {
+	EdbusVariant v;
+	EdbusDict    d;
+};
 
 int main() {
 	EdbusConnection cl;
@@ -19,7 +31,7 @@ int main() {
 
 	cl.send(msg);
 
-	msg.clear();
+	msg.clear_all();
 
 	puts("Changing color of window to FL_RED");
 
@@ -41,13 +53,100 @@ int main() {
 
 	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
 			"org.equinoxproject.Type", "ChangeBackground");
-
+#if 0
 	EdbusDict dict2;
 	dict2.append("key1", dict);
 	dict2.append("key2", dict);
 	dict2.append("key3", dict);
 
-	msg << EdbusData::from_int16(FL_GRAY) << EdbusData::from_dict(dict2);
+	// dict of dicts with dicts
+	EdbusDict dict3;
+	dict3.append("key1", dict2);
+	dict3.append("key2", dict2);
+	dict3.append("key3", dict2);
+
+
+
+	msg << EdbusData::from_int16(FL_GRAY) << EdbusData::from_dict(dict2) << EdbusData::from_dict(dict3);
+#endif
+
+	EdbusDict dict1;
+	dict1.append("key1", "val1");
+	dict1.append("key2", "val2");
+	dict1.append("key3", "val3");
+	dict1.append("key4", "val4");
+
+	EdbusDict dict2;
+	dict2.append("key1", "val1");
+	dict2.append("key2", "val2");
+	dict2.append("key3", "val3");
+	dict2.append("key4", "val4");
+
+	EdbusDict dict3;
+	dict3.append("key1", "val1");
+	dict3.append("key2", "val2");
+	dict3.append("key3", "val3");
+	dict3.append("key4", "val4");
+
+	EdbusVariant vv;
+	vv.value = EdbusData::from_bool(false);
+
+	EdbusList arr = EdbusList::create_array();
+	arr << 3 << 5 << 6 << 7 << 8;
+	//arr << dict1 << dict2 << dict3;
+	
+	vv.value = arr;
+	msg << EdbusData::from_array(arr) << EdbusData::from_variant(vv);
+
+	cl.send(msg);
+
+	sleep(3);
+
+	puts("sending struct");
+	msg.clear_all();
+
+	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
+			"org.equinoxproject.Type", "ChangeBackground");
+
+	sample_struct ss;
+	ss.a = 1;
+	ss.b = 'c';
+	ss.c = "some string";
+
+	EdbusList s = EdbusList::create_struct();
+	s << EdbusData::from_int32(ss.a);;
+	s << EdbusData::from_char(ss.b);;
+	s << EdbusData::from_string(ss.c);;
+
+	msg << s;
+
+	cl.send(msg);
+
+	sleep(3);
+
+	puts("sending some complex data");
+
+	msg.clear_all();
+	msg.create_method_call("org.equinoxproject.server",  "/org/equinoxproject/Object",
+			"org.equinoxproject.Type", "ChangeBackground");
+
+	arr.clear();
+	arr << dict1 << dict2 << dict3;
+
+	complex_struct cs;
+	cs.v.value = arr;
+	cs.d = dict1;
+
+	s.clear();
+	s << EdbusData::from_variant(cs.v);
+	s << EdbusData::from_dict(cs.d);
+
+	EdbusVariant cv;
+	cv.value = EdbusData::from_struct(s);
+
+	/* now send complex_struct and variant whose value is complex_struct object */
+	msg << s;
+	msg << EdbusData::from_variant(cv);
 	cl.send(msg);
 
 	return 0;
@@ -64,6 +163,34 @@ int main() {
 	EdbusMessage msg;
 	msg.create_method_call("org.freedesktop.Hal", 
 			"/org/freedesktop/Hal/devices/computer", "org.freedesktop.DBus.Introspectable", "Introspect");
+
+	EdbusMessage reply;
+	cl.send_with_reply_and_block(msg, 1000, reply);
+
+	EdbusMessage::iterator it = reply.begin(), it_end = reply.end();
+	while(it != it_end) {
+		if((*it).is_string())
+			printf("%s", (*it).to_string());
+		++it;
+	}
+
+	return 0;
+}
+#endif
+
+#if 0
+int main() {
+	EdbusConnection cl;
+	if(!cl.connect(EDBUS_SYSTEM)) {
+		puts("No system connection");
+		return 1;
+	}
+
+	EdbusMessage msg;
+	msg.create_method_call("org.freedesktop.Hal", 
+			"/org/freedesktop/Hal/devices/computer", "org.freedesktop.Hal.Device.SystemPowerManagement", "Reboot");
+
+	msg << 0;
 
 	EdbusMessage reply;
 	cl.send_with_reply_and_block(msg, 1000, reply);

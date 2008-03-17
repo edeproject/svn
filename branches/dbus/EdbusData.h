@@ -34,6 +34,7 @@ struct EdbusDataPrivate;
 #endif
 
 class  EdbusDict;
+class  EdbusList;
 struct EdbusVariant;
 
 /**
@@ -154,6 +155,12 @@ class EdbusData {
 		EdbusData(const EdbusDict& val);
 
 		/**
+		 * Construct object with EdbusList type. Correct type will
+		 * be deduced from EdbusList::list_is_array() and EdbusList::list_is_struct() members
+		 */
+		EdbusData(const EdbusList& val);
+
+		/**
 		 * Construct object with already constructed object.
 		 * Essential for containers
 		 */
@@ -170,14 +177,6 @@ class EdbusData {
 		EdbusDataType type(void) const;
 
 		/**
-		 * Returns a D-BUS signature of current holding type.
-		 * Returned value can be NULL if object is invalid type.
-		 * Returned value points to the internal array that will be free-ed
-		 * upon object destuction
-		 */
-		const char* signature(void) const;
-
-		/**
 		 * Returns a byte value if it holds
 		 */
 		byte_t to_byte(void) const;
@@ -185,7 +184,7 @@ class EdbusData {
 		/**
 		 * Returns a char value if it holds
 		 */
-		char to_char(void) { return to_byte(); }
+		char to_char(void) const { return to_byte(); }
 
 		/**
 		 * Returns a bool value if it holds
@@ -225,7 +224,7 @@ class EdbusData {
 		/**
 		 * Returns a double value if it holds
 		 */
-		double   to_double(void) const;
+		double to_double(void) const;
 
 		/**
 		 * Returns a string value if it holds
@@ -248,6 +247,16 @@ class EdbusData {
 		EdbusDict to_dict(void) const;
 
 		/**
+		 * Returns a EdbusList object as array
+		 */
+		EdbusList to_array(void) const;
+
+		/**
+		 * Returns a EdbusList object as struct
+		 */
+		EdbusList to_struct(void) const;
+
+		/**
 		 * Assign existing object
 		 */
 		EdbusData& operator=(const EdbusData& other);
@@ -256,12 +265,12 @@ class EdbusData {
 		 * Check if two objects are the same checking their types
 		 * and comparing their values if they are same type
 		 */
-		bool operator==(const EdbusData& other);
+		bool operator==(const EdbusData& other) const;
 
 		/**
 		 * Check if two objects are not equal
 		 */
-		bool operator!=(const EdbusData& other) { return !operator==(other); }
+		bool operator!=(const EdbusData& other) const { return !operator==(other); }
 
 		/**
 		 * Returns true if object currently holds a value of valid type
@@ -328,8 +337,19 @@ class EdbusData {
 		 */
 		bool is_object_path(void) const { return type() == EDBUS_TYPE_OBJECT_PATH; }
 
+		/**
+		 * Returns true if object currently holds a EdbusList as array value
+		 */
 		bool is_array(void) const { return type() == EDBUS_TYPE_ARRAY; }
+
+		/**
+		 * Returns true if object currently holds a EdbusList as struct value
+		 */
 		bool is_struct(void) const { return type() == EDBUS_TYPE_STRUCT; }
+
+		/**
+		 * Returns true if object currently holds a EdbusVariant value
+		 */
 		bool is_variant(void) const { return type() == EDBUS_TYPE_VARIANT; }
 
 		/**
@@ -421,6 +441,16 @@ class EdbusData {
 		 * Creates object with EdbusDict value
 		 */
 		static EdbusData from_dict(const EdbusDict& val) { return EdbusData(val); }
+
+		/**
+		 * Creates array object. EdbusData constructor will handle EdbusList type
+		 */
+		static EdbusData from_array(const EdbusList& val) { return EdbusData(val); }
+
+		/**
+		 * Creates struct object. EdbusData constructor will handle EdbusList type
+		 */
+		static EdbusData from_struct(const EdbusList& val) { return EdbusData(val); }
 };
 
 /**
