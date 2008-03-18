@@ -6,9 +6,9 @@
 
 /**
  * \class EdbusList
- * \brief A class representing D-BUS struct and array
+ * \brief A class representing D-Bus struct and array
  *
- * EdbusList is used to implement D-BUS struct and array concept. Althought EdbusList
+ * EdbusList is used to implement D-Bus struct and array concept. Althought EdbusList
  * is much more list-like container (indeed, it uses list for storage), accessing
  * elements is done via iterators which, at some point, is similar to accessing elements
  * to ordinary arrays via pointers (if EdbusList is in <em>array</em> mode).
@@ -18,7 +18,7 @@
  * of the same type, but structs can hold elements of any type. 
  *
  * This sounds little bit strange, especially knowing that EdbusList element is EdbusData type,
- * but if you look at EdbusData more as proxy for D-BUS types than as concrete type, things will
+ * but if you look at EdbusData more as proxy for D-Bus types than as concrete type, things will
  * be little bit clearer. This will be much better explained in few examples below.
  *
  * So, from previous text, EdbusList object can be either array-like or struct-like. This is done
@@ -70,7 +70,7 @@
  *   array << EdbusData::from_bool(true);   // the same type as first element, ok
  * \endcode
  *
- * Some things can look like correct C++ statement, but due D-BUS signatures they are not, like:
+ * Some things can look like correct C++ statement, but due D-Bus signatures they are not, like:
  *
  * \code
  *   EdbusList array = EdbusList::create_array();

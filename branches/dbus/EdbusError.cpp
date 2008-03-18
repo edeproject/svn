@@ -18,10 +18,8 @@ struct EdbusErrorImpl {
 static char* from_edbus_errortype(EdbusErrorType t) {
 	switch(t) {
 		case EDBUS_ERROR_INVALID:
-			assert(0 && "Got EDBUS_ERROR_INVALID in name mapping ?");
-			return NULL;
 		case EDBUS_ERROR_USER_DEFINED:
-			assert(0 && "Got EDBUS_ERROR_USER_DEFINED in name mapping ?");
+			assert(0 && "Should not get here");
 			return NULL;
 		case EDBUS_ERROR_FAILED:
 			return COPY_DBUS_ERROR(DBUS_ERROR_FAILED);
@@ -67,7 +65,9 @@ static char* from_edbus_errortype(EdbusErrorType t) {
 			return COPY_DBUS_ERROR(DBUS_ERROR_INVALID_SIGNATURE);
 	}
 
-	assert(0 && "Wrong error number");
+	/* should not ever be reached */
+	assert(0 && "Got wrong error type ?!?");
+	return NULL;
 }
 
 EdbusErrorType from_dbus_errorstr(const char* msg) {

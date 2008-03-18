@@ -563,7 +563,7 @@ static void from_dbus_iter_to_edbusdata_type(DBusMessageIter* iter, EdbusData& d
 		return;
 	}
 
-	assert(0 && "Got some unknown type from D-BUS ???");
+	assert(0 && "Got some unknown type from D-Bus ???");
 }
 
 

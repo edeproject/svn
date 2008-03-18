@@ -8,7 +8,7 @@ void EdbusDict::append(const EdbusData& key, const EdbusData& value) {
 	/*
 	 * Assure all keys are the same type. The same applies with the values.
 	 * This is done by checking first added entry, if exists. 
-	 * We can accept keys (or values) with different types, but D-BUS does not
+	 * We can accept keys (or values) with different types, but D-Bus does not
 	 * like it.
 	 */
 	if(size() > 0) {
