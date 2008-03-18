@@ -14,7 +14,7 @@ struct EdbusContainerImpl {
 
 /**
  * \class EdbusContainer
- * \brief Abstract container for D-BUS containers
+ * \brief Abstract container for D-Bus containers
  *
  * EdbusContainer is a class for easier creating EdbusDict and EdbusList containers.
  * It uses implicit sharing so all concrete implementations copy internal data only
@@ -29,11 +29,24 @@ struct EdbusContainerImpl {
 template <typename T>
 class EdbusContainer {
 	public:
+		/**
+		 * Iterator type for container
+		 */
 		typedef typename std::list<T>::iterator iterator;
+
+		/**
+		 * Const iterator type for container
+		 */
 		typedef typename std::list<T>::const_iterator const_iterator;
+
+#ifndef SKIP_DOCS
 		typedef EdbusContainerImpl<T> EdbusContainerPrivate;
+#endif
 
 	protected:
+		/**
+		 * Allows access to the private data by inherited classes
+		 */
 		EdbusContainerPrivate* impl;
 
 		/**

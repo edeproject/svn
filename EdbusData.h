@@ -39,11 +39,11 @@ struct EdbusVariant;
 
 /**
  * \class EdbusData
- * \brief Class for representing D-BUS data types
+ * \brief Class for representing D-Bus data types
  *
  * This class is variant-like class; this means it can hold
  * any of already predefined types (see EdbusDataType for the list)
- * that D-BUS protocol understainds.
+ * that D-Bus protocol understainds.
  *
  * Class use implicit sharing so copying EdbusData objects is cheap
  * operation that does not require content copying.
@@ -73,9 +73,9 @@ struct EdbusVariant;
  *   EdbusData d = EdbusData::from_int32(5);
  *   // or to force it inot uint16_t
  *   EdbusData d = EdbusData::from_uint16(5);
- * \encode
+ * \endcode
  *
- * \note D-BUS signature for above types is different and sending int32_t to the service
+ * \note D-Bus signature for above types is different and sending int32_t to the service
  * that expects uint16_t will probably result rejecting whole message!
  */
 class EdbusData {
@@ -359,7 +359,7 @@ class EdbusData {
 
 		/**
 		 * Returns true if given object is basic type.
-		 * Basic types (to D-BUS) are all EdbusDataType types except
+		 * Basic types (to D-Bus) are all EdbusDataType types except
 		 * array, structure, dict and variant
 		 */
 		static bool basic_type(const EdbusData& val) {
@@ -455,9 +455,10 @@ class EdbusData {
 
 /**
  * \class EdbusVariant
- * \brief Represents D-BUS variant
+ * \brief Represents D-Bus variant
  */
 struct EdbusVariant {
+	/** variant value */
 	EdbusData value;
 };
 

@@ -31,7 +31,7 @@ struct EdbusDictEntry {
 
 /**
  * \class EdbusDict
- * \brief Dictionary container for D-BUS types
+ * \brief Dictionary container for D-Bus types
  *
  * EdbusDict is a dictionary container (or <em>map</em> in STL).
  * Data is stored in key//value pairs so data search and fetching is 
@@ -44,17 +44,17 @@ struct EdbusDictEntry {
  * \note 
  * Adding (or updating) pairs (via append()) is not efficient like
  * in e.g. STL map; it is more or less linear operation assuring uniqueness;
- * D-BUS protocol can tolerate, but not prefer duplicate keys in dictionary.
- * Dict's in D-BUS are often used to contain a small number of elements so
+ * D-Bus protocol can tolerate, but not prefer duplicate keys in dictionary.
+ * Dict's in D-Bus are often used to contain a small number of elements so
  * this is not a big deal :)
  *
  * Class use implicit sharing.
  *
  * EdbusDict uses EdbusData as base type which means you can put any
- * type EdbusData can hold as value. On other hand, D-BUS specification
- * restricts key types to be only <em>basic</em> D-BUS types (\see Edbus::basic_type()).
+ * type EdbusData can hold as value. On other hand, D-Bus specification
+ * restricts key types to be only <em>basic</em> D-Bus types (\see Edbus::basic_type()).
  *
- * If you try to add non-basic D-BUS type as key, it will be ignored.
+ * If you try to add non-basic D-Bus type as key, it will be ignored.
  * \todo This should be assertion
  *
  * Each instance of EdbusDict object will have the same types for the keys and the
@@ -87,12 +87,12 @@ struct EdbusDictEntry {
  *   d.append("foo", 4);
  *   d.append("baz", 12);
  *
- *   EdbusDict::iterator it = d.begin(), it_end = d.end();
+ *   EdbusDict::const_iterator it = d.begin(), it_end = d.end();
  *   while(it != it_end) {
  *     printf("key: %s value: %i\n", (*it).key.to_string(), (*it).value.to_int32());
  *     ++it;
  *   }
- * \end
+ * \endcode
  */
 struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
 	/**
@@ -104,7 +104,7 @@ struct EdbusDict : public EdbusContainer<EdbusDictEntry> {
 	 * Assign value with the key and add it. If key already exists,
 	 * previous value will be overriden with the new one.
 	 *
-	 * \param key is key in <em>basic</em> D-BUS type
+	 * \param key is key in <em>basic</em> D-Bus type
 	 * \param value is any value EdbusData can hold
 	 */
 	void append(const EdbusData& key, const EdbusData& value);

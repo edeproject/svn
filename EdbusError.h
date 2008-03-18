@@ -34,18 +34,44 @@ enum EdbusErrorType {
 struct EdbusErrorImpl;
 struct DBusError;
 
+/**
+ * \class EdbusError
+ * \brief A class representing D-Bus error
+ */
 class EdbusError {
 	private:
 		EdbusErrorImpl* impl;
 		void dispose(void);
 	public:
+		/**
+		 * Create invalid error object
+		 */
 		EdbusError();
+
+		/**
+		 * Destroys object
+		 */
 		~EdbusError();
+
+		/**
+		 * Create error object from DBusError
+		 */
 		EdbusError(const DBusError* err);
+
+		/**
+		 * Create error object from another object
+		 */
 		EdbusError(const EdbusError& other);
+
+		/**
+		 * Assing another object
+		 */
 		EdbusError& operator=(const EdbusError& other);
 
-		EdbusError(EdbusErrorType, const char* msg);
+		/**
+		 * Explicitly create error with given EdbusErrorType and text
+		 */
+		EdbusError(EdbusErrorType t, const char* msg);
 
 		/**
 		 * Returns error type
@@ -53,14 +79,19 @@ class EdbusError {
 		EdbusErrorType type(void) const;
 
 		/**
-		 * Returns the D-Bus error name
+		 * Returns the D-Bus error name. It will be NULL if error is invalid
 		 */
-		const char* name() const;
+		const char* name(void) const;
 
 		/**
-		 * Returns a string describing the error
+		 * Returns a string describing the error. It will be NULL if error is invalid
 		 */
-		const char* message() const;
+		const char* message(void) const;
+
+		/**
+		 * Returns true if error object contains valid type (any except EDBUS_ERROR_INVALID)
+		 */
+		bool valid(void) const { return type() != EDBUS_ERROR_INVALID; }
 };
 
 #endif

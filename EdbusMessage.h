@@ -10,14 +10,14 @@ struct DBusMessage;
 
 /**
  * \class EdbusMessage
- * \brief Data transporter for D-BUS
+ * \brief Data transporter for D-Bus
  *
  * EdbusMessage is essentially the way you send and receive a bunch of EdbusData objects.
  * You can see it as e-mail message: EdbusData represents a content you wrote or read and 
  * EdbusMessage is that content plus headers with origin, destination and message type.
  *
  * Knowing that, EdbusMessage can be:
- * - signal, created with create_signal(); it represents D-BUS signal
+ * - signal, created with create_signal(); it represents D-Bus signal
  * - method call, created with create_method_call(); calls a method on service objects
  * - method reply, created with create_reply(); sends a reply on called method
  * - error reply, created with create_error_reply(); sends a error reply on called method
@@ -131,7 +131,7 @@ class EdbusMessage {
 		 * Create a method call
 		 *
 		 * \param service is destination service name
-		 * \param param is destination object path
+		 * \param path is destination object path
 		 * \param interface is destination interface name
 		 * \param method is method to be called
 		 */

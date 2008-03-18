@@ -81,7 +81,7 @@ struct EdbusConnImpl;
 
 /**
  * \class EdbusConnection
- * \brief D-BUS connection and data sender
+ * \brief D-Bus connection and data sender
  */
 class EdbusConnection {
 	private:
@@ -124,7 +124,7 @@ class EdbusConnection {
 		 * Sends a message
 		 *
 		 * \return true if sending was succesfull
-		 * \param connect is message to be send
+		 * \param content is message to be send
 		 */
 		bool send(const EdbusMessage& content);
 
@@ -134,7 +134,7 @@ class EdbusConnection {
 		 *
 		 * \return true if succesfully got reply
 		 * \param content is message to be send
-		 * \param timout_ms is waiting time for arrival in milliseconds
+		 * \param timeout_ms is waiting time for arrival in milliseconds
 		 * \param ret will be filled with reply content if this function returns true
 		 */
 		bool send_with_reply_and_block(const EdbusMessage& content, int timeout_ms, EdbusMessage& ret);
@@ -144,6 +144,7 @@ class EdbusConnection {
 		 * If EdbusConnection object wants to accept messages, clients will send them to this name
 		 *
 		 * \return true if got requested name
+		 * \param name is name to be requested
 		 * \param mode is what to do when requested name already exists
 		 */
 		bool request_name(const char* name, int mode = EDBUS_NAME_NO_REPLACE);
@@ -273,7 +274,7 @@ class EdbusConnection {
 		 *
 		 * \param timeout_ms is time in milliseconds to wait for connections
 		 */
-		int wait(int timout_ms);
+		int wait(int timeout_ms);
 };
 
 #endif

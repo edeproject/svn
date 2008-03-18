@@ -5,11 +5,11 @@
 
 /**
  * \class EdbusObjectPath
- * \brief Represents D-BUS object path
+ * \brief Represents D-Bus object path
  *
- * This data type is necessary to correctly represents D-BUS object path
- * since D-BUS protocol limits character range that should be in object
- * path name. Also, D-BUS have different signature for object paths than
+ * This data type is necessary to correctly represents D-Bus object path
+ * since D-Bus protocol limits character range that should be in object
+ * path name. Also, D-Bus have different signature for object paths than
  * for ordinary strings.
  *
  * Valid path is that string that contains elements with <em>[A-Z][a-z][0-9]_</em>
