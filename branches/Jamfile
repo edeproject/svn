@@ -1,4 +1,0 @@
-C++FLAGS = -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/libpng12 ;
-LINKLIBS = -L/usr/local/lib -lfltk -ldl -lm -lXext -lXft -lcairo -lX11 -lstdc++ ;
-
-Main cairo-surface : CairoSurface.cpp ;
