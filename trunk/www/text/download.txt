@@ -1,0 +1,50 @@
+Official releases
+------------------
+<table style="width: 30%; text-align: left" border="0" cellpadding="2" cellspacing="1">
+   <tbody>
+      <tr>
+         <td style="vertical-align: top;">EDE</td>
+         <td style="vertical-align: top;">1.2</td>
+                 <td style="vertical-align: top;">
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312&amp;release_id=554582">download</a>
+                </td>
+      </tr>
+      <tr>
+         <td style="vertical-align: top;">eFLTK</td>
+         <td style="vertical-align: top;">2.0.7</td>
+                 <td style="vertical-align: top;">
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021&amp;release_id=554585">download</a>
+                 </td>
+      </tr>
+   </tbody>
+</table>
+
+<br />
+
+Repository source
+---------------------
+To download latest source code from repository, you will need a subversion installed. Most today 
+distributions already ship it as package, so this should save you from compiling. Documentation
+about usage can be found on [subversion page](http://subversion.tigris.org/).
+
+Here is how to checkout each component:
+
+   + ede: *svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/ede*
+   + efltk: *svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/efltk*
+   + themes: *svn co https://ede.svn.sourceforge.net/svnroot/ede/trunk/themes*
+
+or [directly browse](http://ede.svn.sourceforge.net/viewvc/ede/) it to see what is there.
+
+If you find problems about repository items downloading, fill out a
+[bug report](http://equinox-project.org/cgi-bin/trac.cgi/newticket). Please,
+*do not* report issues related to subversion (like how to use it, or possible bugs).
+Bugs should be directed to subversion [developers](http://subversion.tigris.org/), and usage
+should be checked at [the subversion book](http://svnbook.red-bean.org).
+
+<br />
+
+NetInstall
+----------
+You can also download packages via [NetInstall](http://equinox-project.org/cgi-bin/trac.cgi/wiki/NetInstall)
+script. Please not that this script is still in beta, so if you are unable to finish installation use one of
+above methods.

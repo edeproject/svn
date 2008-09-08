@@ -1,0 +1,41 @@
+<!--
+ this file is read as xml files so
+ make sure html/xml entities be escaped correctly
+-->
+<document>
+
+<news title="EDE got review, slashdotted, news repost and the rest...">
+<p>
+ As we get noted by our hosting provider, they did some significant hardware
+ upgrade which required data moving and etc. (that includes this site too).
+ ...and during that move, some news I posted are lost ;-(, so this is a second
+ try (with backup, of course).
+</p>
+<p>
+ EDE was reviewed by <a href="http://www.linux.com">linux.com</a> team
+ and you can find it at <a href="http://www.linux.com/feature/135684">this
+ link</a>. This got on <a href="http://linux.slashdot.org/article.pl?sid=08/05/26/1643222">
+ slashdot</a> too!!! :-)
+</p>
+<p>
+ Also, Trac (wiki and tracker) is now up. There are some small changes that needs to
+ be reconfigured due this backup/move/restore but that should not be an issue
+ (hopefully ;-)).
+</p>
+</news>
+
+<news title="Wiki and bug tracker temporary down">
+<p>
+ Our wiki and bug tracker (Trac powered) are temporary down due bad python upgrade.
+ Things should be hopefully resolved soon.
+</p>
+</news>
+
+<news title="Bandwidth problems">
+<p>
+ We had a small bandwidth problems last two days and the site was mostly offline. The issue is fixed, 
+ thanks to quick response from our hosting provider.
+</p>
+</news>
+
+</document>

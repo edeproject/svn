@@ -1,0 +1,235 @@
+<document>
+
+<news title="1.2 released">
+<p>
+ This is a bugfix release of EDE and 2.0.7 eFLTK packages (and hopefully the last one of 1.x code and
+ the last eFLTK release).
+</p>
+<p>
+ It comes with improved support for 64-bit platforms, redesigned epanelconf and full German and French
+ translations, thanks to our contributors. Also big thanks goes to the Zaurus team and users who found
+ odd big-endian bug in eFLTK.
+</p>
+<p>
+ Details you can find at 
+ <a href="http://sourceforge.net/project/shownotes.php?group_id=49891&amp;amp;release_id=554582">EDE</a> and
+ <a href="http://sourceforge.net/project/shownotes.php?group_id=49891&amp;amp;release_id=554585">eFLTK</a> changelogs
+ or at 
+ <a href="http://equinox-project.org/cgi-bin/trac.cgi/query?status=closed&amp;amp;group=resolution&amp;amp;milestone=1.2">
+ the finished 1.2 milestone</a>.
+</p>
+<p>
+ From this release, EDE and eFLTK besides the usual way, can be downloaded via 
+ <a href="http://equinox-project.org/cgi-bin/trac.cgi/wiki/NetInstall">netinstall</a> script too. Details about
+ other download methods you can find at the <a href="http://equinox-project.org/page/download">download</a>
+ page.
+</p>
+<p>
+ These releases are planned to retire development of EDE 1.x series and eFLTK, so we can be fully focused on
+ FLTK powered EDE 2.0. With the exception of truly critical bugs, all further reported bugs will
+ be queued for 2.0 alpha or beta.
+</p>
+</news>
+
+<news title="Work update">
+<p>
+ To show you that we don't sleeping, <a href="http://sourceforge.net/mailarchive/forum.php?thread_name=20070703161444.GA25814%40stigmata.pmf.unsa.ba&amp;amp;forum_name=ede-devel">here</a> is a small update of the current work on
+ 2.0 version.
+</p>
+<p>
+ In short, 2.0 will be based on FLTK 1.x due many reasons (details are in above post),
+ fully <a href="http://freedesktop.org">freedeskop</a> compliant and much much more :)
+</p>
+<p>
+ In the mean time, there is some preparation for release from 1.x series which
+ will mostly try to address some of the current bugs (including infamous gcc 4.x compilation 
+ warnings).
+</p>
+</news>
+
+<news title="EDE metapackage in Mandriva">
+<p>
+ Adam Williamson from <a href="http://www.mandriva.com/">Mandriva</a> created
+ EDE metapackage (task-ede) which will install EDE plus all apps on the default
+ menu layout.
+</p>
+<p>
+ Both EDE and efltk packages are in /contrib/backports repository for 2007 Spring.
+ Documentation about using /backports repositories you can find at
+ <a href="http://wiki.mandriva.com/en/Docs/Basic_tasks/Installing_and_removing_software#Advanced_use:_Backports_and_candidate_updates">Mandriva's wiki</a>.
+</p>
+<p>
+ We can say: Big Thanks !!!
+</p>
+</news>
+
+<news title="EDE on swax">
+<p>
+ <a href="http://www.swax.de/">swax</a> is a project based on OpenBSD that uses EDE
+ as default desktop environment. Yea, on OpenBSD !
+</p>
+<p>
+ Project is still in the beginning, but looks very promising :). Make sure to
+ check <a href="http://www.swax.de/">swax</a> pages for the details.
+</p>
+</news>
+
+<news title="Ubuntu installation howto">
+<p>
+ TigerC10 added a tutorial for Ubuntu users. This tutorial covers ede and efltk compilation
+ and installation from the latest repository source.
+</p>
+<p>
+ You can found it at wiki under 
+ <a href="http://equinox-project.org/cgi-bin/trac.cgi/wiki/UbuntuInstallation">UbuntuInstallation</a>.
+</p>
+</news>
+
+<news title="Tracker moved">
+<p>
+ Our default bug report system is now based on <a href="http://trac.edgewall.org">Trac</a>, and
+ is located at 
+ <a href="http://equinox-project.org/cgi-bin/trac.cgi/report/1">http://equinox-project.org/cgi-bin/trac.cgi</a>,
+ with the rest of nifty things that trac supports.
+</p>
+<p>
+ Bug datatabase is migrated too, so from now, please report all bugs, features or add patches
+ to <a href="http://equinox-project.org/cgi-bin/trac.cgi/newticket">appropriate section</a>.
+</p>
+</news>
+
+<news title="Update...">
+<p>
+ After a looooong period of laziness in the web space (this can't be
+ say for the repository), here is an update with a new, cool stuff.
+</p>
+
+<p>
+ First of all, as you can see, we have a new domain, equinox-project.org.
+ Also, we found a new home for web pages (and tracker, soon) thanks to
+ the guys at <a href="http://www.sohlius.com">Sohlius,Inc.</a> (Thanks !!!)
+</p>
+
+<p>
+ Some pages are probably missing or not updated; this is due current transition,
+ so if you see some 404 or 500 errors, you know what is going on :)
+</p>
+
+<p>
+ Next :) is that we finally got <a href="irc://irc.freenode.net/#ede">#ede</a> channel at Freenode. 
+ This would not be possible without Freenode admins, so a big Thanks! goes to them too. If you
+ find some spare time or want to ask or chat about EDE, you know the destination :)
+</p>
+
+<p>
+ And what was done in the mean time? The best way to find out is to check
+ logs at <a href="http://svn.sourceforge.net/viewvc/ede/">http://svn.sourceforge.net/viewvc/ede/</a>
+ since they will not definitely fit here (due their size, of course :))
+</p>
+</news>
+
+<news title="OSX Panther-like skin">
+<p>
+ Ed B. filled themes section with new <i>EDE-Linther</i> theme. 
+ <i>It's like OSX Panther, originally a Fluxbox theme</i> like he said. Excelent
+ job and refreshing look is our comment.
+</p>
+</news>
+
+<news title="A new distro using EDE">
+<p>
+ STX (pronounced: sticks) is a LiveCD distro based on Debian/Mepis that has 
+ chosen Equinox Desktop Environment as its default and only graphical 
+ environment. This distro in our opinion has a very solid implementation of 
+ EDE and it's a good way to try out EDE without installing it on your 
+ computer.
+</p>
+<p>
+ Please remember that this is a very early version and it's still under 
+ development.
+</p>
+<p>
+ Link: <a href="http://stibs.cc/stx/">http://stibs.cc/stx/</a>
+</p>
+</news>
+
+<news title="New theme">
+<p>
+ Thanks to STIBS, we have new original theme called <i>stx</i>. This is default
+ theme for upcoming new version of STX linux ditribution. You can find it in
+ <a href="http://ede.sourceforge.net/page/themes">themes</a> section for download.
+</p>
+</news>
+
+<news title="1.0.4 is released">
+<p>
+ New version is ready for download. The most important feature is full FreeBSD
+ support. Among other changes are many fixes for reported bugs and inclusion of 
+ key configuration tool (ekeyconf).
+</p>
+<p>
+ Also it is worth to mention that Vedran did a grunt work to bring this
+ release, so all appreciations should go to him. Here is his note:
+</p>
+<p>
+ <i>"I would like to thank Google Summer of Code for funding my work on 
+ (among else) EDE 1.0.4. Thanks guys! You rock :) "</i>:Vedran
+</p>
+<p>
+ Currently only source archive is uploaded, but soon should be done the same for
+ distribution specific packages. Changelog is placed on
+ <a href="https://sourceforge.net/project/shownotes.php?release_id=353280">this</a>link.
+</p>
+</news>
+
+
+<news title="Themes update">
+<p>
+ EddieX refreshed themes section with five excelent new themes: <i>EdeAirlock</i>,
+ <i>EdeDetroit</i>, <i>EdeOpus3</i>, <i>EdeOpusBlue</i> and <i>EdeSmoke</i>. Make sure to
+ check them.
+</p>
+</news>
+
+<news title="Themes">
+<p>
+ Themes section is added. This is the latest theme list pulled from cvs module <i>themes</i>.
+ If you have proposals or want to make new entry, mail us and we will happily include it.
+</p>
+</news>
+
+<news title="New page">
+<p>
+ Well as you can see new page is uploaded. After messing with css compatibility in various browsers (almost two weeks!)
+ and testing xhtml 1.0 support, here is the final work. If you have reasonably browser it should look fine. For those
+ <i>un-reasonably</i> pieces of code, nothing can be done. Next in TODO lists is to check and update content. 
+</p>
+
+<p>
+ If you see something that should not be seen or something broken, please mail us or leave message on forum.
+</p>
+</news>
+
+
+<news title="Package fix">
+<p>
+ EDE source package was uploaded with little bug in configure script - it couldn't recognize efltk 2.0.5.
+ Thanks to Bowman for notice, this is fixed and source package is replaced.
+</p>
+</news>
+
+
+<news title="Release 1.0.3">
+<p>
+ Today, Friday, April 29, 2005, is nice and sunny day; a perfect day for release. This is mostly bugfix version, and we are 
+ hoping that you will encounter less crashes and odd behaviors. So, the summary is 1.0.3 version for EDE following 2.0.5
+ version for efltk. Changelogs are located at 
+ <a href="https://sourceforge.net/project/shownotes.php?release_id=324135">link</a> for EDE and at 
+ <a href="https://sourceforge.net/project/shownotes.php?release_id=324136">link</a> for efltk. 
+</p>
+<p>
+ Sources can be obtained from usual download section. Binary packages for distributions should be available during
+ the next week.
+</p>
+</news>
+</document>

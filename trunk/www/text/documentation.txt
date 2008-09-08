@@ -1,0 +1,134 @@
+Short documentation
+------------------------
+
+   + [Installation](#instalation)
+   + [Building eFLTK from source](#efltk_build)
+   + [Building EDE from source](#ede_build)
+   + [Theming how-to](#theming)
+
+---------------------------------------------------------------------------------------
+
+<a name="installation">Installation how-to</a>
+
+There is three ways to install Equinox Desktop Environment. First is to download binary packages for
+your distribution, second is to download source tarballs and third is to download it from repository and
+compile it. For first option, please consult your's distribution installation system and for other
+two, compilation is the same.
+
+Note that EDE require eFLTK (extended FLTK) library. This library is improved FLTK 2.0 
+library with many changes and core modifications. To build it, you don't need FLTK 2.0 source, 
+eFLTK already incorporate it. You can download it from standard project page.
+
+Here is few steps how to build eFLTK and EDE (EDE will be exactly as you build eFLTK).
+
+<br />
+
+<a name="efltk_build">Building efltk from source</a>
+
+After downloading, unpack it, and run: 
+
+    ./configure
+
+You can check additional options with:
+
+    ./configure --help 
+
+In the usual way, *configure* will build eFLTK with MySQL and unixODBC support.
+EDE does not use it, so you can safely disable it. Option: 
+
+    ./configure --disable-mysql --disable-unixODBC will
+
+do the job. eFLTK support xft (font anti-aliasing) too. Building with this option EDE will have it too. Xft in older
+X versions, especially in XFree86 was very buggy and in that case the best way is to leave it. On other hand, newer
+distributions ships with X.org's server, that have very good xft support. In that case, command:
+
+    ./configure --enable-xft
+
+will happily include it.
+
+If you find spare time and decide to help us, proposal way is to build eFLTK and EDE with debug support. This 
+will create bigger and slower executable files, but in the case of odd behaviors and crashing output will be
+more descriptive which will enable us easily finding the bugs.
+
+    ./configure --enable-debug
+
+is that option.
+
+After configure do it's job, running: 
+
+    make
+
+will start the compilation process. Time spending in it depends on
+processor's speed. When it is done, installation (as root) goes with: 
+
+    make install
+
+<br />
+
+<a name="ede_build">Building EDE from source</a>
+
+EDE building is the same as for eFLTK, except for *configure* options. Debugging is usually supported with 
+
+   ./configure --enable-debug
+   
+flag. Other flags are:
+
+   ./configure --disable-silent
+   
+which will remove those *Compiling something...* console output string, replacing with full compiler command 
+line. This can be very useful (for debugging too) in case compiler starts to act weird. Classical 
+
+   make
+   
+and 
+
+   make install
+
+after configure finished will place EDE where should be.
+
+Last option left to be done is to place in your's local *.xinitrc* file 
+
+   startede
+   
+line. This will invoke script with the same name which will start various programs that are part of desktop 
+environment. Command 
+
+   startx
+
+will start X server and pull commands from your's *.xinitrc* file.
+
+<br />
+
+<a name="theming">Theming how-to</a>
+
+As can be seen, EDE supports themes and window decorations. 
+
+Each theme contain few XPM images and text **default.theme* file, which describes window manager how theme
+should look. Here is example of default.theme file:
+
+   [Theme]
+		Frame color=RGB(129,153,177)
+		Title image=title.xpm
+		Close image up=close.xpm
+		Close image down=closeD.xpm
+		Maximize image up=max.xpm
+		Maximize image down=maxD.xpm
+		Minimize image up=min.xpm
+		Minimize image down=minD.xpm
+
+**Frame color** describes color that will left, right and bottom window frames use. If you ask yourself about top
+frame, don't worry, **Title image** variable will fill it.
+
+**RGB(129, 153, 177)** describes percent of red, green and blue color respectively. So here we have 
+red = 129, green = 153 and blue = 177.  With combination of these basic three colors you can get various color schemes.
+
+**Title image** is ordinary XPM image that will be used to decorate window title. It will be tiled (remember this !).
+
+**Close image up** will be use to decorate close button; button placed on top-right window frame. This 
+variable describe how close button will look when you don't press it.
+
+**Close image down** same as above, except that this image will be used when mouse press button.
+
+**Maximize image up**, **Maximize image down**, **Minimize image up** and **Minimize image down**,
+do (guess :)) like described for **Close** button.
+

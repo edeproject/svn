@@ -1,0 +1,8 @@
+#AddHandler fastcgi-script .fcgi
+#RewriteEngine On
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^(.*)$ /cgi-bin/edesite.fcgi/page/$1 [QSA,L]
+
+RewriteEngine On
+RewriteRule ^(.*)/$ /cgi-bin/page.py?$1 [QSA,L]
+RewriteRule ^(.*)$ /cgi-bin/page.py?$1 [QSA,L]

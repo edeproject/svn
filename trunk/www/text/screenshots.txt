@@ -1,0 +1,33 @@
+## skip-markdown ##
+
+
+<div class="gallery">
+<h2>EDE on Minix 3 and sXb (Slackware based distro for Xbox)</h2>
+
+<a href="/sitemedia/screenshots/minix3.png"><img src="/sitemedia/screenshots/th_minix3.png" width="160" height="120" /></a>
+<a href="/sitemedia/screenshots/sxb.png"><img src="/sitemedia/screenshots/th_sxb.png" width="160" height="120" /></a>
+
+<h2>1.0.2 screenshots with xft support</h2>
+
+<a href="/sitemedia/screenshots/102shot_xft.png"><img src="/sitemedia/screenshots/th_102shot_xft.png" width="160" height="120" /></a>	
+<a href="/sitemedia/screenshots/102shot_xft1.png"><img src="/sitemedia/screenshots/th_102shot_xft1.png" width="160" height="120" /></a>
+<a href="/sitemedia/screenshots/102shot_xft2.png"><img src="/sitemedia/screenshots/th_102shot_xft2.png" width="160" height="120" /></a>
+<a href="/sitemedia/screenshots/102shot_xft3.png"><img src="/sitemedia/screenshots/th_102shot_xft3.png" width="160" height="120" /></a>
+
+<h2>1.0.2 version shots without xft</h2>
+
+<a href="/sitemedia/screenshots/102shot.png"><img src="/sitemedia/screenshots/th_102shot.png" width="160" height="120" /></a>	
+<a href="/sitemedia/screenshots/102shot1.png"><img src="/sitemedia/screenshots/th_102shot1.png" width="160" height="120" /></a>
+
+<h2>Shots from 1.0.1 version</h2>
+
+<a href="/sitemedia/screenshots/101shot.png"><img src="/sitemedia/screenshots/th_101shot.png" width="160" height="120" /></a>	
+<a href="/sitemedia/screenshots/101shot1.png"><img src="/sitemedia/screenshots/th_101shot1.png" width="160" height="120" /></a>
+<a href="/sitemedia/screenshots/101shot2.png"><img src="/sitemedia/screenshots/th_101shot2.png" width="160" height="120" /></a>	
+<a href="/sitemedia/screenshots/101shot3.png"><img src="/sitemedia/screenshots/th_101shot3.png" width="160" height="120" /></a>
+
+<h2>Some screenshots from old 1.0 version</h2>
+
+<a href="/sitemedia/screenshots/10shot.png"><img src="/sitemedia/screenshots/th_10shot.png" width="160" height="120" /></a>	
+<a href="/sitemedia/screenshots/10shot1.png"><img src="/sitemedia/screenshots/th_10shot1.png" width="160" height="120" /></a>
+</div>

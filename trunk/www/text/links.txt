@@ -1,0 +1,23 @@
+FLTK sites
+------------
+
+   + [FLTK](http://www.fltk.org) - EDE's toolkit
+   + [FLTK.net](http://www.fltk.net) - fltk's alternative page
+
+X resources
+--------------
+
+   + [Xorg](http://www.x.org) - official X pages
+   + [FreeDesktop](http://www.freedesktop.org) - various standards amongs DEs
+
+Popular environments
+-------------------------
+
+   + [KDE](http://www.kde.org) - very powerfull DE
+   + [GNOME](http://www.gnome.org) - very powerfull DE too, this time on Gtk
+   + [Xfce](http://www.xfce.org) - lighweight alternative on Gtk
+
+Other
+-------
+
+   + [GNU FSF](http://www.gnu.org) - needed information about GNU philosophy
