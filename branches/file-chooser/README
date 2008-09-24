@@ -1,0 +1,19 @@
+Explains what is here
+=====================
+
+This folder contains an experimental file chooser dialog that should
+be replacement for FLTK's fl_file_chooser().
+
+The plan is to add support for icon themes, some more capability
+than fl_file_chooser() have and etc.
+
+To compile it, make sure to have FLTK and edelib source. Then copy
+"file-chooser" directory in edelib source tree (before that you should
+run "./autogen.sh" and "./configure" in edelib source tree).
+
+After that, in file-chooser directory execute "jam" and you should get
+"file_chooser" binary.
+
+Of course, it is not ready to be useful.
+
+Sanel Z.

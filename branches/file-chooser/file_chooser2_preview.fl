@@ -1,0 +1,67 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.h} 
+code_name {.cxx}
+Function {} {open
+} {
+  Fl_Window {} {open selected
+    xywh {299 169 670 350} type Double resizable visible
+  } {
+    Fl_Button {} {
+      tooltip {Add to bookmarks} image {../../../../.icons/edeneu/16x16/actions/list-add.png} xywh {10 10 30 25} labelsize 14
+    }
+    Fl_Button {} {
+      tooltip {Remove from bookmarks} image {../../../../.icons/edeneu/16x16/actions/list-remove.png} xywh {45 10 30 25} labelsize 14
+    }
+    Fl_Button {} {
+      tooltip {Create directory} image {../../../../.icons/edeneu/16x16/actions/folder-new.png} xywh {365 10 30 25}
+    }
+    Fl_Button {} {
+      tooltip Refresh image {../../../../.icons/edeneu/16x16/actions/view-refresh.png} xywh {400 10 30 25}
+    }
+    Fl_Menu_Button {} {open
+      xywh {440 10 30 25} labelsize 14 textsize 14
+    } {}
+    Fl_Tile {} {open
+      xywh {10 40 460 200} labelsize 14
+    } {
+      Fl_Browser {} {
+        xywh {10 40 145 200}
+      }
+      Fl_File_Browser {} {
+        xywh {155 40 315 200}
+      }
+    }
+    Fl_Group {} {open
+      xywh {10 240 460 105} labelsize 14
+    } {
+      Fl_File_Input {} {
+        label {Location:}
+        xywh {110 246 260 35} resizable
+      }
+      Fl_Choice {} {
+        label {Filter:}
+        xywh {110 285 260 25} down_box BORDER_BOX
+      } {}
+      Fl_Check_Button {} {
+        label Preview
+        xywh {110 315 260 25} down_box DOWN_BOX
+      }
+      Fl_Button {} {
+        label {&Open}
+        xywh {380 255 90 25}
+      }
+      Fl_Button {} {
+        label {&Cancel}
+        xywh {380 285 90 25}
+      }
+    }
+    Fl_Box {} {
+      xywh {175 142 170 81} labelsize 14 resizable
+      code0 {/* invisible resizable box */}
+    }
+    Fl_Box {} {
+      image {../../../../.icons/gnome/48x48/apps/kpackage48.png} xywh {475 40 185 200} box DOWN_BOX color 7 labelsize 10
+    }
+  }
+} 

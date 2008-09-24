@@ -1,0 +1,41 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.h} 
+code_name {.cxx}
+Function {} {open
+} {
+  Fl_Window {} {open selected
+    xywh {367 97 480 350} type Double visible
+  } {
+    Fl_File_Input {} {
+      label {Location:}
+      xywh {105 10 365 34}
+    }
+    Fl_Browser {} {
+      xywh {10 50 185 225}
+    }
+    Fl_File_Browser {} {
+      xywh {200 50 270 225}
+    }
+    Fl_Button {} {
+      label {&Cancel}
+      xywh {380 315 90 25}
+    }
+    Fl_Button {} {
+      label {&Open}
+      xywh {285 315 90 25}
+    }
+    Fl_Button {} {
+      label {&Remove}
+      xywh {105 280 90 25}
+    }
+    Fl_Button {} {
+      label {&Add}
+      xywh {10 280 90 25}
+    }
+    Fl_Choice {} {
+      label {Filter:} open
+      xywh {285 280 186 25} down_box BORDER_BOX
+    } {}
+  }
+} 
