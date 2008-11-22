@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /sitemedia/
+Disallow: /modules/
+Disallow: /text/
+Disallow: /templates/
