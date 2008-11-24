@@ -280,10 +280,9 @@ body
 {
 	/* width will keep images steady (for reasonable maximizations) */
 	width: 100%;
-	height: 180px;
+	height: 21em;
 	margin: 0 0 4em 0;
 	padding: 0;
-	/*background-color: #dddddd;*/
 	background-color: #d8ddd0;
 }
 
@@ -300,6 +299,29 @@ body
 	margin-right: 3em;
 	border: none;
 	float: right;
+}
+
+.introduction a.button
+{
+	display: block;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	background-image: url(../images/button.png);
+	background-position: left;
+	background-repeat: no-repeat;
+	width: 201px;
+	height: 100px;
+	text-align: center;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 140%;
+	color: gray;
+}
+
+.buttontxt
+{
+	padding-top: 40px;
 }
 
 /* =theme part

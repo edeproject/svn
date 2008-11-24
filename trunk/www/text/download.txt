@@ -19,6 +19,8 @@ Official releases
    </tbody>
 </table>
 
+*NOTE: EDE equires eFLTK, so make sure you download it first.*
+
 <br />
 
 Repository source
