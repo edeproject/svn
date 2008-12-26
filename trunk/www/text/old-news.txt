@@ -1,5 +1,12 @@
 <document>
 
+<news title="Bandwidth problems">
+<p>
+ We had a small bandwidth problems last two days and the site was mostly offline. The issue is fixed, 
+ thanks to quick response from our hosting provider.
+</p>
+</news>
+
 <news title="1.2 released">
 <p>
  This is a bugfix release of EDE and 2.0.7 eFLTK packages (and hopefully the last one of 1.x code and

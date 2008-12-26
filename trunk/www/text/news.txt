@@ -4,6 +4,20 @@
 -->
 <document>
 
+<news title="gcc 4.3.2 patch">
+<p>
+ Thierry, from <a href="http://www.nutyx.org/">Nutyx</a> project, completed
+ a long standing eFLTK patch for the newer gcc version(s). Currently a patch
+ is located <a href="http://equinox-project.org/patches/gcc432.patch">here</a>
+ and I'm hoping to apply it on the svn soon.
+</p>
+
+<p>
+ You can see <a href="http://sourceforge.net/forum/forum.php?thread_id=2633352&amp;forum_id=249614">
+ whole thread</a> about this problem and provided solution.
+</p>
+</news>
+
 <news title="EDE got review, slashdotted, news repost and the rest...">
 <p>
  As we get noted by our hosting provider, they did some significant hardware
@@ -28,13 +42,6 @@
 <p>
  Our wiki and bug tracker (Trac powered) are temporary down due bad python upgrade.
  Things should be hopefully resolved soon.
-</p>
-</news>
-
-<news title="Bandwidth problems">
-<p>
- We had a small bandwidth problems last two days and the site was mostly offline. The issue is fixed, 
- thanks to quick response from our hosting provider.
 </p>
 </news>
 
