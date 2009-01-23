@@ -1,5 +1,5 @@
 Latest instalation how-to you can find at
-[InstallationHowTo](http://equinox-project.org/cgi-bin/trac.cgi/wiki/InstallationHowTo) at our wiki.
+[InstallationHowTo](http://equinox-project.org/cgi-bin/trac.cgi/wiki/InstallationHowTo) on our wiki.
 
 Short documentation
 ------------------------
