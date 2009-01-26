@@ -184,9 +184,9 @@ void FileBrowser::draw_cell(TableContext context, int R, int C, int X, int Y, in
 			fl_push_clip(X, Y, W, H);
 
 			if(R > 0 && R % 2)
-				fl_draw_box(FL_FLAT_BOX, X, Y, W, H, FL_LIGHT2);
+				fl_draw_box(FL_FLAT_BOX, X, Y, W, H, row_selected(R) ? selection_color() : FL_LIGHT2);
 			else
-				fl_draw_box(FL_FLAT_BOX, X, Y, W, H, FL_WHITE);
+				fl_draw_box(FL_FLAT_BOX, X, Y, W, H, row_selected(R) ? selection_color() : FL_WHITE);
 
 			fl_pop_clip();
 
@@ -215,6 +215,36 @@ void FileBrowser::draw_cell(TableContext context, int R, int C, int X, int Y, in
 		default:
 			break;
 	}
+}
+
+void FileBrowser::add_selected(int R) {
+	sel_rows.push_back(R);
+}
+
+int FileBrowser::row_selected(int R) {
+	if(!sel_rows.empty()) {
+		list<int>::iterator it = sel_rows.begin(), it_end = sel_rows.end();
+
+		for(; it != it_end; ++it) {
+			if(R == *it)
+				return 1;
+		}
+	}
+
+	return 0;
+}
+
+int FileBrowser::handle(int event) {
+	int ret = TableBase::handle(event);
+
+	int R, C;
+	ResizeFlag resizeflag;
+	TableContext context = cursor2rowcol(R, C, resizeflag);
+
+	int shift = (Fl::event_state() & FL_CTRL) ? FL_CTRL :
+				(Fl::event_state() & FL_SHIFT) ? FL_SHIFT : 0;
+
+	return ret;
 }
 
 EDELIB_NS_END

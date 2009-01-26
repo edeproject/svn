@@ -51,7 +51,7 @@ class Bookmarks : public TableBase {
 			box(FL_DOWN_FRAME);
 			color(FL_WHITE);
 			col_header(1);
-			col_header_height(25);
+			col_header_height(20);
 			cols(1);
 
 			// initial width
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 			lv->box(FL_DOWN_FRAME);
 			lv->color(FL_WHITE);
 			lv->col_header(1);
-			lv->col_header_height(25);
+			lv->col_header_height(20);
 			lv->col_resize(1);
 			lv->col_resize_min(50);
 			lv->cols(4);
