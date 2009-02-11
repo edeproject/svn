@@ -1,5 +1,0 @@
-Known bugs:
-	- problems with localisation in workpanel and desktop icons
-	- on SuSE 8.1 logout doesnt work (problems are maybe in wrong XFree86 configuration, or buggy X version);
-	- some programs when start first time maximize itself so borders are not visible
-	- sometimes workpanel just crash
