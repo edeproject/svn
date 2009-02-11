@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2007 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the EDE package.
+# Ralf Eichinger <ralf.eichinger@pixotec.de>, 2007.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ekeyconf 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-12-12 21:03+0100\n"
+"PO-Revision-Date: 2007-02-22 21:00+0100\n"
+"Last-Translator: Ralf Eichinger <ralf.eichinger@pixotec.de>\n"
+"Language-Team: German <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ekeyconf/ekeyconf.cpp:76
+msgid "Keyboard settings"
+msgstr "Tastatur-Einstellungen"
+
+#: ekeyconf/ekeyconf.cpp:79
+msgid "&OK"
+msgstr "&OK"
+
+#: ekeyconf/ekeyconf.cpp:82 ekeyconf/ekeyconf.cpp:128
+msgid "&Cancel"
+msgstr "&Abbrechen"
+
+#: ekeyconf/ekeyconf.cpp:85
+msgid "&Apply"
+msgstr "Ü&bernehmen"
+
+#: ekeyconf/ekeyconf.cpp:90
+msgid "Shortcuts"
+msgstr "Kürzel"
+
+#: ekeyconf/ekeyconf.cpp:92
+msgid "Keyboard shortcut:"
+msgstr "Tastaturkürzel:"
+
+#: ekeyconf/ekeyconf.cpp:97
+msgid ""
+"To set a shortcut:\n"
+"   Click here, then type the key combination you want.\n"
+"To delete the shortcut:\n"
+"   Click here, then type backspace.\n"
+"To get out of shortcut-setting mode:\n"
+"   Click the mouse on this again, or on some other field."
+msgstr ""
+"Um ein Kürzel zu setzen:\n"
+"   Klicken Sie hier und geben dann die gewünschte Tastenkombination ein.\n"
+"Um ein Kürzel zu löschen:\n"
+"   Klicken Sie hier und drücken dann die Löschen-Taste.\n"
+"Um den Kürzel-Eingabemodus zu verlassen:\n"
+"   Klicken Sie noch einmal mit der Maus darauf oder auf ein anderes Feld."
+
+#: ekeyconf/ekeyconf.cpp:101
+msgid "Action:"
+msgstr "Aktion:"
+
+#: ekeyconf/ekeyconf.cpp:108
+msgid "&New shortcut..."
+msgstr "&Neues Kürzel..."
+
+#: ekeyconf/ekeyconf.cpp:111
+msgid "&Remove shortcut"
+msgstr "Kürzel &entfernen"
+
+#: ekeyconf/ekeyconf.cpp:121
+msgid "Define new shortcut"
+msgstr "Neues Kürzel definieren"
+
+#: ekeyconf/ekeyconf.cpp:123
+msgid "&Shortcut name:"
+msgstr "&Kürzelname:"
+
+#: ekeyconf/ekeyconf.cpp:124
+msgid "C&ommand"
+msgstr "&Befehl"
+
+#: ekeyconf/ekeyconf.cpp:125
+msgid "&Ok"
+msgstr "&OK"
+
+#: ekeyconf/ekeys.cpp:249
+msgid "Shortcut already defined! Please use a different name"
+msgstr "Kürzel bereits definiert! Verwenden Sie bitte einen anderen Namen"
+
+#: ekeyconf/ekeys.cpp:261
+msgid "Maximum number of user shortcuts exceeded"
+msgstr "Maximale Anzahl an Benutzerkürzeln erreicht"

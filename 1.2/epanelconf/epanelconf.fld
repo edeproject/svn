@@ -1,0 +1,229 @@
+# data file for the eFLTK User Interface Designer (eFLUID)
+version 2,0003 
+images_dir ./ 
+i18n 
+header_name {.h} 
+code_name {.cpp} 
+gridx 5 
+gridy 5 
+snap 3
+decl {// Panel config for EDE is (C) Copyright 2001-2002 by Martin Pekar, this program is provided under the terms of GNU GPL v.2, see file COPYING for more information.} {} 
+
+decl {\#include <efltk/Fl_File_Dialog.h>} {} 
+
+decl {\#include <efltk/Fl_Config.h>} {} 
+
+decl {\#include <efltk/Fl_Locale.h>} {} 
+
+decl {\#include <edeconf.h>} {} 
+
+decl {\#include "util.h"} {} 
+
+decl {extern Fl_Input *workspaces[8];} {} 
+
+Function {} {open
+} {
+  code {fl_init_locale_support("epanelconf", PREFIX"/share/locale");} {}
+  Fl_Window panelWindow {
+    label {Panel settings} open
+    xywh {268 98 405 270} resizable visible
+  } {
+    Fl_Button {} {
+      label {&Apply}
+      callback {write_config();
+send_workspaces();}
+      xywh {237 242 80 25}
+    }
+    Fl_Button {} {
+      label {&Close}
+      callback {Fl::first_window()->hide();}
+      private xywh {323 242 80 25}
+    }
+    Fl_Tabs {} {open
+      xywh {0 2 403 235} color 0xfffffffe
+    } {
+      Fl_Group {} {
+        label {&Options} open
+        xywh {1 25 401 209}
+      } {
+        Fl_Group {} {
+          label {Panel applets} open
+          xywh {5 20 395 93} align FL_ALIGN_TOP|FL_ALIGN_LEFT box ENGRAVED_BOX
+        } {
+          Fl_Check_Button showdesktop_check {
+            label {Show &desktop button}
+            xywh {9 8 175 25}
+          }
+          Fl_Check_Button workspace_check {
+            label {Wor&kspace switcher}
+            xywh {9 33 175 25}
+          }
+          Fl_Check_Button qlb_check {
+            label {&Quick launch bar}
+            xywh {9 58 175 25}
+          }
+          Fl_Check_Button runbrowser_check {
+            label {&Command line}
+            xywh {189 8 200 25}
+          }
+          Fl_Check_Button soundmixer_check {
+            label {&Sound mixer}
+            xywh {189 58 200 25}
+          }
+          Fl_Check_Button cpumonitor_check {
+            label {&Processor load graph}
+            xywh {189 33 200 25}
+          }
+        }
+        Fl_Group {} {
+          label {Other options} open
+          xywh {5 133 395 35} align FL_ALIGN_TOP|FL_ALIGN_LEFT box ENGRAVED_BOX
+          extra_code {;}
+        } {
+          Fl_Check_Button autohide_check {
+            label {&Automatically hide panel}
+            xywh {5 5 184 25}
+          }
+          Fl_Check_Button username_check {
+            label {Show &username} selected
+            xywh {189 5 184 25}
+          }
+        }
+        Fl_Box {} {
+          label {NOTE: To apply changes, restart the panel (e.g. by logging out)}
+          xywh {9 173 385 35} align FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+        }
+      }
+      Fl_Group {} {
+        label {&Workspaces} open
+        xywh {1 25 401 209} hide
+      } {
+        Fl_Value_Slider ws_slider {
+          label {&Number of workspaces: }
+          callback {int val = int(ws_slider->value());
+for(int n=0; n<8; n++) {
+  if(n<val)
+    workspaces[n]->activate();
+  else
+    workspaces[n]->deactivate();
+}}
+          xywh {145 10 255 20} type {HORIZONTAL|Fl_Slider::TICK_BELOW} align FL_ALIGN_LEFT|FL_ALIGN_WRAP box THIN_DOWN_BOX button_box THIN_UP_BOX step 1
+          extra_code {o->step(1); ;
+o->range(1,8);}
+        }
+        Fl_Group {} {
+          label {Workspace names:} open
+          xywh {5 60 395 130} align FL_ALIGN_TOP|FL_ALIGN_LEFT box ENGRAVED_BOX
+          extra_code {;}
+        } {
+          Fl_Input {} {
+            label {WS &1:}
+            xywh {55 10 115 20} deactivate
+            extra_code {workspaces[0] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &2:}
+            xywh {55 40 115 20} deactivate
+            extra_code {workspaces[1] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &3:}
+            xywh {55 70 115 20} deactivate
+            extra_code {workspaces[2] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &4:}
+            xywh {55 100 115 20} deactivate
+            extra_code {workspaces[3] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &5:}
+            xywh {260 10 115 20} deactivate
+            extra_code {workspaces[4] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &6:}
+            xywh {260 40 115 20} deactivate
+            extra_code {workspaces[5] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &7:}
+            xywh {260 70 115 20} deactivate
+            extra_code {workspaces[6] = o; ;}
+          }
+          Fl_Input {} {
+            label {WS &8:}
+            xywh {260 100 115 20} deactivate
+            extra_code {workspaces[7] = o; ;}
+          }
+        }
+      }
+      Fl_Group {} {
+        label {&Utilities} open
+        xywh {1 25 401 209} hide
+      } {
+        Fl_Group {} {
+          label {Handlers programs} open
+          xywh {5 20 395 188} align FL_ALIGN_TOP|FL_ALIGN_LEFT box ENGRAVED_BOX
+          extra_code {;}
+        } {
+          Fl_Input browserProgram {
+            label {&Internet browser:}
+            xywh {10 22 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+          }
+          Fl_Button {} {
+            label {&Browse...}
+            callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
+const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
+if (fileName) { 
+  browserProgram->value(fileName);
+}}
+            private xywh {304 20 80 25}
+          }
+          Fl_Input terminalProgram {
+            label {&Terminal:}
+            xywh {10 67 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+          }
+          Fl_Button {} {
+            label {B&rowse...}
+            callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
+const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
+if (fileName) { 
+  terminalProgram->value(fileName);
+}}
+            private xywh {304 65 80 25}
+          }
+          Fl_Input vcProgram {
+            label {&Volume control program:}
+            xywh {9 110 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+          }
+          Fl_Button {} {
+            label {Br&owse...}
+            callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
+const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
+if (fileName) { 
+  vcProgram->value(fileName);
+}}
+            private xywh {304 108 80 25}
+          }
+          Fl_Input tdProgram {
+            label {Time and &date program:}
+            xywh {9 155 285 23} align FL_ALIGN_TOP|FL_ALIGN_LEFT
+          }
+          Fl_Button {} {
+            label {Brow&se...}
+            callback {char *file_types = _("Executables (*.*), *, All files (*.*), *");
+const char *fileName = fl_select_file(0, file_types, _("File selection..."));    
+if (fileName) 
+{ 
+  tdProgram->value(fileName);
+}}
+            private xywh {304 153 80 25}
+          }
+        }
+      }
+    }
+  }
+  code {read_config();} {}
+  code {update_workspaces();} {}
+} 
