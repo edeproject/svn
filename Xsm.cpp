@@ -3,7 +3,7 @@
  *
  * Evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2007 EDE Authors.
+ * Copyright (c) 2007-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
@@ -11,25 +11,41 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 #include <limits.h>
-
 #include <FL/x.H>
 #include <X11/Xresource.h>
 
 #include <edelib/Debug.h>
 #include <edelib/TiXml.h>
-#include <edelib/File.h>
 #include <edelib/Color.h>
 #include <edelib/String.h>
 #include <edelib/Util.h>
 #include <edelib/Directory.h>
 #include <edelib/XSettingsCommon.h>
+#include <edelib/File.h>
 
 #include "Xsm.h"
 
 #define USER_XRESOURCE       ".Xdefaults"
 #define USER_XRESOURCE_TMP   ".Xdefaults-tmp"
 #define USER_XRESOURCE_SAVED ".Xdefaults-ede-saved"
+
+EDELIB_NS_USING(String)
+EDELIB_NS_USING(XSettingsSetting)
+EDELIB_NS_USING(XSettingsList)
+EDELIB_NS_USING(dir_home)
+EDELIB_NS_USING(file_remove)
+EDELIB_NS_USING(file_rename)
+EDELIB_NS_USING(build_filename)
+EDELIB_NS_USING(xsettings_list_find)
+EDELIB_NS_USING(xsettings_list_free)
+EDELIB_NS_USING(xsettings_decode)
+EDELIB_NS_USING(color_rgb_to_fltk)
+EDELIB_NS_USING(color_fltk_to_html)
+EDELIB_NS_USING(XSETTINGS_TYPE_COLOR)
+EDELIB_NS_USING(XSETTINGS_TYPE_INT)
+EDELIB_NS_USING(XSETTINGS_TYPE_STRING)
 
 struct ResourceMap {
 	char* name;
@@ -58,7 +74,7 @@ Xsm::Xsm() {
 }
 
 Xsm::~Xsm() { 
-	EDEBUG("Xsm::~Xsm()\n"); 
+	E_DEBUG(E_STRLOC ": Xsm::~Xsm()\n"); 
 }
 
 /*
@@ -87,10 +103,10 @@ void Xsm::xresource_replace(void) {
 	if(!manager_data->settings)
 		return;
 
-	edelib::String home = edelib::dir_home();
+	String home = dir_home();
 
 	// try to open ~/.Xdefaults; if failed, X Resource will not complain
-	edelib::String db_file = edelib::build_filename(home.c_str(), USER_XRESOURCE);
+	String db_file = build_filename(home.c_str(), USER_XRESOURCE);
 
 	// initialize XResource manager
 	XrmInitialize();
@@ -98,13 +114,13 @@ void Xsm::xresource_replace(void) {
 	// load XResource database
 	XrmDatabase db = XrmGetFileDatabase(db_file.c_str());
 
-	edelib::XSettingsSetting* s;
+	XSettingsSetting* s;
 	int status;
 	char* type, *value;
 	XrmValue xrmv;
 	char color_val[8];
 
-	edelib::String tmp;
+	String tmp;
 
 	/* 
 	 * XSETTINGS does not contains duplicate entries so there is no need to 
@@ -112,13 +128,13 @@ void Xsm::xresource_replace(void) {
 	 * its X Resource equivalent.
 	 */
 	for(unsigned int i = 0; i < RESOURCE_MAP_SIZE(resource_map); i++) {
-		s = edelib::xsettings_list_find(manager_data->settings, resource_map[i].name);
+		s = xsettings_list_find(manager_data->settings, resource_map[i].name);
 		if(!s)
 			continue;
 
 		// assure that XSETTINGS key is color type
-		if(s->type != edelib::XSETTINGS_TYPE_COLOR) {
-			EWARNING(ESTRLOC ": Expected color type in %s, but it is not, skipping...\n", s->name);
+		if(s->type != XSETTINGS_TYPE_COLOR) {
+			E_WARNING(E_STRLOC ": Expected color type in %s, but it is not, skipping...\n", s->name);
 			continue;
 		}
 
@@ -126,7 +142,7 @@ void Xsm::xresource_replace(void) {
 		status = XrmGetResource(db, resource_map[i].xresource_key, resource_map[i].xresource_klass, &type, &xrmv);
 
 		if(status && strcmp(type, "String") == 0) {
-			EDEBUG(ESTRLOC ": %s.%s found in database\n", 
+			E_DEBUG(E_STRLOC ": %s.%s found in database\n", 
 					resource_map[i].xresource_klass, resource_map[i].xresource_key);
 
 			value = xrmv.addr;
@@ -136,8 +152,8 @@ void Xsm::xresource_replace(void) {
 		 * Now convert color from XSETTINGS to html value. First convert to fltk color.
 		 * TODO: Strange, didn't implemented something like color_rgb_to_html in edelib ?
 		 */
-		int fltk_color = edelib::color_rgb_to_fltk(s->data.v_color.red, s->data.v_color.green, s->data.v_color.blue);
-		edelib::color_fltk_to_html(fltk_color, color_val);
+		int fltk_color = color_rgb_to_fltk(s->data.v_color.red, s->data.v_color.green, s->data.v_color.blue);
+		color_fltk_to_html(fltk_color, color_val);
 
 		// and save it
 		tmp.clear();
@@ -145,7 +161,7 @@ void Xsm::xresource_replace(void) {
 		XrmPutLineResource(&db, tmp.c_str());
 	}
 
-	edelib::String tmp_db_file = edelib::build_filename(home.c_str(), USER_XRESOURCE_TMP);
+	String tmp_db_file = build_filename(home.c_str(), USER_XRESOURCE_TMP);
 
 	/*
 	 * Try to merge existing ~/.Xdefaults (if present) with our changes. If there is existing
@@ -155,31 +171,38 @@ void Xsm::xresource_replace(void) {
 	 */
 	status = XrmCombineFileDatabase(db_file.c_str(), &db, 0);
 	XrmPutFileDatabase(db, tmp_db_file.c_str());
-	//XrmSetDatabase(fl_display, db);
 	XrmDestroyDatabase(db);
+
 	if(status) {
-		edelib::String db_backup = edelib::build_filename(home.c_str(), USER_XRESOURCE_SAVED);
-		edelib::file_rename(db_file.c_str(), db_backup.c_str());
+		String db_backup = build_filename(home.c_str(), USER_XRESOURCE_SAVED);
+		file_rename(db_file.c_str(), db_backup.c_str());
 	} 
 
-	edelib::file_rename(tmp_db_file.c_str(), db_file.c_str());
+	file_rename(tmp_db_file.c_str(), db_file.c_str());
 }
 
 void Xsm::xresource_undo(void) {
-	edelib::String home, db_file_backup, db_file;
+	String home, db_file_backup, db_file;
 
-	home = edelib::dir_home();
-	db_file_backup = edelib::build_filename(home.c_str(), USER_XRESOURCE_SAVED);
-	db_file = edelib::build_filename(home.c_str(), USER_XRESOURCE);
+	home = dir_home();
+	db_file_backup = build_filename(home.c_str(), USER_XRESOURCE_SAVED);
+	db_file = build_filename(home.c_str(), USER_XRESOURCE);
 
 	/*
 	 * If we have backup, restore it; otherwise delete ~/.Xdefaults.
 	 * TODO: what if user something write in it? Changes will be lost...
 	 */
-	if(edelib::file_exists(db_file_backup.c_str()))
-		edelib::file_rename(db_file_backup.c_str(), db_file.c_str());
+	if(!file_rename(db_file_backup.c_str(), db_file.c_str()))
+		file_remove(db_file.c_str());
+
+#if 0
+	if(file_exists(db_file_backup.c_str()))
+		file_rename(db_file_backup.c_str(), db_file.c_str());
 	else
-		edelib::file_remove(db_file.c_str());
+		file_remove(db_file.c_str());
+#endif
+
+
 }
 
 bool Xsm::load_serialized(const char* file) {
@@ -199,19 +222,19 @@ bool Xsm::load_serialized(const char* file) {
 
 	for(elem = elem->FirstChildElement(); elem; elem = elem->NextSibling()) {
 		if(strcmp(elem->Value(), "setting") != 0) {
-			EWARNING(ESTRLOC ": Got unknown child in 'ede-setting' %s\n", elem->Value());
+			E_WARNING(E_STRLOC ": Got unknown child in 'ede-setting' %s\n", elem->Value());
 			continue;
 		}
 
 		name = elem->ToElement()->Attribute("name");
 		if(!name) {
-			EWARNING(ESTRLOC ": Missing name key\n");
+			E_WARNING(E_STRLOC ": Missing name key\n");
 			continue;
 		}
 
 		type = elem->ToElement()->Attribute("type");
 		if(!type) {
-			EWARNING(ESTRLOC ": Missing type key\n");
+			E_WARNING(E_STRLOC ": Missing type key\n");
 			continue;
 		}
 
@@ -222,7 +245,7 @@ bool Xsm::load_serialized(const char* file) {
 		else if(strcmp(type, "color") == 0)
 			cmp = 3;
 		else {
-			EWARNING(ESTRLOC ": Unknown type %s\n", type);
+			E_WARNING(E_STRLOC ": Unknown type %s\n", type);
 			continue;
 		}
 
@@ -231,7 +254,7 @@ bool Xsm::load_serialized(const char* file) {
 				if(elem->ToElement()->QueryIntAttribute("value", &v_int) == TIXML_SUCCESS)
 					set(name, v_int);
 				else
-					EWARNING(ESTRLOC ": Unable to query integer value\n");
+					E_WARNING(E_STRLOC ": Unable to query integer value\n");
 				break;
 			case 2:
 				v_string = elem->ToElement()->Attribute("value");
@@ -262,7 +285,7 @@ bool Xsm::save_serialized(const char* file) {
 	unsigned long n_items, bytes_after;
 	unsigned char* data;
 	int result;
-	edelib::XSettingsList* settings = NULL, *iter = NULL;
+	XSettingsList* settings = NULL, *iter = NULL;
 
 	int (*old_handler)(Display*, XErrorEvent*);
 
@@ -278,39 +301,39 @@ bool Xsm::save_serialized(const char* file) {
 	XSetErrorHandler(old_handler);
 	if(result == Success && type != None) {
 		if(type != manager_data->xsettings_atom)
-			EWARNING(ESTRLOC ": Invalid type for XSETTINGS property\n");
+			E_WARNING(E_STRLOC ": Invalid type for XSETTINGS property\n");
 		else if(format != 8)
-			EWARNING(ESTRLOC ": Invalid format for XSETTINGS property\n");
+			E_WARNING(E_STRLOC ": Invalid format for XSETTINGS property\n");
 		else
-			settings = edelib::xsettings_decode(data, n_items, NULL);
+			settings = xsettings_decode(data, n_items, NULL);
 		XFree(data);
 	}
 
 	if(!settings)
 		return false;
 
-	edelib::File setting_file;
-	if(!setting_file.open(file, edelib::FIO_WRITE)) {
-		EWARNING(ESTRLOC ": Unable to write to %s\n", file);
-		edelib::xsettings_list_free(settings);
+	FILE* setting_file = fopen(file, "w");
+	if(!setting_file) {
+		E_WARNING(E_STRLOC ": Unable to write to %s\n", file);
+		xsettings_list_free(settings);
 		return false;
 	}
 
-	setting_file.printf("<? xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-	setting_file.printf("<ede-settings>\n");
+	fprintf(setting_file, "<? xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+	fprintf(setting_file, "<ede-settings>\n");
 
 	iter = settings;
 	while(iter) {
-		setting_file.printf("\t<setting name=\"%s\" ", iter->setting->name);
+		fprintf(setting_file, " <setting name=\"%s\" ", iter->setting->name);
 		switch(iter->setting->type) {
-			case edelib::XSETTINGS_TYPE_INT:
-				setting_file.printf("type=\"int\" value=\"%i\" />\n", iter->setting->data.v_int);
+			case XSETTINGS_TYPE_INT:
+				fprintf(setting_file, "type=\"int\" value=\"%i\" />\n", iter->setting->data.v_int);
 				break;
-			case edelib::XSETTINGS_TYPE_STRING:
-				setting_file.printf("type=\"string\" value=\"%s\" />\n", iter->setting->data.v_string);
+			case XSETTINGS_TYPE_STRING:
+				fprintf(setting_file, "type=\"string\" value=\"%s\" />\n", iter->setting->data.v_string);
 				break;
-			case edelib::XSETTINGS_TYPE_COLOR:
-				setting_file.printf("type=\"color\" red=\"%i\" green=\"%i\" blue=\"%i\" alpha=\"%i\" />\n",
+			case XSETTINGS_TYPE_COLOR:
+				fprintf(setting_file, "type=\"color\" red=\"%i\" green=\"%i\" blue=\"%i\" alpha=\"%i\" />\n",
 						iter->setting->data.v_color.red,
 						iter->setting->data.v_color.green,
 						iter->setting->data.v_color.blue,
@@ -321,11 +344,10 @@ bool Xsm::save_serialized(const char* file) {
 		iter = iter->next;
 	}
 
-	setting_file.printf("</ede-settings>\n");
+	fprintf(setting_file, "</ede-settings>\n");
 
-	setting_file.close();
-	edelib::xsettings_list_free(settings);
-
+	fclose(setting_file);
+	xsettings_list_free(settings);
 	xresource_undo();
 
 	return true;

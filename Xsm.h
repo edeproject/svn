@@ -3,7 +3,7 @@
  *
  * Evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2007 EDE Authors.
+ * Copyright (c) 2007-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
@@ -23,12 +23,13 @@ class Xsm : public edelib::XSettingsManager {
 	public:
 		Xsm();
 		~Xsm();
+
 		bool load_serialized(const char* file);
 		bool save_serialized(const char* file);
 
-		// replace XResource values from one from XSETTINGS
+		/* replace XResource values from one from XSETTINGS */
 		void xresource_replace(void);
-		// undo old XResource values
+		/* undo old XResource values */
 		void xresource_undo(void);
 };
 

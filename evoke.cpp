@@ -3,64 +3,37 @@
  *
  * Evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2007-2008 EDE Authors.
+ * Copyright (c) 2007-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
  * See COPYING for details.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string.h>
 #include <signal.h>
-
-#include <edelib/Config.h>
-#include <edelib/Debug.h>
-#include <edelib/File.h>
-
+#include <stdio.h>
 #include <FL/Fl.H>
 #include <FL/x.H>
 
 #include "EvokeService.h"
 
-#define FOREVER       1e20
-#define CONFIG_FILE   "evoke.conf"
-#define DEFAULT_PID   "/tmp/evoke.pid"
-/*
- * Used to assure unique instance, even if is given another 
- * path for pid. This option can't be modified by user.
- * TODO: add lock on file so it can't be removed ?
- */
-#define LOCK_FILE  "/tmp/.evoke.lock"
+#define FOREVER   1e20
+#define LOCK_FILE "/tmp/.evoke.lock"
 
 #define CHECK_ARGV(argv, pshort, plong) ((strcmp(argv, pshort) == 0) || (strcmp(argv, plong) == 0))
 
 static void quit_signal(int sig) {
-	EVOKE_LOG("Got quit signal %i\n", sig);
 	EvokeService::instance()->stop();
 }
 
 static int xmessage_handler(int) {
-#ifdef USE_FLTK_LOOP_EMULATION
-	XEvent xev;
-	while(XEventsQueued(fl_display, QueuedAfterReading)) {
-		XNextEvent(fl_display, &xev);
-		EvokeService::instance()->handle((const XEvent*)&xev);
-	}
-	return 1;
-#else
 	return EvokeService::instance()->handle(fl_xevent);
-#endif
 }
-
-#ifdef USE_FLTK_LOOP_EMULATION
-static void xmessage_handler_fd(int, void*) {
-	xmessage_handler(0);
-}
-
-static int composite_handler(int ev) {
-	return EvokeService::instance()->composite_handle(fl_xevent);
-}
-#endif
 
 static const char* next_param(int curr, char** argv, int argc) {
 	int j = curr + 1;
@@ -73,9 +46,8 @@ static const char* next_param(int curr, char** argv, int argc) {
 
 static void help(void) {
 	puts("Usage: evoke [OPTIONS]");
-	puts("EDE startup manager responsible for starting, quitting and tracking");
-	puts("various pieces of desktop environment and external programs.");
-	puts("...and to popup a nice window when something crashes...\n");
+	puts("EDE startup manager responsible for desktop starting and quitting");
+	puts("(including various bits and pieces desktop needs)");
 	puts("Options:");
 	puts("  -h, --help            this help");
 	puts("  -s, --startup         run in starup mode");
@@ -83,21 +55,16 @@ static void help(void) {
 	puts("  -d, --dry-run         run in starup mode, but don't execute anything");
 	puts("  -a, --autostart       read autostart directory and run all items");
 	puts("  -u, --autostart-safe  read autostart directory and display dialog what will be run");
-	puts("  -c, --config [FILE]   use FILE as config file");
-	puts("  -p, --pid [FILE]      use FILE to store PID number");
-	puts("  -l, --log [FILE]      log traffic to FILE (FILE can be stdout/stderr for console output)\n");
+	puts("  -c, --config [FILE]   use FILE as config file\n");
 }
 
 int main(int argc, char** argv) {
 	const char* config_file = NULL;
-	const char* pid_file    = NULL;
-	const char* log_file    = NULL;
-
-	bool do_startup        = 0;
-	bool do_dryrun         = 0;
-	bool no_splash         = 0;
-	bool do_autostart      = 0;
-	bool do_autostart_safe = 0;
+	bool do_startup         = false;
+	bool do_dryrun          = false;
+	bool show_splash        = true;
+	bool do_autostart       = false;
+	bool do_autostart_safe  = false;
 
 	if(argc > 1) {
 		const char* a;
@@ -113,93 +80,34 @@ int main(int argc, char** argv) {
 					return 1;
 				}
 				i++;
-			} else if(CHECK_ARGV(a, "-p", "--pid")) {
-				pid_file = next_param(i, argv, argc);
-				if(!pid_file) {
-					puts("Missing pid filename");
-					return 1;
-				}
-				i++;
-			} else if(CHECK_ARGV(a, "-l", "--log")) {
-				log_file = next_param(i, argv, argc);
-				if(!log_file) {
-					puts("Missing log filename");
-					return 1;
-				}
-				i++;
-			} 
-			else if(CHECK_ARGV(a, "-s", "--startup"))
-				do_startup = 1;
+			}
+			else if(CHECK_ARGV(a, "-s", "--starup"))
+				do_startup = true;
 			else if(CHECK_ARGV(a, "-d", "--dry-run"))
-				do_dryrun = 1;
+				do_dryrun = true;
 			else if(CHECK_ARGV(a, "-n", "--no-splash"))
-				no_splash = 1;
+				show_splash = false;
 			else if(CHECK_ARGV(a, "-a", "--autostart"))
-				do_autostart = 1;
+				do_autostart = true;
 			else if(CHECK_ARGV(a, "-u", "--autostart-safe"))
-				do_autostart_safe = 1;
+				do_autostart_safe = true;
 			else {
 				printf("Unknown parameter '%s'. Run 'evoke -h' for options\n", a);
 				return 1;
 			}
 		}
 	}
-	
+
 	// make sure X11 is running before rest of code is called
 	fl_open_display();
 
 	// initialize main service object
 	EvokeService* service = EvokeService::instance();
-
-	if(!service->setup_logging(log_file)) {
-		printf("Can't open %s for logging. Please choose some writeable place\n", log_file);
+	if(!service->setup_lock(LOCK_FILE)) {
+		printf("Either another evoke instance is running or I can't create lock file\n");
+		printf("If program abnormaly crashed before, just remove '%s' and start it again\n", LOCK_FILE);
 		return 1;
 	}
-
-	if(!service->setup_channels()) {
-		printf("Can't setup internal channels\n");
-		return 1;
-	}
-
-	EVOKE_LOG("= evoke started =\n");
-
-	if(!pid_file)
-		pid_file = DEFAULT_PID;
-
-	if(!service->setup_pid(pid_file, LOCK_FILE)) {
-		printf("Either another evoke instance is running or can't create pid file. Please correct this\n");
-		printf("Note: if program abnormaly crashed before, just remove '%s' and start it again\n", LOCK_FILE);
-		printf("= evoke abrupted shutdown =\n");
-		return 1;
-	}
-
-	if(!config_file)
-		config_file = CONFIG_FILE; // TODO: XDG paths
-
-	if(do_startup) {
-		if(!service->init_splash(config_file, no_splash, do_dryrun)) {
-			EVOKE_LOG("Unable to read correctly %s. Please check it is correct config file\n", config_file);
-			EVOKE_LOG("= evoke abrupted shutdown =\n");
-			return 1;
-		}
-	}
-
-	service->setup_atoms(fl_display);
-	service->init_xsettings_manager();
-
-	/*
-	 * Run autostart code after XSETTINGS manager since some Gtk apps (mozilla) will eats a lot
-	 * of cpu during runtime settings changes
-	 */
-	if(do_autostart || do_autostart_safe)
-		service->init_autostart(do_autostart_safe);
-
-	/*
-	 * Let composite manager be run the latest. Running autostart after it will not deliver
-	 * X events to possible shown autostart window, and I'm not sure why. Probably due event
-	 * throttle from XDamage ?
-	 */
-	service->init_composite();
 
 	signal(SIGINT,  quit_signal);
 	signal(SIGTERM, quit_signal);
@@ -216,56 +124,25 @@ int main(int argc, char** argv) {
 	signal(SIGHUP,  quit_signal);
 #endif
 
-#if 0
-	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), PropertyChangeMask | SubstructureNotifyMask | ClientMessage);
-#endif
-	// composite engine included too
-	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), 
-			SubstructureNotifyMask | ExposureMask | StructureNotifyMask | PropertyChangeMask | ClientMessage);
+	// TODO: XDG dirs
+	if(!config_file)
+		config_file = "ede-startup.conf";
 
-	/*
-	 * Register event listener and run in infinite loop. Loop will be
-	 * interrupted from one of the received signals.
-	 *
-	 * I choose to use fltk for this since wait() will nicely poll events
-	 * and pass expecting ones to xmessage_handler(). Other (non-fltk) solution would
-	 * be to manually pool events via select() and that code could be very messy.
-	 * So stick with the simplicity :)
-	 *
-	 * Also note that '1' in add_fd (when USE_FLTK_LOOP_EMULATION is defined) parameter 
-	 * means POLLIN, and for the details see Fl_x.cxx
-	 *
-	 * Let me explaint what these USE_FLTK_LOOP_EMULATION parts means. It was introduced
-	 * since FLTK eats up SelectionClear event and so other parts (evoke specific atoms, splash etc.)
-	 * could be used and tested. FLTK does not have event handler that could be registered
-	 * _before_ it process events, but only add_handler() which will be called _after_ FLTK process
-	 * all events and where will be reported ones that FLTK does not understainds or for those
-	 * windows it already don't know.
-	 */
-#ifdef USE_FLTK_LOOP_EMULATION
-	Fl::add_fd(ConnectionNumber(fl_display), 1, xmessage_handler_fd);
-	Fl::add_handler(composite_handler);
-#else
-	/*
-	 * NOTE: composite_handler() is not needed since it will be included
-	 * within xmessage_handler() call
-	 */
+	if(do_startup) {
+		service->read_startup(config_file);
+		service->run_startup(show_splash, do_dryrun);
+	}
+
+	service->start_xsettings_manager();
+
+	/* set stuff so xsettings manager can receive events */
+	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), 
+			PropertyChangeMask | SubstructureNotifyMask | ClientMessage);
 	Fl::add_handler(xmessage_handler);
-#endif
 
 	service->start();
 
 	while(service->running()) {
-#ifdef USE_FLTK_LOOP_EMULATION
-		/*
-	 	 * Seems that when XQLength() is not used, damage events will not be correctly
-	 	 * send to xmessage_handler() and composite will wrongly draw the screen.
-	 	 */
-		if(XQLength(fl_display)) {
-			xmessage_handler(0);
-			continue;
-		}
-#else
 		/*
 		 * FLTK will not report SelectionClear needed for XSETTINGS manager
 		 * so we must catch it first before FLTK discards it (if we can :P)
@@ -274,16 +151,9 @@ int main(int argc, char** argv) {
 		 */
 		if(fl_xevent && fl_xevent->type == SelectionClear)
 			service->handle(fl_xevent);
-#endif
 
 		Fl::wait(FOREVER);
-
-#ifndef USE_FLTK_LOOP_EMULATION
-		if(fl_xevent && fl_xevent->type == SelectionClear)
-			service->handle(fl_xevent);
-#endif
 	}
 
-	EVOKE_LOG("= evoke nice shutdown =\n");
 	return 0;
 }

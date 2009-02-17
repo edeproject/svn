@@ -3,7 +3,7 @@
  *
  * Evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2008 EDE Authors.
+ * Copyright (c) 2008-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
@@ -19,7 +19,7 @@
 
 #include "Logout.h"
 
-// Note that order of initialized items is important so LOGOUT_OPT_XXX can work
+/* Note that order of initialized items is important so LOGOUT_OPT_XXX can work */
 struct LogoutOptions {
 	const char* opt_short;
 	const char* opt_long;
@@ -50,19 +50,19 @@ static void option_cb(Fl_Widget*, void* o) {
 	ret_option = v;
 }
 
-int logout_dialog(int screen_w, int screen_h, int opt) {
+int logout_dialog_show(int screen_w, int screen_h, int opt) {
 	ret_option = LOGOUT_RET_LOGOUT;
 
 	win = new Fl_Window(335, 180, _("Quit EDE?"));
 	win->begin();
-		Fl_Box* b1 = new Fl_Box(10, 9, 315, 25, _("How do you want to quit?"));
+		Fl_Box* b1 = new Fl_Box(10, 9, 315, 25, _("How do you want to quit EDE?"));
 		b1->labelfont(1);
 		b1->align(196|FL_ALIGN_INSIDE);
 
 		Fl_Choice* c = new Fl_Choice(10, 45, 315, 25);
 		c->down_box(FL_BORDER_BOX);
 
-		// fill choice menu
+		/* fill choice menu */
 		c->add(logout_options[0].opt_short, 0, option_cb, c);
 		if(opt & LOGOUT_OPT_RESTART)
 			c->add(logout_options[1].opt_short, 0, option_cb, c);
@@ -72,7 +72,7 @@ int logout_dialog(int screen_w, int screen_h, int opt) {
 		description = new Fl_Box(10, 80, 315, 55);
 		description->align(197|FL_ALIGN_INSIDE);
 
-		// set to first menu item
+		/* set to first menu item */
 		c->value(0);
 		description->label(logout_options[0].opt_long);
 
@@ -82,7 +82,7 @@ int logout_dialog(int screen_w, int screen_h, int opt) {
 		cancel->callback(cancel_cb);
 	win->end();
 
-	// so when X in titlebar was clicked, we can get LOGOUT_RET_CANCEL
+	/* so when X in titlebar was clicked, we can get LOGOUT_RET_CANCEL */
 	win->callback(cancel_cb);
 
 	win->position(screen_w / 2 - win->w() / 2, screen_h / 2 - win->h() / 2);
