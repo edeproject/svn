@@ -3,7 +3,7 @@
  *
  * Evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2008 EDE Authors.
+ * Copyright (c) 2008-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
@@ -21,6 +21,6 @@
 #define LOGOUT_OPT_RESTART  (1 << 1)
 #define LOGOUT_OPT_SHUTDOWN (1 << 2)
 
-int logout_dialog(int screen_w, int screen_h, int opt);
+int logout_dialog_show(int screen_w, int screen_h, int opt);
 
 #endif

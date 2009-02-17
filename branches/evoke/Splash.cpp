@@ -1,9 +1,9 @@
 /*
  * $Id$
  *
- * Evoke, head honcho of everything
+ * evoke, head honcho of everything
  * Part of Equinox Desktop Environment (EDE).
- * Copyright (c) 2000-2007 EDE Authors.
+ * Copyright (c) 2007-2009 EDE Authors.
  *
  * This program is licensed under terms of the 
  * GNU General Public License version 2 or newer.
@@ -11,21 +11,20 @@
  */
 
 #include <stdio.h> // snprintf
-
+#include <stdlib.h> // system
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl.H>
-
-#include <edelib/Run.h>
 #include <edelib/Debug.h>
 #include <edelib/Nls.h>
+#include <edelib/Util.h>
 
 #include "Splash.h"
-#include "Spawn.h"
 
-#define TIMEOUT_START    0.5  // timeout when splash is first time shown (also for first client)
-#define TIMEOUT_CONTINUE 2.0  // timeout between starting rest of the cliens
+#define TIMEOUT_START    0.5  /* timeout when splash is first time shown (also for first client) */
+#define TIMEOUT_CONTINUE 2.0  /* timeout between starting rest of the cliens */
 
-extern void service_watcher_cb(int pid, int signum);
+EDELIB_NS_USING(String)
+EDELIB_NS_USING(build_filename)
 
 #ifndef EDEWM_HAVE_NET_SPLASH
 static Splash* global_splash = NULL;
@@ -48,7 +47,7 @@ static int splash_xmessage_handler(int e) {
 #endif
 
 /*
- * repeatedly call runner() untill all clients are 
+ * repeatedly call runner() until all clients are 
  * started then hide splash window
  */
 static void runner_cb(void* s) {
@@ -60,20 +59,27 @@ static void runner_cb(void* s) {
 		sp->hide();
 }
 
-Splash::Splash(bool sp, bool dr) : Fl_Double_Window(480, 364), clist(NULL), bkg(NULL), 
-	counter(0), no_splash(sp), dry_run(dr)  {
+Splash::Splash(StartupItemList& s, String& dir, bool show_it, bool dr) : Fl_Double_Window(480, 365) {
+	slist = &s;
+	splash_data_dir = &dir;
+	show_splash = show_it;
+	dryrun = dr;
 	icons = NULL;
+	counter = 0;
+
+	box(FL_BORDER_BOX);
 }
+	
 
 Splash::~Splash() {
-	EVOKE_LOG("Cleaning splash data\n");
-	// elements of icons cleans Fl_Group
+	E_DEBUG(E_STRLOC ": Cleaning splash data\n");
+	/* elements of icons cleans Fl_Group */
 	delete [] icons;
 	Fl::remove_timeout(runner_cb);
 }
 
 
-// after edewm got _NET_WM_WINDOW_TYPE_SPLASH support
+/* after edewm got _NET_WM_WINDOW_TYPE_SPLASH support */
 #if EDEWM_HAVE_NET_SPLASH
 void Splash::show(void) {
 	if(shown())
@@ -93,9 +99,9 @@ void Splash::show(void) {
 #endif
 
 void Splash::run(void) {
-	E_ASSERT(clist != NULL);
+	E_ASSERT(slist != NULL);
 
-	if(no_splash) {
+	if(!show_splash) {
 		while(next_client_nosplash()) 
 			;
 		return;
@@ -103,18 +109,22 @@ void Splash::run(void) {
 
 	fl_register_images();
 
-	// setup widgets
+	String path;
+
+	/* setup widgets */
 	begin();
 		Fl_Box* bimg = new Fl_Box(0, 0, w(), h());
 		Fl_Image* splash_img = 0;
 
-		if(bkg)
-			splash_img = Fl_Shared_Image::get(bkg->c_str());
+		if(!splash_data_dir->empty()) {
+			path = build_filename(splash_data_dir->c_str(), "background.png");
+			splash_img = Fl_Shared_Image::get(path.c_str());
+		}
 
 		if(splash_img) {
 			int W = splash_img->w();
 			int H = splash_img->h();
-			// update window and Box sizes
+			/* update window and Box sizes */
 			size(W, H);
 			bimg->size(W, H);
 
@@ -143,21 +153,27 @@ void Splash::run(void) {
 		Fl_Group* icon_group = new Fl_Group(10, msgbox->y() - 10 - 64, 0, 64);
 		int X = icon_group->x();
 		int Y = icon_group->y();
-		// offset between icons
+
+		/* offset between icons */
 		int ioffset = 5;
 
-		// FIXME: use malloc/something instead this
-		icons = new Fl_Box*[clist->size()];
+		/* FIXME: use malloc/something instead this */
+		icons = new Fl_Box*[slist->size()];
 
 		icon_group->begin();
+			int         i = 0;
 			const char* imgpath;
-			Fl_Image* iconimg;
-			int i = 0;
-			for(ClientListIter it = clist->begin(); it != clist->end(); ++it, ++i) {
+			Fl_Image*   iconimg = 0;
+
+			for(StartupItemListIter it = slist->begin(); it != slist->end(); ++it, ++i) {
 				Fl_Box* bb = new Fl_Box(X, Y, 64, 64);
 
-				imgpath = (*it).icon.c_str();
-				iconimg = Fl_Shared_Image::get(imgpath);
+				if(!splash_data_dir->empty()) {
+					path = build_filename(splash_data_dir->c_str(), (*it)->icon.c_str());
+					imgpath = path.c_str();
+					iconimg = Fl_Shared_Image::get(imgpath);
+				}
+
 				if(!iconimg) {
 					bb->label(_("No image"));
 					bb->align(FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
@@ -171,9 +187,9 @@ void Splash::run(void) {
 			}
 		icon_group->end();
 
-		// see X as width of all icons
+		/* see X as width of all icons */
 		int gx = w()/2 - X/2;
-		// gx can be negative
+		/* gx can be negative */
 		gx = (gx > 10) ? gx : 10;
 		icon_group->position(gx, Y);
 	end();
@@ -195,7 +211,7 @@ void Splash::run(void) {
 	Fl::add_timeout(TIMEOUT_START, runner_cb, this);
 
 	// to keep splash at the top
-#ifndef HAVE_NET_SPLASH
+#ifndef EDEWM_HAVE_NET_SPLASH
 	global_splash = this;
 	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), SubstructureNotifyMask);
 	Fl::add_handler(splash_xmessage_handler);
@@ -209,68 +225,67 @@ void Splash::run(void) {
 #endif
 }
 
-// called when splash option is on
+/* called when splash option is on */
 bool Splash::next_client(void) {
-	if(clist->empty())
+	if(slist->empty())
 		return false;
 
 	if(counter == 0)
-		clist_it = clist->begin();
+		slist_it = slist->begin();
 
-	if(clist_it == clist->end()) {
+	if(slist_it == slist->end()) {
 		counter = 0;
 		return false;
 	}
 
 
-	E_ASSERT(counter < clist->size() && "Internal error; 'counter' out of bounds");
+	E_ASSERT(counter < slist->size() && "Internal error; 'counter' out of bounds");
 
 	char buff[1024];
-	const char* msg = (*clist_it).desc.c_str();
-	const char* cmd = (*clist_it).exec.c_str();
+	const char* msg = (*slist_it)->description.c_str();
+	const char* cmd = (*slist_it)->exec.c_str();
 	snprintf(buff, sizeof(buff), _("Starting %s..."), msg);
 
 	icons[counter]->show();
 	msgbox->copy_label(buff);
 	redraw();
 
-	if(!dry_run) {
-		spawn_program(cmd, service_watcher_cb);
-		//spawn_program(cmd);
-	}
+	/* run command */
+	if(!dryrun)
+		system(cmd);
 
-	++clist_it;
+	++slist_it;
 	++counter;
 	return true;
 }
 
-// called when splash option is off
+/* called when splash option is off */
 bool Splash::next_client_nosplash(void) {
-	if(clist->empty())
+	if(slist->empty())
 		return false;
 
 	if(counter == 0)
-		clist_it = clist->begin();
+		slist_it = slist->begin();
 
-	if(clist_it == clist->end()) {
+	if(slist_it == slist->end()) {
 		counter = 0;
 		return false;
 	}
 
-	E_ASSERT(counter < clist->size() && "Internal error; 'counter' out of bounds");
+	E_ASSERT(counter < slist->size() && "Internal error; 'counter' out of bounds");
 
 	char buff[1024];
-	const char* msg = (*clist_it).desc.c_str();
-	const char* cmd = (*clist_it).exec.c_str();
+	const char* msg = (*slist_it)->description.c_str();
+	const char* cmd = (*slist_it)->exec.c_str();
 	snprintf(buff, sizeof(buff), _("Starting %s..."), msg);
 
 	printf("%s\n", buff);
 
-	if(!dry_run)
-		spawn_program(cmd, service_watcher_cb);
-		//spawn_program(cmd);
+	/* run command */
+	if(!dryrun)
+		system(cmd);
 
-	++clist_it;
+	++slist_it;
 	++counter;
 	return true;
 }
