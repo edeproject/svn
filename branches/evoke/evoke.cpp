@@ -98,11 +98,32 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// make sure X11 is running before rest of code is called
+	/* make sure X11 is running before rest of code is called */
 	fl_open_display();
 
-	// initialize main service object
+	/* initialize main service object */
 	EvokeService* service = EvokeService::instance();
+
+	/* TODO: XDG dirs */
+	if(!config_file)
+		config_file = "ede-startup.conf";
+
+	/*
+	 * Main loop is not initialized before startup (and splash) are finished;
+	 * this is intentional so we could use 'dryrun' to test a splash theme and startup items
+	 * without interfering with already running evoke instance (and getting lock error)
+	 *
+	 * TODO: dryrun option is pretty dummy; better to use "test-splash" or similar
+	 */
+	if(do_startup) {
+		service->read_startup(config_file);
+		service->run_startup(show_splash, do_dryrun);
+	}
+
+	/* only testing, quit nicely */
+	if(do_dryrun)
+		return 0;
+
 	if(!service->setup_lock(LOCK_FILE)) {
 		printf("Either another evoke instance is running or I can't create lock file\n");
 		printf("If program abnormaly crashed before, just remove '%s' and start it again\n", LOCK_FILE);
@@ -123,15 +144,6 @@ int main(int argc, char** argv) {
 	 */
 	signal(SIGHUP,  quit_signal);
 #endif
-
-	// TODO: XDG dirs
-	if(!config_file)
-		config_file = "ede-startup.conf";
-
-	if(do_startup) {
-		service->read_startup(config_file);
-		service->run_startup(show_splash, do_dryrun);
-	}
 
 	service->start_xsettings_manager();
 
