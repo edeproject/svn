@@ -21,6 +21,7 @@
 #include <FL/x.H>
 
 #include "EvokeService.h"
+#include "Autostart.h"
 
 #define FOREVER   1e20
 #define LOCK_FILE "/tmp/.evoke.lock"
@@ -144,6 +145,9 @@ int main(int argc, char** argv) {
 	 */
 	signal(SIGHUP,  quit_signal);
 #endif
+
+	if(do_autostart || do_autostart_safe)
+		perform_autostart(do_autostart_safe);
 
 	service->start_xsettings_manager();
 

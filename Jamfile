@@ -17,7 +17,8 @@ SOURCE = evoke.cpp
          EvokeService.cpp 
          Splash.cpp 
          Xsm.cpp 
-		 Logout.cpp ;
+		 Logout.cpp 
+		 Autostart.cpp ;
 
 EdeProgram evoke : $(SOURCE) ;
 TranslationStrings locale : $(SOURCE) ;
