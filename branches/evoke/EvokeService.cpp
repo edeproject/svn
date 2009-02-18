@@ -16,6 +16,7 @@
 #include <edelib/File.h>
 #include <edelib/Debug.h>
 #include <edelib/Config.h>
+#include <edelib/Resource.h>
 #include <edelib/StrUtil.h>
 #include <edelib/MessageBox.h>
 #include <edelib/Nls.h>
@@ -25,10 +26,18 @@
 #include "Logout.h"
 #include "Xsm.h"
 
+EDELIB_NS_USING(Config)
+EDELIB_NS_USING(Resource)
+EDELIB_NS_USING(RES_SYS_ONLY)
 EDELIB_NS_USING(file_exists)
 EDELIB_NS_USING(file_remove)
 EDELIB_NS_USING(str_trim)
-EDELIB_NS_USING(Config)
+
+#ifdef USE_LOCAL_CONFIG
+ #define CONFIG_GET_STRVAL(object, section, key, buff) object.get(section, key, buff, sizeof(buff))
+#else
+ #define CONFIG_GET_STRVAL(object, section, key, buff) object.get(section, key, buff, sizeof(buff), RES_SYS_ONLY)
+#endif
 
 static Atom XA_EDE_EVOKE_SHUTDOWN_ALL;
 static Atom XA_EDE_EVOKE_QUIT;
@@ -92,7 +101,7 @@ void EvokeService::remove_lock(void) {
 }
 
 void EvokeService::clear_startup_items(void) {
-	E_DEBUG("EvokeService::clear_startup_items()\n");
+	E_DEBUG(E_STRLOC ": EvokeService::clear_startup_items()\n");
 
 	if(startup_items.empty())
 		return;
@@ -104,35 +113,45 @@ void EvokeService::clear_startup_items(void) {
 	startup_items.clear();
 }
 
-void EvokeService::read_startup(const char* name) {
-	E_ASSERT(name != NULL);
-
+void EvokeService::read_startup(void) {
+#ifdef USE_LOCAL_CONFIG
+	/* 
+	 * this will load SETTINGS_FILENAME only from local directory;
+	 * intended for development and testing only
+	 */
 	Config c;
-	if(!c.load(name))
-		return;
+	E_RETURN_IF_FAIL(c.load("ede-startup.conf"));
+#else
+	/* only system resource will be loaded; use ede-startup will be skipped */
+	Resource c;
+	E_RETURN_IF_FAIL(c.load("ede/ede-startup"));
+#endif
 
 	char tok_buff[256], buff[256];
 
-	if(c.get("Startup", "splash_data", buff, sizeof(buff)))
+	/* if nothing found, exit */
+	if(!CONFIG_GET_STRVAL(c, "Startup", "start_order", tok_buff))
+		return;
+
+	if(CONFIG_GET_STRVAL(c, "Startup", "splash_data", buff))
 		splash_data_dir = buff;
 
-	c.get("Startup", "start_order", tok_buff, sizeof(tok_buff));
 	for(const char* sect = strtok(tok_buff, ","); sect; sect = strtok(NULL, ",")) {
 		/* remove leading/ending spaces, if exists */
 		str_trim(buff);
 
 		/* assure each startup item has 'exec' key */
-		if(!c.get(sect, "exec", buff, sizeof(buff))) {
-			E_WARNING(E_STRLOC, "Startup item '%s' does not have anything to execute. Skipping...\n", sect);
+		if(!CONFIG_GET_STRVAL(c, sect, "exec", buff)) {
+			E_WARNING(E_STRLOC ": Startup item '%s' does not have anything to execute. Skipping...\n", sect);
 			continue;
 		}
 
 		StartupItem *s = new StartupItem;
 		s->exec = buff;
 
-		if(c.get(sect, "icon", buff, sizeof(buff)))
+		if(CONFIG_GET_STRVAL(c, sect, "icon", buff))
 			s->icon = buff;
-		if(c.get(sect, "description", buff, sizeof(buff)))
+		if(CONFIG_GET_STRVAL(c, sect, "description", buff))
 			s->description = buff;
 
 		startup_items.push_back(s);
@@ -166,8 +185,7 @@ void EvokeService::start_xsettings_manager(void) {
 
 	E_RETURN_IF_FAIL(xsm);
 
-	/* TODO: XDG */
-	if(xsm->load_serialized("ede-settings.conf"))
+	if(xsm->load_serialized())
 		xsm->notify();
 }
 
@@ -175,9 +193,8 @@ void EvokeService::stop_xsettings_manager(bool serialize) {
 	if(!xsm)
 		return;
 
-	/* TODO: XDG */
 	if(serialize)
-		xsm->save_serialized("ede-settings.conf");
+		xsm->save_serialized();
 
 	delete xsm;
 	xsm = NULL;
