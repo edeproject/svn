@@ -1,18 +1,26 @@
-Evoke documentation
+evoke documentation
 ===================
 
-Evoke is EDE head service responsible for starting environment, running
-requested applications and shutting down environment respectively.
+[NOTE]
+.TODO
+=====================
+Add info about splash themes; reorder document
+=====================
 
-It is usually started at EDE startup, placing in 'startede' script and
-will allow only one instance of itself to be running.
+evoke is EDE service responsible for starting and quitting desktop, including
+all needed prerequisites. Also, it will autostart programs (run programs using
+http://www.freedesktop.org/wiki/Specifications/autostart-spec[autostart specification])
+and behave as http://www.freedesktop.org/wiki/Specifications/xsettings-spec[XSETTINGS] manager.
+
+It is usually started at EDE startup, from 'startede' script and will allow only one instance of 
+itself to be running.
 
 Options
 -------
 
 -s, --startup::
 	Run in starup mode. Startup mode should be used when environment is
-	starting and it will read evoke.conf file looking for compontents to
+	starting and it will read 'ede-startup.conf' file looking for components to
 	be started.
 
 -n, --no-splash::
@@ -20,8 +28,8 @@ Options
 	(given '-s' or '--startup').
 
 -d, --dry-run::
-	Only valid in startup or autostart mode. It will show what will be started,
-	but will not start anything. Usefull for testing.
+	Only useful in startup mode (if '-s' or '--startup' are given). Mainly to test
+	splash screen themes
 
 -a, --autostart::
 	Run in autostart mode. It will check 'autostart' directory and run .desktop
@@ -35,13 +43,6 @@ Options
 	Read [FILE] as config file. This file is only used in startup mode to read
 	components to be started.
 
--p, --pid [FILE]::
-	Store session pid to [FILE].
-
--l, --log [FILE]::
-	Log events to [FILE]. [FILE] can be 'stdout' or 'stderr' (literally) where logging
-	will be to standard output or standard error output.
-
 -h, --help::
 	This help.
 
@@ -49,9 +50,15 @@ Options
 Details
 -------
 
-Evoke can be started with or without options. If started without options, it will do nothing
-until external application send request to start something or to quit (here 'quit' means
-to quit evoke, not some running application).
+evoke can be started with or without options. If started without options, it will behave
+as XSETTINGS manager, reading options from 'ede-settings.conf'.
+
+[NOTE]
+.XSETTINGS support
+==================================
+Not all toolkits supports XSETTINGS protocol; currently only Gtk+ and edelib apps understainds
+it (as I know).
+==================================
 
 As you can see from options, there are two 'modes' (if parameteres for them are given):
 
@@ -84,19 +91,15 @@ These options are intentionally provided so you can choose startup policy depend
 options.
 
 *Startup mode* is meant to be used when EDE is starting, running each component (or program)
-from evoke.conf (or file specified with '-c' option). This configuration file must be in the following form:
+from 'ede-startup.conf' (or file specified with '-c' option). This configuration file must be in the following form:
 --------------
-# [evoke] section must be present
-[evoke]
-  # Startup key is used to notify evoke what to start
+[Startup]
+  # start_order key is used to notify evoke what to start
   # and program keys must be separated with comma (if multiple ones are given)
-  Startup = program1, program2, program3 
+  start_order = program1, program2, program3 
 
-  # ImagesDirectory is directory with icons used for splash screen
-  ImagesDirectory = /some/path/some_dir_name
-
-  # Splash is image used for splash screen (it will be searched in ImagesDirectory)
-  Splash = image.png
+  # splash_data is directory with icons used for splash screen
+  splash_data = /some/path/some_dir_name
 
 # now comes each value from Startup key as separate key
 [program1]
@@ -116,5 +119,3 @@ from evoke.conf (or file specified with '-c' option). This configuration file mu
 
 ...
 --------------
-
-  
