@@ -24,8 +24,8 @@ class Xsm : public edelib::XSettingsManager {
 		Xsm();
 		~Xsm();
 
-		bool load_serialized(const char* file);
-		bool save_serialized(const char* file);
+		bool load_serialized(void);
+		bool save_serialized(void);
 
 		/* replace XResource values from one from XSETTINGS */
 		void xresource_replace(void);

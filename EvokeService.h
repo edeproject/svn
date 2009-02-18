@@ -49,7 +49,7 @@ class EvokeService {
 		void stop(void)    { is_running = false; }
 		bool running(void) { return is_running; }
 
-		void read_startup(const char* name);
+		void read_startup(void);
 		void run_startup(bool splash, bool dryrun);
 		int handle(const XEvent* xev);
 

@@ -31,13 +31,19 @@
 #define USER_XRESOURCE_TMP   ".Xdefaults-tmp"
 #define USER_XRESOURCE_SAVED ".Xdefaults-ede-saved"
 
+#define SETTINGS_FILENAME    "ede-settings.conf"
+
 EDELIB_NS_USING(String)
+EDELIB_NS_USING(list)
 EDELIB_NS_USING(XSettingsSetting)
 EDELIB_NS_USING(XSettingsList)
 EDELIB_NS_USING(dir_home)
 EDELIB_NS_USING(file_remove)
 EDELIB_NS_USING(file_rename)
+EDELIB_NS_USING(file_exists)
 EDELIB_NS_USING(build_filename)
+EDELIB_NS_USING(user_config_dir)
+EDELIB_NS_USING(system_config_dirs)
 EDELIB_NS_USING(xsettings_list_find)
 EDELIB_NS_USING(xsettings_list_free)
 EDELIB_NS_USING(xsettings_decode)
@@ -194,19 +200,45 @@ void Xsm::xresource_undo(void) {
 	 */
 	if(!file_rename(db_file_backup.c_str(), db_file.c_str()))
 		file_remove(db_file.c_str());
-
-#if 0
-	if(file_exists(db_file_backup.c_str()))
-		file_rename(db_file_backup.c_str(), db_file.c_str());
-	else
-		file_remove(db_file.c_str());
-#endif
-
-
 }
 
-bool Xsm::load_serialized(const char* file) {
-	TiXmlDocument doc(file);
+bool Xsm::load_serialized(void) {
+#ifdef USE_LOCAL_CONFIG
+	/* 
+	 * this will load SETTINGS_FILENAME only from local directory;
+	 * intended for development and testing only
+	 */
+	String file = SETTINGS_FILENAME;
+#else
+	/* try to find it in home directory */
+	String file = user_config_dir();
+	file += "/ede/"SETTINGS_FILENAME;
+
+	if(!file_exists(file.c_str())) {
+		/* then scan for the system one */
+		list<String> dirs;
+		system_config_dirs(dirs);
+		list<String>::iterator it = dirs.begin(), it_end = dirs.end();
+
+		file.clear();
+
+		for(; it != it_end; ++it) {
+			*it += "/ede/"SETTINGS_FILENAME;
+
+			E_DEBUG("%s\n", (*it).c_str());
+
+			if(file_exists((*it).c_str())) {
+				file = *it;
+				break;
+			}
+		}
+
+		if(file.empty() && !file_exists(file.c_str()))
+			return false;
+	}
+#endif
+
+	TiXmlDocument doc(file.c_str());
 	if(!doc.LoadFile())
 		return false;
 
@@ -278,8 +310,7 @@ bool Xsm::load_serialized(const char* file) {
 	return true;
 }
 
-bool Xsm::save_serialized(const char* file) {
-	// FIXME: a lot of this code could be in edelib
+bool Xsm::save_serialized(void) {
 	Atom type;
 	int format;
 	unsigned long n_items, bytes_after;
@@ -289,7 +320,7 @@ bool Xsm::save_serialized(const char* file) {
 
 	int (*old_handler)(Display*, XErrorEvent*);
 
-	// possible ?
+	/* possible ? */
 	if(!manager_data->manager_win)
 		return false;
 
@@ -312,9 +343,20 @@ bool Xsm::save_serialized(const char* file) {
 	if(!settings)
 		return false;
 
-	FILE* setting_file = fopen(file, "w");
+#ifdef USE_LOCAL_CONFIG
+	/* 
+	 * this will load SETTINGS_FILENAME only from local directory;
+	 * intended for development and testing only
+	 */
+	String file = SETTINGS_FILENAME;
+#else
+	String file = user_config_dir();
+	file += "/ede/"SETTINGS_FILENAME;
+#endif
+
+	FILE* setting_file = fopen(file.c_str(), "w");
 	if(!setting_file) {
-		E_WARNING(E_STRLOC ": Unable to write to %s\n", file);
+		E_WARNING(E_STRLOC ": Unable to write to %s\n", file.c_str());
 		xsettings_list_free(settings);
 		return false;
 	}

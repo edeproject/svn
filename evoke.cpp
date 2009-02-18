@@ -36,15 +36,6 @@ static int xmessage_handler(int) {
 	return EvokeService::instance()->handle(fl_xevent);
 }
 
-static const char* next_param(int curr, char** argv, int argc) {
-	int j = curr + 1;
-	if(j >= argc)
-		return NULL;
-	if(argv[j][0] == '-')
-		return NULL;
-	return argv[j];
-}
-
 static void help(void) {
 	puts("Usage: evoke [OPTIONS]");
 	puts("EDE startup manager responsible for desktop starting and quitting");
@@ -55,12 +46,10 @@ static void help(void) {
 	puts("  -n, --no-splash       do not show splash screen in starup mode");
 	puts("  -d, --dry-run         run in starup mode, but don't execute anything");
 	puts("  -a, --autostart       read autostart directory and run all items");
-	puts("  -u, --autostart-safe  read autostart directory and display dialog what will be run");
-	puts("  -c, --config [FILE]   use FILE as config file\n");
+	puts("  -u, --autostart-safe  read autostart directory and display dialog what will be run\n");
 }
 
 int main(int argc, char** argv) {
-	const char* config_file = NULL;
 	bool do_startup         = false;
 	bool do_dryrun          = false;
 	bool show_splash        = true;
@@ -74,13 +63,6 @@ int main(int argc, char** argv) {
 			if(CHECK_ARGV(a, "-h", "--help")) {
 				help();
 				return 0;
-			} else if(CHECK_ARGV(a, "-c", "--config")) {
-				config_file = next_param(i, argv, argc);
-				if(!config_file) {
-					puts("Missing configuration filename");
-					return 1;
-				}
-				i++;
 			}
 			else if(CHECK_ARGV(a, "-s", "--starup"))
 				do_startup = true;
@@ -105,10 +87,6 @@ int main(int argc, char** argv) {
 	/* initialize main service object */
 	EvokeService* service = EvokeService::instance();
 
-	/* TODO: XDG dirs */
-	if(!config_file)
-		config_file = "ede-startup.conf";
-
 	/*
 	 * Main loop is not initialized before startup (and splash) are finished;
 	 * this is intentional so we could use 'dryrun' to test a splash theme and startup items
@@ -117,7 +95,7 @@ int main(int argc, char** argv) {
 	 * TODO: dryrun option is pretty dummy; better to use "test-splash" or similar
 	 */
 	if(do_startup) {
-		service->read_startup(config_file);
+		service->read_startup();
 		service->run_startup(show_splash, do_dryrun);
 	}
 
@@ -149,7 +127,7 @@ int main(int argc, char** argv) {
 	if(do_autostart || do_autostart_safe)
 		perform_autostart(do_autostart_safe);
 
-	service->start_xsettings_manager();
+	//service->start_xsettings_manager();
 
 	/* set stuff so xsettings manager can receive events */
 	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), 
