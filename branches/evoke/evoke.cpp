@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
 	if(do_autostart || do_autostart_safe)
 		perform_autostart(do_autostart_safe);
 
-	//service->start_xsettings_manager();
+	service->start_xsettings_manager();
 
 	/* set stuff so xsettings manager can receive events */
 	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), 

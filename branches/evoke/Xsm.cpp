@@ -24,6 +24,7 @@
 #include <edelib/Directory.h>
 #include <edelib/XSettingsCommon.h>
 #include <edelib/File.h>
+#include <edelib/Resource.h>
 
 #include "Xsm.h"
 
@@ -31,19 +32,17 @@
 #define USER_XRESOURCE_TMP   ".Xdefaults-tmp"
 #define USER_XRESOURCE_SAVED ".Xdefaults-ede-saved"
 
-#define SETTINGS_FILENAME    "ede-settings.conf"
+#define SETTINGS_FILENAME    "ede-settings"
 
 EDELIB_NS_USING(String)
-EDELIB_NS_USING(list)
+EDELIB_NS_USING(Resource)
 EDELIB_NS_USING(XSettingsSetting)
 EDELIB_NS_USING(XSettingsList)
 EDELIB_NS_USING(dir_home)
 EDELIB_NS_USING(file_remove)
 EDELIB_NS_USING(file_rename)
-EDELIB_NS_USING(file_exists)
 EDELIB_NS_USING(build_filename)
 EDELIB_NS_USING(user_config_dir)
-EDELIB_NS_USING(system_config_dirs)
 EDELIB_NS_USING(xsettings_list_find)
 EDELIB_NS_USING(xsettings_list_free)
 EDELIB_NS_USING(xsettings_decode)
@@ -208,33 +207,13 @@ bool Xsm::load_serialized(void) {
 	 * this will load SETTINGS_FILENAME only from local directory;
 	 * intended for development and testing only
 	 */
-	String file = SETTINGS_FILENAME;
+	String file = SETTINGS_FILENAME".conf";
 #else
-	/* try to find it in home directory */
-	String file = user_config_dir();
-	file += "/ede/"SETTINGS_FILENAME;
-
-	if(!file_exists(file.c_str())) {
-		/* then scan for the system one */
-		list<String> dirs;
-		system_config_dirs(dirs);
-		list<String>::iterator it = dirs.begin(), it_end = dirs.end();
-
-		file.clear();
-
-		for(; it != it_end; ++it) {
-			*it += "/ede/"SETTINGS_FILENAME;
-
-			E_DEBUG("%s\n", (*it).c_str());
-
-			if(file_exists((*it).c_str())) {
-				file = *it;
-				break;
-			}
-		}
-
-		if(file.empty() && !file_exists(file.c_str()))
-			return false;
+	/* try to find it in home directory, then will scan for the system one */
+	String file = Resource::find_config("ede/"SETTINGS_FILENAME);
+	if(file.empty()) {
+		E_WARNING(E_STRLOC ": Unable to load XSETTINGS data from '%s'\n", file.c_str());
+		return false;
 	}
 #endif
 
@@ -348,10 +327,10 @@ bool Xsm::save_serialized(void) {
 	 * this will load SETTINGS_FILENAME only from local directory;
 	 * intended for development and testing only
 	 */
-	String file = SETTINGS_FILENAME;
+	String file = SETTINGS_FILENAME".conf";
 #else
 	String file = user_config_dir();
-	file += "/ede/"SETTINGS_FILENAME;
+	file += "/ede/"SETTINGS_FILENAME".conf";
 #endif
 
 	FILE* setting_file = fopen(file.c_str(), "w");

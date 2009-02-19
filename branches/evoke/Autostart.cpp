@@ -27,6 +27,7 @@
 #include <edelib/Directory.h>
 #include <edelib/Nls.h>
 #include <edelib/Debug.h>
+#include <edelib/Run.h>
 
 #include "Autostart.h"
 #include "icons/warning.xpm"
@@ -38,11 +39,12 @@ EDELIB_NS_USING(dir_list)
 EDELIB_NS_USING(system_config_dirs)
 EDELIB_NS_USING(user_config_dir)
 EDELIB_NS_USING(str_ends)
+EDELIB_NS_USING(run_program)
 
 #ifdef DEBUG_AUTOSTART_RUN
  #define AUTOSTART_RUN(s) E_DEBUG("Executing %s\n", s)
 #else
- #define AUTOSTART_RUN(s) system(s)
+ #define AUTOSTART_RUN(s) run_program(s, false)
 #endif
 
 struct DialogEntry {
