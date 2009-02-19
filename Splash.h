@@ -22,7 +22,7 @@ class Splash : public Fl_Double_Window {
 	private:
 		StartupItemList*     slist;
 		StartupItemListIter  slist_it;
-		edelib::String*      splash_data_dir;      
+		edelib::String*      splash_theme;      
 
 		unsigned int counter;
 		bool         show_splash;
@@ -32,7 +32,7 @@ class Splash : public Fl_Double_Window {
 		Fl_Box**     icons;
 
 	public:
-		Splash(StartupItemList& s, edelib::String& dir, bool show_it, bool dr);
+		Splash(StartupItemList& s, edelib::String& theme, bool show_it, bool dr);
 		~Splash();
 
 		bool next_client(void);

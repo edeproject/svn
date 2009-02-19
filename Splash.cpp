@@ -11,12 +11,14 @@
  */
 
 #include <stdio.h> // snprintf
-#include <stdlib.h> // system
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl.H>
 #include <edelib/Debug.h>
 #include <edelib/Nls.h>
 #include <edelib/Util.h>
+#include <edelib/Directory.h>
+#include <edelib/Resource.h>
+#include <edelib/Run.h>
 
 #include "Splash.h"
 
@@ -24,7 +26,11 @@
 #define TIMEOUT_CONTINUE 2.0  /* timeout between starting rest of the cliens */
 
 EDELIB_NS_USING(String)
+EDELIB_NS_USING(Resource)
 EDELIB_NS_USING(build_filename)
+EDELIB_NS_USING(dir_exists)
+EDELIB_NS_USING(run_program)
+EDELIB_NS_USING(RES_SYS_ONLY)
 
 #ifndef EDEWM_HAVE_NET_SPLASH
 static Splash* global_splash = NULL;
@@ -59,9 +65,9 @@ static void runner_cb(void* s) {
 		sp->hide();
 }
 
-Splash::Splash(StartupItemList& s, String& dir, bool show_it, bool dr) : Fl_Double_Window(480, 365) {
+Splash::Splash(StartupItemList& s, String& theme, bool show_it, bool dr) : Fl_Double_Window(480, 365) {
 	slist = &s;
-	splash_data_dir = &dir;
+	splash_theme = &theme;
 	show_splash = show_it;
 	dryrun = dr;
 	icons = NULL;
@@ -109,17 +115,33 @@ void Splash::run(void) {
 
 	fl_register_images();
 
-	String path;
+	String path, splash_theme_path;
+
+#ifdef USE_LOCAL_CONFIG
+	splash_theme_path = "splash-themes/";
+#else
+	splash_theme_path = Resource::find_data("ede/splash-themes", RES_SYS_ONLY);
+	if(splash_theme_path.empty()) {
+		E_WARNING(E_STRLOC ": Unable to locate splash themes in $XDG_DATA_DIRS directories\n");
+		return;
+	}
+#endif
+	splash_theme_path += E_DIR_SEPARATOR;
+	splash_theme_path += *splash_theme;
+
+	if(!dir_exists(splash_theme_path.c_str())) {
+		E_WARNING(E_STRLOC ": Unable to locate '%s' in '%s' theme directory\n", 
+				splash_theme->c_str(), splash_theme_path.c_str());
+		return;
+	}
 
 	/* setup widgets */
 	begin();
 		Fl_Box* bimg = new Fl_Box(0, 0, w(), h());
 		Fl_Image* splash_img = 0;
 
-		if(!splash_data_dir->empty()) {
-			path = build_filename(splash_data_dir->c_str(), "background.png");
-			splash_img = Fl_Shared_Image::get(path.c_str());
-		}
+		path = build_filename(splash_theme_path.c_str(), "background.png");
+		splash_img = Fl_Shared_Image::get(path.c_str());
 
 		if(splash_img) {
 			int W = splash_img->w();
@@ -168,11 +190,9 @@ void Splash::run(void) {
 			for(StartupItemListIter it = slist->begin(); it != slist->end(); ++it, ++i) {
 				Fl_Box* bb = new Fl_Box(X, Y, 64, 64);
 
-				if(!splash_data_dir->empty()) {
-					path = build_filename(splash_data_dir->c_str(), (*it)->icon.c_str());
-					imgpath = path.c_str();
-					iconimg = Fl_Shared_Image::get(imgpath);
-				}
+				path = build_filename(splash_theme_path.c_str(), (*it)->icon.c_str());
+				imgpath = path.c_str();
+				iconimg = Fl_Shared_Image::get(imgpath);
 
 				if(!iconimg) {
 					bb->label(_("No image"));
@@ -252,7 +272,7 @@ bool Splash::next_client(void) {
 
 	/* run command */
 	if(!dryrun)
-		system(cmd);
+		run_program(cmd, false);
 
 	++slist_it;
 	++counter;
@@ -283,7 +303,7 @@ bool Splash::next_client_nosplash(void) {
 
 	/* run command */
 	if(!dryrun)
-		system(cmd);
+		run_program(cmd, false);
 
 	++slist_it;
 	++counter;

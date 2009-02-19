@@ -34,7 +34,7 @@ class EvokeService {
 		Xsm*            xsm;
 		bool            is_running;
 		StartupItemList startup_items;
-		edelib::String  splash_data_dir;
+		edelib::String  splash_theme;
 
 		void clear_startup_items(void);
 	public:

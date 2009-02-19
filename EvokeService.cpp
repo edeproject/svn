@@ -120,12 +120,16 @@ void EvokeService::read_startup(void) {
 	 * intended for development and testing only
 	 */
 	Config c;
-	E_RETURN_IF_FAIL(c.load("ede-startup.conf"));
+	int ret = c.load("ede-startup.conf");
 #else
 	/* only system resource will be loaded; use ede-startup will be skipped */
 	Resource c;
-	E_RETURN_IF_FAIL(c.load("ede/ede-startup"));
+	int ret = c.load("ede/ede-startup");
 #endif
+	if(!ret) {
+		E_WARNING(E_STRLOC ": Unable to load EDE startup file\n");
+		return;
+	}
 
 	char tok_buff[256], buff[256];
 
@@ -133,8 +137,8 @@ void EvokeService::read_startup(void) {
 	if(!CONFIG_GET_STRVAL(c, "Startup", "start_order", tok_buff))
 		return;
 
-	if(CONFIG_GET_STRVAL(c, "Startup", "splash_data", buff))
-		splash_data_dir = buff;
+	if(CONFIG_GET_STRVAL(c, "Startup", "splash_theme", buff))
+		splash_theme = buff;
 
 	for(const char* sect = strtok(tok_buff, ","); sect; sect = strtok(NULL, ",")) {
 		/* remove leading/ending spaces, if exists */
@@ -162,7 +166,7 @@ void EvokeService::run_startup(bool splash, bool dryrun) {
 	if(startup_items.empty())
 		return;
 
-	Splash s(startup_items, splash_data_dir, splash, dryrun);
+	Splash s(startup_items, splash_theme, splash, dryrun);
 	s.run();
 	clear_startup_items();
 }

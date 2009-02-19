@@ -20,10 +20,12 @@ SOURCE = evoke.cpp
 		 Logout.cpp 
 		 Autostart.cpp ;
 
-ObjectC++Flags $(SOURCE) : -DUSE_LOCAL_CONFIG ;
+#ObjectC++Flags $(SOURCE) : -DUSE_LOCAL_CONFIG ;
 
 EdeProgram evoke : $(SOURCE) ;
 TranslationStrings locale : $(SOURCE) ;
 EdeManual doc/evoke.txt ;
 
 FltkProgramBare test/evoke_test : test/evoke_test.cpp : "noinstall" ;
+
+SubInclude TOP evoke splash-themes ;
