@@ -1,0 +1,148 @@
+dnl
+dnl $Id$
+dnl
+dnl Copyright (c) 2005-2007 edelib authors
+dnl
+dnl This library is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU Lesser General Public
+dnl License as published by the Free Software Foundation; either
+dnl version 2 of the License, or (at your option) any later version.
+dnl
+dnl This library is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+dnl Lesser General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Lesser General Public License
+dnl along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+m4_define([edelib_major_version], [2])
+m4_define([edelib_minor_version], [0])
+m4_define([edelib_patch_version], [0])
+m4_define([edelib_version], [edelib_major_version.edelib_minor_version.edelib_patch_version])
+
+AC_PREREQ(2.13)
+
+AC_INIT(edelib, edelib_version, [karijes@users.sourceforge.net])
+
+AC_CONFIG_SRCDIR(edelib/Nls.h)
+AC_CONFIG_HEADER(edelib/_conf.h:edelib/_conf.h.in)
+
+EDELIB_MAJOR_VERSION=edelib_major_version
+EDELIB_MINOR_VERSION=edelib_minor_version
+EDELIB_PATCH_VERSION=edelib_patch_version
+EDELIB_API_VERSION=$PACKAGE_VERSION
+
+dnl configure fuck up CFLAGS/CXXFLAG by adding '-O2' and '-g' after AC_PROG_CC and AC_PROG_CXX
+dnl and there is no way to remove them without knowing if user added them
+user_cflags="$CFLAGS"
+user_cxxflags="$CXXFLAGS"
+
+dnl check for compiler and programs first before any variable was set
+dnl this is for case if compiler is not a gcc, so we can set a different variables
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_LN_S
+AC_PATH_PROG(SED, sed)
+AC_PATH_PROG(MSGFMT, msgfmt)
+AC_PATH_PROG(XGETTEXT, xgettext)
+AC_PATH_PROG(DOXYGEN, doxygen)
+EDELIB_PROG_JAM
+
+if test "$ac_compiler_gnu" = "yes"; then
+	SANITY_FLAGS="-Wall -pedantic"
+	DEBUG_FLAGS="-D_DEBUG"
+	OPTIM_FLAGS="-O2"
+else
+	SANITY_FLAGS=""
+	DEBUG_FLAGS="-D_DEBUG"
+	OPTIM_FLAGS=""
+fi
+
+CFLAGS="-DHAVE_EDELIB_BASE_CONFIG_H $SANITY_FLAGS $user_cflags"
+CXXFLAGS="-DHAVE_EDELIB_BASE_CONFIG_H $SANITY_FLAGS $user_cxxflags"
+
+dnl basic headers
+AC_HEADER_STDC
+AC_CHECK_HEADER(string.h, AC_DEFINE(HAVE_STRING_H, 1, [Define to 1 if you have string.h file]))
+AC_CHECK_FUNC(snprintf, AC_DEFINE(HAVE_SNPRINTF, 1, [Define to 1 if you have snprintf()]))
+AC_CHECK_FUNC(vsnprintf, AC_DEFINE(HAVE_VSNPRINTF, 1, [Define to 1 if you have vsnprintf()]))
+
+dnl terminal stuff
+AC_CHECK_FUNC(grantpt, AC_DEFINE(HAVE_GRANTPT, 1, [Define to 1 if you have grantpt()]))
+AC_CHECK_FUNC(ptsname, AC_DEFINE(HAVE_PTSNAME, 1, [Define to 1 if you have ptsname()]))
+AC_CHECK_FUNC(unlockpt, AC_DEFINE(HAVE_UNLOCKPT, 1, [Define to 1 if you have unlockpt()]))
+AC_CHECK_FUNC(_getpty, AC_DEFINE(HAVE__GETPTY, 1, [Define to 1 if you have _getpty()]))
+AC_CHECK_HEADER(pty.h, AC_DEFINE(HAVE_PTY_H, 1, [Define to 1 if you have pty.h]))
+AC_CHECK_HEADER(libutil.h, AC_DEFINE(HAVE_LIBUTIL_H, 1, [Define to 1 if you have libutil.h]))
+AC_CHECK_HEADER(util.h, AC_DEFINE(HAVE_UTIL_H, 1, [Define to 1 if you have util.h]))
+
+dnl xdgmimcache.c
+AC_CHECK_FUNC(mmap, XDG_MIME_HAVE_MMAP=-DHAVE_MMAP)
+
+EDELIB_DATETIME
+EDELIB_DEVELOPMENT
+
+EDELIB_X11
+
+dnl user fired --without-x, we disable FLTK checks
+if test "$have_x" = "yes"; then
+	EDELIB_FLTK
+	EDELIB_LIBXPM
+fi
+
+EDELIB_NOTIFY
+EDELIB_SHARED
+EDELIB_NLS
+EDELIB_MIME
+EDELIB_DBUS
+
+AC_ARG_VAR([PKG_CONFIG], [pkg-config command])
+AC_ARG_VAR([PKG_CONFIG_PATH], [A directory with .pc files for pkg-config])
+
+dnl jam don't like spaces in empty string so clear vars if --without-x is given
+if test "$have_x" = "yes"; then
+	FLTK_LIBS="$FLTK_LIBS $LIBXPM_LIBS $LIBFAM_LIBS"
+	FLTK_LIBS_FULL="$FLTK_LIBS_FULL $LIBXPM_LIBS $LIBFAM_LIBS"
+else
+	FLTK_LIBS=""
+	FLTK_LIBS_FULL=""
+fi
+
+if test -n "$OPTIM_FLAGS"; then
+	CFLAGS="$CFLAGS $OPTIM_FLAGS"
+	CXXFLAGS="$CXXFLAGS $OPTIM_FLAGS"
+else
+	CFLAGS="$CFLAGS $DEBUG_FLAGS"
+	CXXFLAGS="$CXXFLAGS $DEBUG_FLAGS"
+fi
+
+EDELIB_INIT_JAM
+
+AC_SUBST(EDELIB_MAJOR_VERSION)
+AC_SUBST(EDELIB_MINOR_VERSION)
+AC_SUBST(EDELIB_PATCH_VERSION)
+AC_SUBST(EDELIB_API_VERSION)
+AC_SUBST(FLTK_CFLAGS)
+AC_SUBST(FLTK_LIBS)
+AC_SUBST(FLTK_LIBS_FULL)
+AC_SUBST(DBUS_CFLAGS)
+AC_SUBST(DBUS_LIBS)
+AC_SUBST(SHARED)
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(LDLIBS)
+AC_SUBST(XDG_MIME_HAVE_MMAP)
+
+AC_OUTPUT([
+ edelib/Version.h
+ doc/Doxyfile
+ Jamconfig
+ edelib.pc
+ edelib-dbus.pc
+])
+
+echo ""
+echo "Now run 'jam' or 'jam help' to see further options."
+echo ""
