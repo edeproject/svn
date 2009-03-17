@@ -1,6 +1,7 @@
 2009-03-17  Sanel <karijes@users.sourceforge.net>
 
 	* src/IconTheme.cpp: spec said $XDG_DATA_HOME/icons should be used too
+	* edelib/IconLoader.h: some documentation update
 
 2009-03-16  Sanel <karijes@users.sourceforge.net>
 

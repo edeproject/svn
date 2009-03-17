@@ -142,7 +142,8 @@ public:
 	 * the function you should use to set icon inside the widget, because it allows dynamic refreshing when 
 	 * icon theme was changed by redrawing the widget.
 	 *
-	 * If icon wasn't found, it will do nothing
+	 * If icon wasn't found, it will try to load fallback icon and if succeeded (in one of the cases)
+	 * it will redraw the widget.
 	 */
 	static bool set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
 
