@@ -1,3 +1,18 @@
+2009-03-17  Sanel <karijes@users.sourceforge.net>
+
+	* src/IconTheme.cpp: spec said $XDG_DATA_HOME/icons should be used too
+
+2009-03-16  Sanel <karijes@users.sourceforge.net>
+
+	* edelib/IconTheme.h:
+	* src/IconTheme.cpp: new code, new design, improved icon searching
+	* edelib/IconLoader.h:
+	* src/IconLoader.cpp: now this class actually loads icons, cache them and
+	displays inside widgets
+	* src/Window.cpp:
+	* src/IconChooser.cpp:
+	* test/xdg/icon-theme.cpp: updated because of these chages
+
 2009-03-10  Sanel <karijes@users.sourceforge.net>
 
 	* edelib/Pty.h:

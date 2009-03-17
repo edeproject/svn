@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+
 #include <FL/Fl.H>
 #include <FL/x.H>
 #include <FL/Fl_Tooltip.H>
@@ -30,7 +31,7 @@
 #include <edelib/Window.h>
 #include <edelib/Color.h>
 #include <edelib/MessageBox.h>
-#include <edelib/IconTheme.h>
+#include <edelib/IconLoader.h>
 #include <edelib/Debug.h>
 #include <edelib/XSettingsClient.h>
 
@@ -69,10 +70,10 @@ static bool icon_theme_load_once(const char* theme) {
 	seen_theme = strdup(theme);
 	E_DEBUG(E_STRLOC ": loading '%s' theme\n", theme);
 
-	if(IconTheme::inited())
-		IconTheme::shutdown();
-
-	IconTheme::init(theme);
+	if(IconLoader::inited())
+		IconLoader::reload(theme);
+	else
+		IconLoader::init(theme);
 	return true;
 }
 
@@ -230,8 +231,7 @@ Window::Window(int W, int H, const char* l) : Fl_Double_Window(W, H, l),
 }
 
 Window::~Window() {
-	if(IconTheme::inited())
-		IconTheme::shutdown();
+	IconLoader::shutdown();
 
 	if(seen_theme)
 		free(seen_theme);
@@ -248,15 +248,10 @@ void Window::init(int component) {
 
 	fl_open_display();
 
-	if(component & WIN_INIT_ICON_THEME) {
-		// try to figure out icon theme name if xsettings manager is running
-		if(XSettingsClient::manager_running(fl_display, fl_screen))
-		{ }
-
+	if(component & WIN_INIT_ICON_THEME)
 		icon_theme_load_once(DEFAULT_ICON_THEME);
-	}
 
-	// setup icons for dialogs
+	/* setup icons for dialogs */
 	MessageBox::set_themed_icons(MSGBOX_ICON_INFO, 
 								 MSGBOX_ICON_ERROR, 
 								 MSGBOX_ICON_QUESTION, 

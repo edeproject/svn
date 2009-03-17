@@ -377,15 +377,16 @@ String icon_chooser(const char* dir) {
 	return ic.get_ret();
 }
 
-
 String icon_chooser(IconSizes sz, IconContext ctx) {
 	IconChooser ic;
 
+#if 0
 	if(IconTheme::inited()) {
 		list<String> all_icons;
 		IconTheme::get_all(all_icons, sz, ctx);
 		ic.load_from_list(all_icons);
 	}
+#endif
 
 	ic.show();
 	while(ic.visible())
