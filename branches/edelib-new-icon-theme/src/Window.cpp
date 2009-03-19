@@ -85,6 +85,30 @@ static void send_client_message(::Window w, Atom a, unsigned int uid) {
 	XSendEvent(fl_display, w, False, mask, &xev);
 }
 
+static void set_titlebar_icon(Fl_Window* ww) {
+#ifdef HAVE_LIBXPM
+	/* it can be safely casted to our Window class */
+	Window* win = (Window*)ww;
+
+	if(!win->window_icon())
+		return;
+
+	Pixmap pix, mask;
+	XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display), (char**)win->window_icon(), &pix, &mask, NULL);
+
+	XWMHints* hints = XGetWMHints(fl_display, fl_xid(win));
+	if(!hints)
+		return;
+
+	hints->icon_pixmap = pix;
+	hints->icon_mask = mask;
+	hints->flags |= IconPixmapHint | IconMaskHint;
+
+	XSetWMHints(fl_display, fl_xid(win), hints);
+	XFree(hints);
+#endif
+}
+
 /*
  * FIXME: make sure this function route events to window; e.g. ClientMessage
  * so window can install handler and re-read ClientMessage again
@@ -204,20 +228,24 @@ static void xsettings_cb(const char* name, XSettingsAction action, XSettingsSett
 	}
 }
 
-Window::Window(int X, int Y, int W, int H, const char* l) : Fl_Double_Window(X, Y, W, H, l), 
-	inited(false), sbuffer(false), loaded_components(0), pref_atom(0), pref_uid(0), 
+Window::Window(int X, int Y, int W, int H, const char* l, int component) : Fl_Double_Window(X, Y, W, H, l), 
+	inited(false), sbuffer(false), loaded_components(0), 
+	xs(NULL), pref_atom(0), pref_uid(0), 
 	xs_cb(NULL), xs_cb_old(NULL), xs_cb_data(NULL),
-	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) { 
-
+	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) 
+{
 	type(EWINDOW);
+	init(component);
 }
 
-Window::Window(int W, int H, const char* l) : Fl_Double_Window(W, H, l),
-	inited(false), sbuffer(false), loaded_components(0), pref_atom(0), pref_uid(0), 
+Window::Window(int W, int H, const char* l, int component) : Fl_Double_Window(W, H, l),
+	inited(false), sbuffer(false), loaded_components(0), 
+	xs(NULL), pref_atom(0), pref_uid(0), 
 	xs_cb(NULL), xs_cb_old(NULL), xs_cb_data(NULL), 
-	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) { 
-
+	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) 
+{
 	type(EWINDOW);
+	init(component);
 }
 
 Window::~Window() {
@@ -226,6 +254,7 @@ Window::~Window() {
 	if(seen_theme)
 		free(seen_theme);
 
+	delete xs;
 	hide();
 }
 
@@ -253,9 +282,13 @@ void Window::init(int component) {
 
 	pref_atom = XInternAtom(fl_display, "_CHANGE_SETTINGS", False);
 
-	// FIXME: what if failed ?
-	if(xs.init(fl_display, fl_screen, xsettings_cb, this))
-		xcli = &xs;
+	xs = new XSettingsClient();
+	if(xs->init(fl_display, fl_screen, xsettings_cb, this))
+		xcli = xs;
+	else {
+		delete xs;
+		xs = NULL;
+	}
 
 	/*
 	 * FLTK keeps internaly list of event handlers that are shared between
@@ -304,34 +337,6 @@ void Window::update_settings(unsigned int uid) {
 	XFlush(fl_display);
 }
 
-XSettingsClient* Window::xsettings(void) {
-	EASSERT(inited == true && "init() must be called before this function");
-	return &xs;
-}
-
-static void set_titlebar_icon(Fl_Window* ww) {
-#ifdef HAVE_LIBXPM
-	Window* win = (Window*)ww;
-
-	if(!win->window_icon())
-		return;
-
-	Pixmap pix, mask;
-	XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display), (char**)win->window_icon(), &pix, &mask, NULL);
-
-	XWMHints* hints = XGetWMHints(fl_display, fl_xid(win));
-	if(!hints)
-		return;
-
-	hints->icon_pixmap = pix;
-	hints->icon_mask = mask;
-	hints->flags |= IconPixmapHint | IconMaskHint;
-
-	XSetWMHints(fl_display, fl_xid(win), hints);
-	XFree(hints);
-#endif
-}
-
 void Window::show(void) {
 	image(Fl::scheme_bg_);
 
@@ -353,8 +358,9 @@ void Window::show(void) {
 		}
 
 		window_xid_create(this, set_titlebar_icon, background_pixel);
-	} else
+	} else {
 		XMapRaised(fl_display, fl_xid(this));
+	}
 
 	if(pref_atom) {
 		XChangeProperty(fl_display, fl_xid(this), 

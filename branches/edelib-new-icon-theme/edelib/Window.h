@@ -51,58 +51,52 @@ typedef void (WindowSettingsCallback)(void* data);
  * \brief Window class
  *
  * This is Window class similar to FLTK's Fl_Window and Fl_Double_Window with addition of icon themes,
- * xsettings, dialog icons setup and image initialization code, often called prior program startup.
+ * XSETTINGS, dialog icons setup and image initialization code, often called prior program startup.
  *
- * It will also clean loaded data (e.g. call IconTheme::shutdown()).
+ * It will also clean loaded data (e.g. call IconLoader::shutdown()), automatically when window is closed.
  *
- * Contrary to FLTK's Fl_Window and Fl_Double_Window which are separate classes, this class can be
+ * Contrary to the FLTK's Fl_Window and Fl_Double_Window which are separate classes, this class can be
  * both of them (actually you can chose will window be single buffered or double buffered). If member
  * single_buffer() is set to true, window will behave as Fl_Window, if not (default), window will
  * be as Fl_Double_Window.
  *
- * Make sure to call single_buffer() <em>before</em> show() if you want to change single/double buffering
- * scheme.
+ * Make sure to call single_buffer() before show() if you want to change single/double buffering scheme.
  */
 class EDELIB_API Window : public Fl_Double_Window {
 private:
 	bool inited;
 	bool sbuffer;
 	int  loaded_components;
-	XSettingsClient xs;
-	unsigned long pref_atom; /* TODO: this should be Atom type */
-	unsigned int  pref_uid;
+
+	XSettingsClient* xs;
+	unsigned long    pref_atom;
+	unsigned int     pref_uid;
 
 	WindowXSettingsCallback* xs_cb;
 	WindowXSettingsCallback* xs_cb_old;
-	void* xs_cb_data;
+	void*                    xs_cb_data;
 
 	WindowSettingsCallback* s_cb;
-	void* s_cb_data;
+	void*                   s_cb_data;
 
 	const char* const* icon_pixmap;
 
+	void init(int component);
 public:
 	/**
 	 * Constructor
 	 */
-	Window(int X, int Y, int W, int H, const char* l = 0);
+	Window(int X, int Y, int W, int H, const char* l = 0, int component = WIN_INIT_ALL);
 
 	/**
 	 * Constructor
 	 */
-	Window(int W, int H, const char* l = 0);
+	Window(int W, int H, const char* l = 0, int component = WIN_INIT_ALL);
 
 	/**
 	 * Destructor
 	 */
 	virtual ~Window();
-
-	/**
-	 * Load one or all components. Note that this function must be called
-	 * before show() (event if WIN_INIT_NONE is given) since will load XSETTINGS code
-	 */
-	void init(int component = WIN_INIT_ALL);
-
 
 	/**
 	 * Set UID (unique ID) for this window
@@ -141,12 +135,6 @@ public:
 	 * \param uid window which will update it's settings
 	 */
 	static void update_settings(unsigned int uid);
-
-	/**
-	 * Returns pointer to XSettingsClient member. init() must be called
-	 * prior this function or assertion will be triggered
-	 */
-	XSettingsClient* xsettings(void);
 
 	/**
 	 * Register callback for changes in XSETTINGS
