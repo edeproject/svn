@@ -25,8 +25,12 @@
 #include <FL/Fl_Window.H>
 #include <FL/x.H>
 
-char fl_show_iconic;	// hack for iconize()
-int  fl_disable_transient_for; // secret method of removing TRANSIENT_FOR
+/* 
+ * These are defined in FLTK as hidden variables for some internal hacks, but are used here.
+ * XXX: possible changes in future FLTK versions
+ */
+extern char fl_show_iconic;
+extern int  fl_disable_transient_for;
 
 EDELIB_NS_BEGIN
 
