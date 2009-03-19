@@ -5,6 +5,12 @@
 	* edelib/WindowXid.h:
 	* src/WindowXid.cpp: window_xid_create() moved to WindowXid.{h,cpp} for
 	easier maintenance
+	* edelib/IconLoader.h: documented caveats if IconLoader::reload() was used
+	when Window is used
+	* src/IconLoader.cpp: removing main() used for test code
+	* edelib/Window.h:
+	* src/Window.cpp: reimplemented previous settings stuff naming it as foreign
+	callbacks
 
 2009-03-17  Sanel <karijes@users.sourceforge.net>
 

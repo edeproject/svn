@@ -111,7 +111,12 @@ public:
 
 	/**
 	 * Reload IconLoader with the new theme. This function is preferred to load another theme than 
-	 * shutdown()/init() combination, since it will not clear all internal data
+	 * shutdown()/init() combination, since it will not clear all internal data.
+	 *
+	 * \note This function should not be used when edelib::Window is used for window construcion;
+	 * edelib::Window tracks icon theme changes via XSETTINGS protocol and when needed, it will call this
+	 * function. Manually calling it (but edelib::Window is used), will change icon theme but XSETTINGS 
+	 * data will not be synced, yielding different themes in edelib and XSETTINGS aware toolkits (like Gtk+).
 	 */
 	static void reload(const char* theme);
 
