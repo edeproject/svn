@@ -50,7 +50,6 @@ extern int FL_NORMAL_SIZE;
 EDELIB_NS_BEGIN
 
 static XSettingsClient* xcli = NULL;
-static Window*          local_window  = NULL;
 static char*            seen_theme = NULL;
 
 static bool icon_theme_load_once(const char* theme) {
@@ -109,43 +108,12 @@ static void set_titlebar_icon(Fl_Window* ww) {
 #endif
 }
 
-/*
- * FIXME: make sure this function route events to window; e.g. ClientMessage
- * so window can install handler and re-read ClientMessage again
- */
 static int xevent_handler(int id) {
-	if(fl_xevent->type == ClientMessage) {
-		Fl_Window* win = 0;
-		Atom message = fl_xevent->xclient.message_type;
+	if(xcli)
+		xcli->process_xevent(fl_xevent);
 
-		/*
-		 * All windows known to FLTK must be scanned and global variable must NOT be used
-		 * (sadly add_handler() don't have additional parameter that can be passed) due
-		 * multiple Window objects in the same app. If global variable is used, callbacks
-		 * will be messed up and only last Window object created will accept them.
-		 *
-		 * There are two ways to resolve this:
-		 * - (used here) is to relay on FLTK's RTTI and scan window list for matched uid;
-		 *   cons: every inherited window _must not_ decrease type() variable, only can increase it
-		 *
-		 * - relay on xclient.window member, but all X tree must be scanned for _CHANGE_SETTINGS property
-		 *   and send it to those
-		 *   cons: if there are large number of windows, this can be slow
-		 *   pros: much more robust
-		 */
-		for(win = Fl::first_window(); win; win = Fl::next_window(win)) {
-			if(win->type() >= EWINDOW) {
-				edelib::Window* ewin = (edelib::Window*)win;
-				if(message == ewin->preferences_atom() && 
-						(unsigned int)fl_xevent->xclient.data.l[0] == ewin->settings_uid()) {
-					(*ewin->settings_callback())(ewin->settings_callback_data());
-				}
-			}
-		}
-	}
-
-	E_RETURN_VAL_IF_FAIL(xcli != NULL, 0);
-	return xcli->process_xevent(fl_xevent);
+	/* allow event could be processed again if user installs own handler */
+	return 0;
 }
 
 static void xsettings_cb(const char* name, XSettingsAction action, XSettingsSetting* setting, void* data) {
@@ -219,20 +187,19 @@ static void xsettings_cb(const char* name, XSettingsAction action, XSettingsSett
 
 		changed = icon_theme_load_once(th);
 	} else if(win->xsettings_callback()) {
-		// finally pass data to the user
+		/* finally pass data to the user */
 		changed = (*win->xsettings_callback())(name, action, setting, win->xsettings_callback_data());
 	}
 
-	if(changed) {
+	if(changed)
 		win->redraw();
-	}
 }
 
 Window::Window(int X, int Y, int W, int H, const char* l, int component) : Fl_Double_Window(X, Y, W, H, l), 
 	inited(false), sbuffer(false), loaded_components(0), 
-	xs(NULL), pref_atom(0), pref_uid(0), 
+	xs(NULL),
 	xs_cb(NULL), xs_cb_old(NULL), xs_cb_data(NULL),
-	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) 
+	icon_pixmap(NULL) 
 {
 	type(EWINDOW);
 	init(component);
@@ -240,9 +207,9 @@ Window::Window(int X, int Y, int W, int H, const char* l, int component) : Fl_Do
 
 Window::Window(int W, int H, const char* l, int component) : Fl_Double_Window(W, H, l),
 	inited(false), sbuffer(false), loaded_components(0), 
-	xs(NULL), pref_atom(0), pref_uid(0), 
+	xs(NULL),
 	xs_cb(NULL), xs_cb_old(NULL), xs_cb_data(NULL), 
-	s_cb(NULL), s_cb_data(NULL), icon_pixmap(NULL) 
+	icon_pixmap(NULL) 
 {
 	type(EWINDOW);
 	init(component);
@@ -277,10 +244,7 @@ void Window::init(int component) {
 								 MSGBOX_ICON_QUESTION, 
 								 MSGBOX_ICON_PASSWORD);
 
-	// FIXME: uh, uh ???
-	local_window = this;
-
-	pref_atom = XInternAtom(fl_display, "_CHANGE_SETTINGS", False);
+	/* pref_atom = XInternAtom(fl_display, "_CHANGE_SETTINGS", False); */
 
 	xs = new XSettingsClient();
 	if(xs->init(fl_display, fl_screen, xsettings_cb, this))
@@ -303,38 +267,6 @@ void Window::init(int component) {
 	Fl::add_handler(xevent_handler);
 
 	inited = true;
-}
-
-/* static */
-void Window::update_settings(unsigned int uid) {
-	/* 
-	 * Fetch _CHANGE_SETTINGS atom (note 'True'). If noone app set
-	 * this, it will fail and we will do nothing.
-	 */
-	Atom pref = XInternAtom(fl_display, "_CHANGE_SETTINGS", True);
-	if(pref == None)
-		return;
-
-	/*
-	 * Alternative version:
-	 * instead recursively children scan, we will relay on server; let it
-	 * pass message to the each child at the first level and send it uid. 
-	 * If that uid matches child's one, callback will be done
-	 */
-	::Window dummy, root, *children = 0;
-	unsigned int nchildren;
-
-	root = RootWindow(fl_display, fl_screen);
-	XQueryTree(fl_display, root, &dummy, &dummy, &children, &nchildren);
-	if(!nchildren)
-		return;
-
-	for(unsigned int i = 0; i < nchildren; i++)
-		if(children[i] != root)
-			send_client_message(children[i], pref, uid);
-
-	XFree(children);
-	XFlush(fl_display);
 }
 
 void Window::show(void) {
@@ -360,11 +292,6 @@ void Window::show(void) {
 		window_xid_create(this, set_titlebar_icon, background_pixel);
 	} else {
 		XMapRaised(fl_display, fl_xid(this));
-	}
-
-	if(pref_atom) {
-		XChangeProperty(fl_display, fl_xid(this), 
-				pref_atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&pref_uid, 1);
 	}
 }
 

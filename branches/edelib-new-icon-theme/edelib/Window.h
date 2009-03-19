@@ -41,8 +41,6 @@ enum WindowComponents {
 #ifndef SKIP_DOCS
 typedef bool (WindowXSettingsCallback)(const char* name, XSettingsAction action, 
 		const XSettingsSetting* setting, void* data);
-
-typedef void (WindowSettingsCallback)(void* data);
 #endif
 
 /**
@@ -68,18 +66,13 @@ private:
 	bool sbuffer;
 	int  loaded_components;
 
-	XSettingsClient* xs;
-	unsigned long    pref_atom;
-	unsigned int     pref_uid;
+	XSettingsClient*         xs;
 
 	WindowXSettingsCallback* xs_cb;
 	WindowXSettingsCallback* xs_cb_old;
 	void*                    xs_cb_data;
 
-	WindowSettingsCallback* s_cb;
-	void*                   s_cb_data;
-
-	const char* const* icon_pixmap;
+	const char* const*       icon_pixmap;
 
 	void init(int component);
 public:
@@ -97,44 +90,6 @@ public:
 	 * Destructor
 	 */
 	virtual ~Window();
-
-	/**
-	 * Set UID (unique ID) for this window
-	 */
-	void settings_uid(unsigned int uid) { pref_uid = uid; }
-
-	/**
-	 * Get window UID
-	 */
-	unsigned int settings_uid(void) { return pref_uid; }
-
-	/**
-	 * Register callback for changes. Changes will be called with Window::update_settings()
-	 * \param cb is callback function
-	 * \param data is data passed to the callback
-	 */
-	void settings_callback(WindowSettingsCallback& cb, void* data = NULL) { s_cb = cb; s_cb_data = data; }
-
-	/**
-	 * Returns callback used for settings
-	 */
-	WindowSettingsCallback* settings_callback(void) { return s_cb; }
-
-	/**
-	 * Returns data assigned that should be passed to the settings_callback
-	 */
-	void* settings_callback_data(void) { return s_cb_data; }
-
-	/**
-	 * Returns atom used for settings. Internaly used by Window class
-	 */
-	unsigned long preferences_atom(void) { return pref_atom; }
-
-	/**
-	 * Update settings for window with give uid
-	 * \param uid window which will update it's settings
-	 */
-	static void update_settings(unsigned int uid);
 
 	/**
 	 * Register callback for changes in XSETTINGS
