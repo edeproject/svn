@@ -22,7 +22,6 @@
 #define __WINDOW_H__
 
 #include "XSettingsClient.h"
-#include "IconTheme.h"
 #include <FL/Fl_Double_Window.H>
 
 EDELIB_NS_BEGIN
@@ -250,22 +249,6 @@ public:
 			Fl_Window::hide();
 	}
 };
-
-/**
- * \ingroup widgets
- *
- * This function is intended to be used inside inherited show() member (from Fl_Window familly)
- * and do the same job as Fl_X::make_xid(). The main difference is that it will call before_map_func()
- * (if given) before window is actually mapped. 
- *
- * This is usefull for cases when window data must exists (when FLTK creates them) so some properties
- * can be set before mapping on the screen (actually these properties can be set after window was mapped 
- * but many window managers, panels, etc. will not be notified correctly and will not use them; of course
- * not all properies must be set before window was mapped, but for those that must, this function is intended).
- *
- * In short, if you have not clue what I was talking about, then you don't need this function at all ;-).
- */
-void window_xid_create(Fl_Window* win, void (*before_map_func)(Fl_Window*) = NULL, int background_pixel = -1);
 
 EDELIB_NS_END
 

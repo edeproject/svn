@@ -1,3 +1,11 @@
+2009-03-19  Sanel <karijes@users.sourceforge.net>
+
+	* edelib/Window.h:
+	* src/Window.cpp:
+	* edelib/WindowXid.h:
+	* src/WindowXid.cpp: window_xid_create() moved to WindowXid.{h,cpp} for
+	easier maintenance
+
 2009-03-17  Sanel <karijes@users.sourceforge.net>
 
 	* src/IconTheme.cpp: spec said $XDG_DATA_HOME/icons should be used too
