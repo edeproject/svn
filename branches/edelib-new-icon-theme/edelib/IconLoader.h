@@ -155,7 +155,7 @@ public:
 	/**
 	 * Returns IconTheme object
 	 */
-	static const IconTheme* theme(void);
+	static const IconTheme* theme(void) const;
 
 	/**
 	 * Set fallback icon name. This name will be used to search alternative icon when target one wasn't found.
