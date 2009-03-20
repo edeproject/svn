@@ -216,7 +216,7 @@ bool IconLoader::set(Fl_Widget* widget, const char* name, IconSizes sz, IconCont
 	return IconLoader::instance()->set_icon(name, widget, sz, ctx);
 }
 
-const IconTheme* IconLoader::theme(void) const {
+const IconTheme* IconLoader::theme(void) {
 	return IconLoader::instance()->current_theme();
 }
 
