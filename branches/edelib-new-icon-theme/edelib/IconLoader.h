@@ -82,9 +82,9 @@ private:
 	void clear_items(void);
 public:
 #ifndef SKIP_DOCS
-	const char* get_icon_path(const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
-	Fl_Shared_Image* get_icon(const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
-	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
+	const char* get_icon_path(const char* name, IconSizes sz, IconContext ctx);
+	Fl_Shared_Image* get_icon(const char* name, IconSizes sz, IconContext ctx);
+	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx);
 	void load_theme(const char* name);
 	void reload_icons(void);
 	void repoll_icons(void);
@@ -155,7 +155,7 @@ public:
 	/**
 	 * Returns IconTheme object
 	 */
-	static const IconTheme* theme(void) const;
+	static const IconTheme* theme(void);
 
 	/**
 	 * Set fallback icon name. This name will be used to search alternative icon when target one wasn't found.

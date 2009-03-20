@@ -1,6 +1,8 @@
 2009-03-20  Sanel <karijes@users.sourceforge.net>
 
 	* src/ThreadableMember.h: removed; not used any more
+	* src/IconChooser.cpp: re-implemented loading via new IconLoader
+	* edelib/IconLoader.h: remove default parameters from hidden functions
 
 2009-03-19  Sanel <karijes@users.sourceforge.net>
 
