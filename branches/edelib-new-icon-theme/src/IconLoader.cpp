@@ -115,7 +115,7 @@ Fl_Shared_Image* IconLoader::get_icon(const char* name, IconSizes sz, IconContex
 	return img;
 }
 
-bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx) {
+bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, bool redraw_widget) {
 	Fl_Shared_Image* img;
 	IconLoaderItem* item;
 	
@@ -133,7 +133,10 @@ bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, Ico
 		return false;
 
 	widget->image(img);
-	widget->redraw();
+
+	if(redraw_widget)
+		widget->redraw();
+
 	return true;
 }
 
@@ -212,8 +215,8 @@ String IconLoader::get_path(const char* name, IconSizes sz, IconContext ctx) {
 	return IconLoader::instance()->get_icon_path(name, sz, ctx);
 }
 
-bool IconLoader::set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx) {
-	return IconLoader::instance()->set_icon(name, widget, sz, ctx);
+bool IconLoader::set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx, bool redraw_widget) {
+	return IconLoader::instance()->set_icon(name, widget, sz, ctx, redraw_widget);
 }
 
 const IconTheme* IconLoader::theme(void) {

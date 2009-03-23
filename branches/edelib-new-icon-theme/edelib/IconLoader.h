@@ -63,6 +63,8 @@ class IconLoaderItem;
  * Also, with this, IconLoader will track these widgets so when icon theme was changed, they would
  * be appropriately refreshed.
  *
+ * IconLoader::init() should not be called if edelib::Window class is used; it will call it automatically.
+ *
  * To dinamically change icon theme and reload loaded icons, IconLoader::reload() should be used. This function 
  * will correctly update icon paths and redraw widgets. When Window class is used, it will automatically call 
  * reload() when theme was changed, so there is no need to call it manually.
@@ -84,7 +86,7 @@ public:
 #ifndef SKIP_DOCS
 	const char* get_icon_path(const char* name, IconSizes sz, IconContext ctx);
 	Fl_Shared_Image* get_icon(const char* name, IconSizes sz, IconContext ctx);
-	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx);
+	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, bool redraw_widget);
 	void load_theme(const char* name);
 	void reload_icons(void);
 	void repoll_icons(void);
@@ -148,9 +150,10 @@ public:
 	 * icon theme was changed by redrawing the widget.
 	 *
 	 * If icon wasn't found, it will try to load fallback icon and if succeeded (in one of the cases)
-	 * it will redraw the widget.
+	 * it will redraw the widget (if <em>redraw_widget</em> is set to true, which is default)
 	 */
-	static bool set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
+	static bool set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY,
+			bool redraw_widget = true);
 
 	/**
 	 * Returns IconTheme object
