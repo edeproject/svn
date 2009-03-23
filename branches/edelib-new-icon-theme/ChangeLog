@@ -1,3 +1,8 @@
+2009-03-23  Sanel <karijes@users.sourceforge.net>
+
+	* edelib/Window.h: small clarification about XSETTINGS callback;
+	documented XSETTINGS keys
+
 2009-03-20  Sanel <karijes@users.sourceforge.net>
 
 	* src/ThreadableMember.h: removed; not used any more

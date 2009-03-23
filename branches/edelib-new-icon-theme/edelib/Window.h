@@ -51,7 +51,7 @@ typedef void (WindowForeignCallback)(void* data);
  * \brief Window class
  *
  * This is Window class similar to FLTK's Fl_Window and Fl_Double_Window with addition of icon themes,
- * XSETTINGS, dialog icons setup and image initialization code, often called prior program startup.
+ * XSETTINGS protocol, dialog icons setup and image initialization code, often called prior program startup.
  *
  * It will also clean loaded data (e.g. call IconLoader::shutdown()), automatically when window is closed.
  *
@@ -61,6 +61,16 @@ typedef void (WindowForeignCallback)(void* data);
  * be as Fl_Double_Window.
  *
  * Make sure to call single_buffer() before show() if you want to change single/double buffering scheme.
+ *
+ * Window implements the following XSETTINGS keys:
+ *  - Fltk/Background - set FL_BACKGROUND color
+ *  - Fltk/Background2 - set FL_BACKGROUND2 color
+ *  - Fltk/Foreground - set FL_FOREGROUND color
+ *  - Fltk/FontSize - set font size
+ *  - Net/IconThemeName - load icon theme with the given name
+ *
+ * \note Due some FLTK issues, when font size was changed (via Fltk/FontSize), window will not be redrawn
+ * (actually, it can't be redrawn), so window has to be closed and opened again.
  */
 class EDELIB_API Window : public Fl_Double_Window {
 private:
@@ -97,14 +107,15 @@ public:
 	virtual ~Window();
 
 	/**
-	 * Register callback for changes in XSETTINGS
-	 * \param cb is callback function
-	 * \param data is data passed to the callback
+	 * Register callback for changes via XSETTINGS protocol. Optional, <em>data</em> parameter will
+	 * be passed to the callback.
+	 *
+	 * If callback function returns <em>true</em>, window will be redrawn.
 	 */
 	void xsettings_callback(WindowXSettingsCallback& cb, void* data = NULL) { xs_cb = cb; xs_cb_data = data; }
 
 	/**
-	 * Returns callback used for XSETTINGS
+	 * Returns callback used for XSETTINGS protocol
 	 */
 	WindowXSettingsCallback* xsettings_callback(void) { return xs_cb; }
 
