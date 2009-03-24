@@ -42,9 +42,7 @@
 
 #define EDELIB_WINDOW 0xF3
 
-#define DEFAULT_ICON_THEME "edeneu" /* FIXME: this name should be shared somehow with IconLoader */
 #define DEFAULT_FONT_SIZE  12
-
 #define FOREIGN_CALLBACK_ATOM_NAME "_EDELIB_FOREIGN_CALLBACK"
 
 extern int FL_NORMAL_SIZE;
@@ -216,7 +214,7 @@ static void xsettings_cb(const char* name, XSettingsAction action, XSettingsSett
 		const char* th = NULL;
 
 		if(action == XSETTINGS_ACTION_DELETED || setting->type != XSETTINGS_TYPE_STRING)
-			th = DEFAULT_ICON_THEME;
+			th = IconTheme::default_theme_name();
 		else
 			th = setting->data.v_string;
 
@@ -269,7 +267,7 @@ void Window::init(int component) {
 	fl_open_display();
 
 	if(component & WIN_INIT_ICON_THEME)
-		icon_theme_load_once(DEFAULT_ICON_THEME);
+		icon_theme_load_once(IconTheme::default_theme_name());
 
 	/* setup icons for dialogs */
 	MessageBox::set_themed_icons(MSGBOX_ICON_INFO, 

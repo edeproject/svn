@@ -106,24 +106,40 @@ const char* IconLoader::get_icon_path(const char* name, IconSizes sz, IconContex
 	return item->path.c_str();
 }
 
-Fl_Shared_Image* IconLoader::get_icon(const char* name, IconSizes sz, IconContext ctx) {
-	Fl_Shared_Image* img;
+Fl_Shared_Image* IconLoader::get_icon(const char* name, IconSizes sz, IconContext ctx, bool allow_absolute_path) {
+	Fl_Shared_Image* img = NULL;
 	const char* path;
-	
+
+	if(allow_absolute_path) {
+		/* try to directly open it */
+		img = Fl_Shared_Image::get(name);
+		if(img)
+			return img;
+	}
+
 	path = get_icon_path(name, sz, ctx);
 	img = Fl_Shared_Image::get(path);
 	return img;
 }
 
-bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, bool redraw_widget) {
-	Fl_Shared_Image* img;
+bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, 
+		bool allow_absolute_path, bool redraw_widget) 
+{
+	Fl_Shared_Image* img = NULL;
 	IconLoaderItem* item;
-	
-	item = get_or_create_item(items, name, sz, ctx, curr_theme, widget);
-	img = Fl_Shared_Image::get(item->path.c_str());
 
+	/* try to directly open it */
+	if(allow_absolute_path)
+		img = Fl_Shared_Image::get(name);
+	
+	/* then go inside icon theme */
 	if(!img) {
-		/* no image, try fallback then */
+		item = get_or_create_item(items, name, sz, ctx, curr_theme, widget);
+		img = Fl_Shared_Image::get(item->path.c_str());
+	}
+
+	/* no image, try fallback then */
+	if(!img) {
 		item = get_or_create_item(items, fallback_icon, sz, ctx, curr_theme, widget);
 		img = Fl_Shared_Image::get(item->path.c_str());
 	}
@@ -143,6 +159,8 @@ bool IconLoader::set_icon(const char* name, Fl_Widget* widget, IconSizes sz, Ico
 void IconLoader::reload_icons(void) {
 	ItemsIter it = items.begin(), it_end = items.end();
 	IconLoaderItem* item;
+
+	/* TODO: Fl_Shared_Image cache should be cleared here */
 
 	/* iterate over the list and update each icon name with the new path */
 	for(; it != it_end; ++it) {
@@ -168,7 +186,7 @@ void IconLoader::repoll_icons(void) {
 	while(it != it_end) {
 		/* 
 		 * when widget get's destroyed, it's image goes too; this is good since we can
-		 * check that with Fl_Shared_Image::find() function since it will not exists in Fl_Shared_Image cache
+		 * check that with Fl_Shared_Image::find() because it will not exists in Fl_Shared_Image cache
 		 */
 		img = Fl_Shared_Image::find((*it)->path.c_str());
 		if(!img) {
@@ -207,16 +225,18 @@ IconLoader* IconLoader::instance() {
 	return IconLoader::pinstance;
 }
 
-Fl_Shared_Image* IconLoader::get(const char* name, IconSizes sz, IconContext ctx) {
-	return IconLoader::instance()->get_icon(name, sz, ctx);
+Fl_Shared_Image* IconLoader::get(const char* name, IconSizes sz, IconContext ctx, bool allow_absolute_path) {
+	return IconLoader::instance()->get_icon(name, sz, ctx, allow_absolute_path);
 }
 
 String IconLoader::get_path(const char* name, IconSizes sz, IconContext ctx) {
 	return IconLoader::instance()->get_icon_path(name, sz, ctx);
 }
 
-bool IconLoader::set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx, bool redraw_widget) {
-	return IconLoader::instance()->set_icon(name, widget, sz, ctx, redraw_widget);
+bool IconLoader::set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx, 
+		bool allow_absolute_path, bool redraw_widget) 
+{
+	return IconLoader::instance()->set_icon(name, widget, sz, ctx, allow_absolute_path, redraw_widget);
 }
 
 const IconTheme* IconLoader::theme(void) {

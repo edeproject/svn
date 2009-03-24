@@ -85,8 +85,9 @@ private:
 public:
 #ifndef SKIP_DOCS
 	const char* get_icon_path(const char* name, IconSizes sz, IconContext ctx);
-	Fl_Shared_Image* get_icon(const char* name, IconSizes sz, IconContext ctx);
-	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, bool redraw_widget);
+	Fl_Shared_Image* get_icon(const char* name, IconSizes sz, IconContext ctx, bool allow_absolute_path);
+	bool set_icon(const char* name, Fl_Widget* widget, IconSizes sz, IconContext ctx, 
+			bool allow_absolute_path, bool redraw_widget);
 	void load_theme(const char* name);
 	void reload_icons(void);
 	void repoll_icons(void);
@@ -99,7 +100,12 @@ public:
 	 * Initialize loader code and load given theme name. This function <em>must</em> be called
 	 * before further calls
 	 */
-	static void init(const char* theme = "edeneu");
+	static void init(const char* theme);
+
+	/**
+	 * Initialize loader code using default theme name (\see IconTheme::default_theme_name())
+	 */
+	static void init(void) { IconLoader::init(IconTheme::default_theme_name()); }
 
 	/**
 	 * Shutdowns loader by cleaning internal data. Call init() to load it again
@@ -134,10 +140,15 @@ public:
 	static void repoll(void);
 
 	/**
-	 * Returns image object by given icon name, size and context. If icon wasn't found, NULL will be returned.
-	 * For further members of Fl_Shared_Image, see FLTK documentation
+	 * Returns image object by searching icon that matches name, size and context. First, it will check
+	 * if <em>name</em> is absolute path to the icon (when <em>allow_absolute_path</em> was true, which is 
+	 * default) and will try to load it. If fails, it will consult icon theme.
+	 *
+	 * If icon wasn't found, NULL will be returned. For further members of Fl_Shared_Image, see FLTK 
+	 * documentation
 	 */
-	static Fl_Shared_Image* get(const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY);
+	static Fl_Shared_Image* get(const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY, 
+			bool allow_absolute_path = true);
 
 	/**
 	 * Returns full path to given icon name. If icon wasn't found, returned string will be empty
@@ -149,11 +160,12 @@ public:
 	 * the function you should use to set icon inside the widget, because it allows dynamic refreshing when 
 	 * icon theme was changed by redrawing the widget.
 	 *
-	 * If icon wasn't found, it will try to load fallback icon and if succeeded (in one of the cases)
-	 * it will redraw the widget (if <em>redraw_widget</em> is set to true, which is default)
+	 * It will try to load icon the sam way as get() does: first it will check if <em>name</em> is
+	 * absolute path then will go in icon theme. If this fails, it will try to load fallback icon and if 
+	 * succeeded (in one of the cases), it will redraw the widget (if <em>redraw_widget</em> is set to true)
 	 */
 	static bool set(Fl_Widget* widget, const char* name, IconSizes sz, IconContext ctx = ICON_CONTEXT_ANY,
-			bool redraw_widget = true);
+			bool allow_absolute_path = true, bool redraw_widget = true);
 
 	/**
 	 * Returns IconTheme object

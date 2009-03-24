@@ -143,6 +143,11 @@ public:
 	 * Query available icons from loaded theme and inherited themes. Icons will have full path
 	 */
 	void query_icons(list<String>& lst, IconSizes size, IconContext context = ICON_CONTEXT_ANY) const;
+
+	/**
+	 * Returns name for default icon theme
+	 */
+	static const char* default_theme_name(void) { return "edeneu"; }
 };
 
 EDELIB_NS_END
