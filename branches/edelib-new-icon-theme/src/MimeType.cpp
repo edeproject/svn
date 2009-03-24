@@ -143,6 +143,8 @@ const String& MimeType::icon_name(void) {
 	const char* ic = xdg_mime_get_icon(mtype.c_str());
 	if(ic) {
 		micon = ic;
+
+		status |= ICON_LOADED;
 		return micon;
 	}
 
@@ -168,6 +170,7 @@ const String& MimeType::icon_name(void) {
 		micon[pos] = '-';
 	}
 
+	status |= ICON_LOADED;
 	return micon;
 }
 
