@@ -160,21 +160,27 @@ void IconLoader::reload_icons(void) {
 	ItemsIter it = items.begin(), it_end = items.end();
 	IconLoaderItem* item;
 
-	/* TODO: Fl_Shared_Image cache should be cleared here */
+	/* 
+	 * TODO: Fl_Shared_Image cache should be cleared here; not fully because
+	 * it could contain other images, not related to the icons.
+	 */
 
 	/* iterate over the list and update each icon name with the new path */
 	for(; it != it_end; ++it) {
 		item = *it;
 		item->path = curr_theme->find_icon(item->name.c_str(), item->size, item->context);
 
-		/* also update widget icon */
+		/* 
+		 * Also update widget icon. If Fl_Shared_Image::get() fails here, image() will
+		 * receive NULL and will signal to FLTK that previous image be removed from drawing
+		 * surface, drawing nothing. This is desired behaviour.
+		 */
 		if(item->widget) {
 			Fl_Shared_Image* img = Fl_Shared_Image::get(item->path.c_str());
-			if(img) {
-				Fl_Widget* wi = item->widget;
-				wi->image(img);
-				wi->redraw();
-			}
+			Fl_Widget* wi = item->widget;
+
+			wi->image(img);
+			wi->redraw();
 		}
 	}		
 }

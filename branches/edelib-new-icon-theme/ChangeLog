@@ -6,6 +6,9 @@
 	* edelib/IconLoader.h:
 	* src/IconLoader.cpp: let IconLoader tries to directly load icon, then use
 	IconTheme
+	* src/IconLoader.cpp: removed checks if Fl_Shared_Image::get() fails;
+	image() will get NULL and widget will remove previous image, drawing
+	nothing; this behaviour is desired since image is not found anyway
 
 2009-03-23  Sanel <karijes@users.sourceforge.net>
 
