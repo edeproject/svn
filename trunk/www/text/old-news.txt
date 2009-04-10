@@ -1,5 +1,12 @@
 <document>
 
+<news title="Wiki and bug tracker temporary down">
+<p>
+ Our wiki and bug tracker (Trac powered) are temporary down due bad python upgrade.
+ Things should be hopefully resolved soon.
+</p>
+</news>
+
 <news title="Bandwidth problems">
 <p>
  We had a small bandwidth problems last two days and the site was mostly offline. The issue is fixed, 

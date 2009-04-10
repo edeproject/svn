@@ -4,6 +4,14 @@
 -->
 <document>
 
+<news title="Issue tracker changed">
+<p>
+ The new issue tracker, powered by <a href="http://bugzilla.org">Bugzilla</a>
+ is now on <a href="http://bugs.equinox-project.org">http://bugs.equinox-project.org</a>, so
+ please report future requests there.
+</p>
+</news>
+
 <news title="gcc 4.3.2 patch">
 <p>
  Thierry, from <a href="http://www.nutyx.org/">Nutyx</a> project, completed
@@ -35,13 +43,6 @@
  Also, Trac (wiki and tracker) is now up. There are some small changes that needs to
  be reconfigured due this backup/move/restore but that should not be an issue
  (hopefully ;-)).
-</p>
-</news>
-
-<news title="Wiki and bug tracker temporary down">
-<p>
- Our wiki and bug tracker (Trac powered) are temporary down due bad python upgrade.
- Things should be hopefully resolved soon.
 </p>
 </news>
 
