@@ -11,8 +11,7 @@ You can help us in numerious ways, like:
 
 Bug reporting
 -------------
-Bugs are inevitable, so filling a 
-[new ticket](http://equinox-project.org/cgi-bin/trac.cgi) with detail description
+Bugs are inevitable, so filling a [new ticket](http://bugs.equinox-project.org) with detail description
 what happened, means a lot for us. Please, in report put as much details as possible (like
 CPU type, OS platform, X or gcc version, etc.). If you wan't to provide us with even more details, you
 can rebuild package with debug support (usually *./configure --enable-debug*) and fire it under
