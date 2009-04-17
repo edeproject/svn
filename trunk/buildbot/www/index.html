@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+  <meta name="author" content="ede team" />
+  <link type="text/css" href="css/style.css" rel="stylesheet" title="default" />
+  <link rel="icon" href="http://equinox-project.org/sitemedia/images/favicon.ico" />
+  <link rel="alternate" type="application/rss+xml" title="Latest EDE project news" href="http://sourceforge.net/export/rss2_projnews.php?group_id=49891&amp;rss_fulltext=1" />
+  <title>EDE Buildbot</title>
+  <script type="text/javascript" src="js/rounded_corners.js"></script>
+  <script type="text/javascript">
+     window.onload = function() {
+      settings = {
+          tl: { radius: 1 },
+          tr: { radius: 1 },
+          bl: { radius: 10 },
+          br: { radius: 10 },
+          antiAlias: true,
+          autoPad: true,
+          validTags: ["div"]
+      }
+	  var iobject = new curvyCorners(settings, "introduction");
+	  var robject = new curvyCorners(settings, "rounder");
+      robject.applyCornersToAll();
+      iobject.applyCornersToAll();
+     }
+  </script>
+</head>
+
+<body>
+<div id="container">
+<div id="top">
+   <div id="title">
+      <img id="logo" src="images/ede-logo.png" alt="Equinox Desktop Environment" />
+   </div>
+   <div id="toplinks">
+      <ul>
+         <li><a href="/waterfall" title="give you a time-oriented summary of recent buildbot activity">waterfall display</a></li>
+         <li><a href="/grid" title="give you a developer-oriented summary of recent buildbot activity">grid display</a></li>
+         <li><a href="/one_box_per_builder" title="each builder is here">latest builds</a></li>
+         <li><a href="/one_line_per_build" title="are summarized here, one per line">recent builds</a></li>
+         <li><a href="/buildslaves" title="buildslave information">buildslaves</a></li>
+      </ul>
+   </div>
+</div>
+
+<div id="content">
+<a href="http://equinox-project.org">&laquo; return back</a><br /><br />
+
+<h2>EDE Buildbot</h2>
+<p>
+This is the central place where various information about EDE builds are reported. These builds 
+are scheduled to be executed daily, pulling latest changes from our repository.
+</p>
+
+<p>
+The major goal of using this Buildbot is to provide build coverage for edelib and ede on various OS-es
+with different (if possible) compilers.
+</p>
+
+<h2>A short explaination of the menu items</h2>
+<ul>
+  <li><b>waterfall display</b> - gives you a time-oriented summary of recent buildbot activity</li>
+  <li><b>grid display</b> - gives you a developer-oriented summary of recent buildbot activity</li>
+  <li><b>latest build</b> - information about latest build per builder</li>
+  <li><b>recent builds</b> - information about latest builds are summarized here, one per line</li>
+  <li><b>buildslaves</b> - information about connected peers and their capabilities</li>
+</ul>
+
+<br /><br />
+This site is powered with <a href="about">Buildbot</a>.
+
+</div>
+<br /><br />
+<div id="bottom">
+   Copyright &copy; ede team 2002-2009 <br />
+</div>
+</div>
+<div class="rounder"></div>
+</body>
+</html> 
+
+<!-- page generated in 0.036332 sec. -->

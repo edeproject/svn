@@ -1,0 +1,394 @@
+/*
+ * ede's css style 
+ * css mess by Sanel Z.
+ */
+
+body
+{
+	background: #5a6668;
+	padding: 0;
+	margin-top: 0;
+	margin-right: 3em;
+	margin-left: 3em;
+	font-size: small;
+	
+	/* for centered content (not supported by explorer) 
+	width: 760px;*/
+}
+
+.bottom_left
+{
+	background-image: url(../images/bottom-left.gif);
+	background-position: bottom left;
+	background-repeat: no-repeat;
+}
+
+.bottom_right
+{
+	background-image: url(../images/bottom-right.gif);
+	background-position: bottom right;
+	background-repeat: no-repeat;
+}
+
+#container
+{
+	background: white;
+	/* border: 1px solid gray; */
+}
+
+/* =top header
+********************************/
+#top
+{
+	background: #d4d7b6;
+	background-image: url(../images/gradient.gif);
+	background-repeat: repeat-x;
+}
+
+#title
+{
+	padding: 30px 0 0 20px;
+	height: 80px;
+	text-align:left;
+}
+
+#toplinks
+{
+	text-align: right;
+	font-family: "Lucida Grande", verdana, sans-serif;
+	font-size: 85%;
+	border-bottom: 2px solid #dddddd; 
+}
+
+#toplinks ul
+{
+	margin: 6px 0 8px 0;
+	margin-right: 2%;
+	padding: 0;
+	list-style-type: none;
+}
+
+#toplinks ul li
+{
+	display: inline;
+}
+
+#toplinks ul li a
+{
+	text-decoration: none;
+	margin-left: 3px;
+	margin-right: 3px;
+	padding: 5px 2px 5px 2px;
+}
+
+#toplinks li a 
+{
+	color: #5a6668;
+	font-weight: bold;
+
+	/* explorer 5.00 bugfix */
+	/*width: 0; */
+}
+
+#toplinks li a:hover
+{
+	border-bottom: 3px solid #5a6668;
+	padding-bottom: 8px;
+}
+
+#toplinks li a.active
+{
+	border-bottom: 3px solid green;
+	padding-bottom: 8px;
+	color: #2e3435;
+}
+
+
+/* =left bar
+*******************************/
+#leftbar
+{
+	float: left;
+	margin: 10px 0 0 5px;
+	border: 1px solid #dddddd;
+	width: 15%;
+}
+
+#leftbar ul
+{
+	font-family: "Lucida Grande", verdana, sans-serif;
+	/*font-size: 11px/20px;*/
+	font-size: 85%;
+	padding: 0;
+	margin-left: 12%;
+}
+
+#leftbar li
+{
+	list-style-type: none;
+	background-image: url(../images/arrow.gif);
+	background-repeat: no-repeat;
+	background-position: 0 .5em;
+	padding-left: 10px;
+	padding-bottom: 3px;
+	margin-left: 0;
+}
+
+#leftbar a
+{
+	text-decoration: none;
+	color: black;
+}
+
+#leftbar a:hover
+{
+	text-decoration: underline;
+	color: #454bc5;
+}
+
+#leftbar h3
+{
+	padding: 3px 2px 2px 8px;
+	margin: 1px;
+	font-family: verdana,sans-serif;
+	font-size: 85%;
+	border-bottom:1px gray solid ;
+	font-style: normal; color: black;
+	background: #d8ddc3;
+	color: #5a6668;
+}
+
+
+
+/* =content
+****************************/
+
+#content
+{
+	/*margin-left: 18%;*/
+	/*margin-right: 2%;*/
+	margin-top: 10px;
+	margin-bottom: 0;
+	padding-top: 10px;
+	/*padding: 10px 20px 10px 20px;*/
+	margin-left: 3%;
+	margin-right: 3%;
+	font-family: verdana, sans-serif;
+	font-size: 95%;
+	float: left;
+}
+
+#content .news
+{
+	background-image: url(../images/paper.png);
+	background-position: left;
+	background-repeat: no-repeat;
+
+	/*
+	font-family: verdana, sans-serif;
+	font-size: 110%;
+	color: gray;
+	border-bottom: 1px solid #dddddd;
+	*/
+	padding-left: 20px;
+}
+
+#content h1
+{
+	font-family: verdana, sans-serif;
+	font-size: 110%;
+	color: gray;
+	border-bottom: 1px solid #dddddd;
+	/*padding-left: 20px;*/
+}
+
+#content h2
+{
+	font-family: verdana, sans-serif;
+	font-size: 110%;
+	color: gray;
+}
+
+#content li
+{
+	list-style-type: square;
+}
+
+#content hr
+{
+	border: 1px solid gray;
+	height: 1px; 
+}
+
+#content pre
+{
+	/*border: 1px dotted #3f8220;*/
+	border: 1px solid #c7c7c7;
+	background: #efefef;
+	font-family: verdana, sans-serif;
+	font-size : 85%;
+	padding: 5px;
+}
+
+/* markdown add <pre><code>xxx</code></pre> so
+ * we handle that crap here
+ */
+#content code
+{
+	background: #efefef;
+	font-family: verdana, sans-serif;
+	font-size: 100%;
+}
+
+#content img
+{
+	border: 1px solid #dddddd;
+	padding: 3px;
+}
+
+
+#content .dotplan
+{
+	border: 1px solid #dddddd;
+	padding: 10px;
+}
+
+#content .date
+{
+	color: gray;
+	font-size: 75%;
+}
+
+/* =bottom
+****************************/
+#bottom
+{
+	clear: both;
+	text-align: center;
+	font-family: verdana, sans-serif;
+	font-size: 70%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+
+/* =introduction part
+****************************/
+.introduction
+{
+	/* width will keep images steady (for reasonable maximizations) */
+	width: 100%;
+	height: 21em;
+	margin: 0 0 4em 0;
+	padding: 0;
+	background-color: #d8ddd0;
+}
+
+.introductiontxt
+{
+	padding: 1.5em 3em 3em 3em;
+	width: 50%;
+	font-size: 100%;
+}
+
+.introduction img
+{
+	margin-top: 1.5em;
+	margin-right: 3em;
+	border: none;
+	float: right;
+}
+
+.introduction a.button
+{
+	display: block;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	background-image: url(../images/button.png);
+	background-position: left;
+	background-repeat: no-repeat;
+	width: 201px;
+	height: 100px;
+	text-align: center;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 140%;
+	color: gray;
+}
+
+.buttontxt
+{
+	padding-top: 40px;
+}
+
+/* =theme part
+******************************/
+.themes
+{
+	height: 180px;
+	font-size: inherit;
+}
+
+.themes img
+{
+	float: right;	
+	border: 1px solid gray;
+	padding: 3px;
+	margin-left: 8%;
+}
+
+.themes h2 
+{
+	font-size: 100% !important;
+	color: gray !important;
+	border-bottom: 1px solid #dddddd !important;
+}
+
+.themes h3
+{
+	font-size: 85% !important;
+	color: gray !important;
+}
+
+
+/* =gallery part
+******************************/
+.gallery
+{
+	text-align: left;
+}
+
+.gallery img
+{
+	margin: 0.1em;
+}
+
+.gallery h2
+{
+	font-size: 100% !important;
+    color: gray !important;
+}
+
+/* =various
+****************************/
+a
+{
+	color: #6b6fc1;
+}
+
+a.name
+{
+	color: red;
+}
+
+.hidden
+{
+	display: none;
+}
+
+.rounder
+{
+	background: white;
+	/*margin-bottom: 20px;*/
+}
