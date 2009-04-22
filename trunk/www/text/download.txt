@@ -1,5 +1,5 @@
-Official releases
-------------------
+Stable releases
+---------------
 <table style="width: 30%; text-align: left" border="0" cellpadding="2" cellspacing="1">
    <tbody>
       <tr>
@@ -11,15 +11,39 @@ Official releases
       </tr>
       <tr>
          <td style="vertical-align: top;">eFLTK</td>
-         <td style="vertical-align: top;">2.0.7</td>
+         <td style="vertical-align: top;">2.0.8</td>
                  <td style="vertical-align: top;">
-<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021&amp;release_id=554585">download</a>
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=58021&amp;release_id=677630">download</a>
                  </td>
       </tr>
    </tbody>
 </table>
 
 *NOTE: EDE equires eFLTK, so make sure you download it first.*
+
+
+Unstable 2.0 releases
+---------------------
+<table style="width: 30%; text-align: left" border="0" cellpadding="2" cellspacing="1">
+   <tbody>
+      <tr>
+         <td style="vertical-align: top;">EDE</td>
+         <td style="vertical-align: top;">2.0 alpha</td>
+                 <td style="vertical-align: top;">
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=43312&amp;release_id=677631">download</a>
+                </td>
+      </tr>
+      <tr>
+         <td style="vertical-align: top;">edelib</td>
+         <td style="vertical-align: top;">2.0 alpha</td>
+                 <td style="vertical-align: top;">
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=5254&amp;release_id=677628">download</a>
+                 </td>
+      </tr>
+   </tbody>
+</table>
+
+*NOTE: Unstable 2.0 releases requires eFLTK too.*
 
 <br />
 

@@ -4,6 +4,31 @@
 -->
 <document>
 
+<news title="EDE 2.0 alpha released">
+<p>
+ We are pleased to announce the first, major 2.0 EDE release, we are working
+ on for the last tree years. 
+</p>
+
+<p>
+ There is a lot of the new stuff and code, but the most important are replacing 
+ eFLTK usage with <a href="http://www.fltk.org">FLTK</a>, introducing our
+ brand new edelib library and syncing with the
+ <a href="http://freedesktop.org">fredesktop.org</a> standards.
+</p>
+
+<p>
+ Please note how this is still alpha release meant for those who would like to
+ contribute to the project.
+</p>
+
+<p>
+ Installation instructions can be found at 
+ <a href="http://equinox-project.org/cgi-bin/trac.cgi/wiki/InstallationHowTo2.0a">
+ 2.0 Installation HowTo</a>.
+</p>
+</news>
+
 <news title="Issue tracker changed">
 <p>
  The new issue tracker, powered by <a href="http://bugzilla.org">Bugzilla</a>
@@ -23,26 +48,6 @@
 <p>
  You can see <a href="http://sourceforge.net/forum/forum.php?thread_id=2633352&amp;forum_id=249614">
  whole thread</a> about this problem and provided solution.
-</p>
-</news>
-
-<news title="EDE got review, slashdotted, news repost and the rest...">
-<p>
- As we get noted by our hosting provider, they did some significant hardware
- upgrade which required data moving and etc. (that includes this site too).
- ...and during that move, some news I posted are lost ;-(, so this is a second
- try (with backup, of course).
-</p>
-<p>
- EDE was reviewed by <a href="http://www.linux.com">linux.com</a> team
- and you can find it at <a href="http://www.linux.com/feature/135684">this
- link</a>. This got on <a href="http://linux.slashdot.org/article.pl?sid=08/05/26/1643222">
- slashdot</a> too!!! :-)
-</p>
-<p>
- Also, Trac (wiki and tracker) is now up. There are some small changes that needs to
- be reconfigured due this backup/move/restore but that should not be an issue
- (hopefully ;-)).
 </p>
 </news>
 
