@@ -1,0 +1,43 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2008 EDE Authors.
+#
+# This program is licenced under terms of the 
+# GNU General Public Licence version 2 or newer.
+# See COPYING for details.
+
+SubDir TOP ede-tip ;
+
+SOURCE = Fortune.cpp ede-tip.cpp ;
+
+EdeProgram ede-tip : $(SOURCE) ;
+TranslationStrings  locale : $(SOURCE) ;
+EdeManual doc/ede-tip.txt : doc/ede-tip.jpg ;
+
+ProgramBare ede-tip-compiler : ede-tip-compiler.c ;
+
+# this rule is for compiling fortune files
+rule FortuneCompile
+{
+	Depends $(<) : ede-tip-compiler ;
+	Depends $(<) : $(>) ;
+	Depends all : $(<) ;
+
+	SEARCH on $(>) = $(SUBDIR) ;
+	MakeLocate $(<) : $(SUBDIR) ;
+
+	FortuneCompile1 $(<) : $(>) ;
+	LocalClean clean : $(<) ;
+}
+
+actions FortuneCompile1
+{
+	$(TOP)/ede-tip/ede-tip-compiler -s "$(>)" "$(<)"
+}
+
+FortuneCompile tips/ede.dat : tips/ede ;
+
+InstallEdeTips tips/ede.dat ;
+InstallEdeTips tips/ede ;

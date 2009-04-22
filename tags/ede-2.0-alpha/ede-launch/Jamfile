@@ -1,0 +1,20 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2007-2008 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+SubDir TOP ede-launch ;
+
+SOURCE = ede-launch.cpp ;
+
+EdeProgram     ede-launch : $(SOURCE) ;
+TranslationStrings locale : $(SOURCE) ;
+
+ObjectC++Flags       ede-launch-sn.cpp : $(STARTUP_NOTIFICATION_INCLUDE) ;
+EdeProgramAsFltkBare ede-launch-sn     : ede-launch-sn.cpp ;
+LinkAgainst          ede-launch-sn     : $(STARTUP_NOTIFICATION_LIB) ;

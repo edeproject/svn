@@ -1,0 +1,114 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2007 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+ASCIIDOC  = "$(TOP)/doc/asciidoc/asciidoc.py" ;
+DOCDIR    = "$(TOP)/doc" ;
+MANUALDIR = "$(DOCDIR)/manual" ;
+
+# Must be relative to "doc" dir
+MANUALICONS = "images" ;
+
+# EdeManual [file] : [optinal-images] : "make-toc" ;
+# Creates [file].html via asciidoc. If [optinal-images] are
+# given, they will be copied in $(DOCICONS).
+rule EdeManual
+{
+	if ! $(ASCIIDOC) {
+		Echo "ASCIIDOC not defined; documentation will not be built!" ;
+		return ;
+	}
+
+	if ! $(PYTHON) {
+		Echo "PYTHON not defined. This means python was not found on your system. Documentation will not be build!" ;
+		return ;
+	}
+
+	# see if we have tidy installed
+	local tidy_paths = [ Glob $(PATH) : tidy ] ;
+
+	local html_ext = ".html" ;
+	local path = $(SEARCH_SOURCE) ;
+
+	local i source target ;
+	for i in $(<) {
+		source = [ FFileName $(path) $(i) ] ;
+		# strip directory part so we can prepend
+		# another one (used as output directory)
+		target = $(source:D=) ;
+
+		# set output extension (asciidoc does not do that)
+		# and grist to prevent collision
+		target = $(target:S=$(html_ext):G="$(target)-html") ;
+
+		LocalDepends $(target) : $(source) ;
+		LocalDepends all : $(target) ;
+		LocalDepends doc : $(target) ;
+
+		# set output to $(MANUALDIR) directory
+		MakeLocate $(target) : $(MANUALDIR) ;
+
+		# a hack to create Table of Content
+		# seems that this is the only way asciidoc can do it
+		if $(3) = "make-toc" {
+			TOC_FLAG on $(target) = "-a toc" ;
+		}
+
+		if ! $(tidy_paths) {
+			AsciiDoc1 $(target) : $(source) ;
+		} else {
+			TIDY on $(target) = "tidy" ;
+			AsciiDoc2 $(target) : $(source) ;
+		}
+
+		LocalClean clean : $(target) ;
+	}
+
+	# copy images, if given
+	local imgdir = [ FDirName $(MANUALDIR) $(MANUALICONS) ] ;
+	if $(>) {
+		for i in $(>) {
+			source = [ FFileName $(path) $(i) ] ;
+			target = $(source:D=$(imgdir)) ;
+
+			MkDir $(imgdir) ;
+
+			LocalDepends $(target) : $(imgdir) ;
+			LocalDepends $(target) : $(source) ;
+			LocalDepends all : $(target) ;
+			LocalDepends doc : $(target) ;
+
+			Copy $(target) : $(source) ;
+			LocalClean clean : $(target) ;
+		}
+	}
+}
+
+# EdeManualWithToc [file] : [optinal-images] ;
+# The same as EdeManual, but it will build Table of Contents
+rule EdeManualWithToc
+{
+	EdeManual $(1) : $(2) : "make-toc" ;
+}
+
+actions AsciiDoc1
+{
+	$(ASCIIDOC) $(TOC_FLAG) -a icons -a iconsdir=$(MANUALICONS) -a edeversion="EDE $(EDE_VERSION)" -o $(<) $(>)
+}
+
+# version with tidy (utility to clean HTML/XHTML code)
+actions AsciiDoc2
+{
+	$(ASCIIDOC) $(TOC_FLAG) -a icons -a iconsdir=$(MANUALICONS) -a edeversion="EDE $(EDE_VERSION)" -o "$(<).tmp" $(>)
+	$(TIDY) -q -i "$(<).tmp" > "$(<)"
+	$(RM) "$(<).tmp"
+}
+
+NotFile doc ;
+Always doc ;

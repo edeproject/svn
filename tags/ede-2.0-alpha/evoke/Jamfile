@@ -1,0 +1,44 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2009 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+SubDir TOP evoke ;
+
+SOURCE = evoke.cpp 
+         EvokeService.cpp 
+         Splash.cpp 
+         Xsm.cpp 
+		 Logout.cpp 
+		 Autostart.cpp 
+		 Xshutdown.cpp ;
+
+CONFIG = ede-settings.conf 
+         ede-startup.conf ;
+
+#ObjectC++Flags $(SOURCE) : -DUSE_LOCAL_CONFIG ;
+
+# use SIGHUP for now as default
+ObjectC++Flags evoke.cpp : -DUSE_SIGHUP ;
+
+ObjectC++Flags EvokeService.cpp : $(EDELIB_DBUS_INCLUDE) ;
+LinkAgainstAsFirst evoke : $(EDELIB_DBUS_LIB) ;
+
+EdeProgram evoke : $(SOURCE) ;
+
+ObjectC++Flags ede-shutdown : $(X_CFLAGS) ;
+ProgramBare    ede-shutdown : ede-shutdown.cpp ; 
+LinkAgainst    ede-shutdown : $(X_LIBS) -lX11 ;
+
+InstallEdeProgram ede-settings-apply ;
+
+EdeManualWithToc [ FFileName doc evoke.txt ] ;
+TranslationStrings locale : $(SOURCE) ;
+InstallEdeConfigFiles $(CONFIG) ;
+
+SubInclude TOP evoke splash-themes ;

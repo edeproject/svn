@@ -1,0 +1,219 @@
+dnl
+dnl $Id: configure.in 1719 2006-08-15 08:56:42Z karijes $
+dnl
+dnl Part of Equinox Desktop Environment (EDE).
+dnl Copyright (c) 2000-2008 EDE Authors.
+dnl 
+dnl This program is licenced under terms of the 
+dnl GNU General Public Licence version 2 or newer.
+dnl See COPYING for details.
+
+m4_define([ede_major_version], [2])
+m4_define([ede_minor_version], [0])
+m4_define([ede_patch_version], [0])
+m4_define([ede_version], [ede_major_version.ede_minor_version.ede_patch_version])
+
+AC_PREREQ(2.13)
+AC_INIT(EDE, ede_version, [karijes@users.sourceforge.net])
+AC_CONFIG_SRCDIR(COPYING)
+AC_CONFIG_HEADER(config.h:config.h.in)
+
+dnl PACKAGE_VERSION is filled from AC_INIT
+EDE_VERSION=$PACKAGE_VERSION
+
+if test "$prefix" = NONE; then
+	EDE_INSTALL_DIR="/usr/local"
+else
+	EDE_INSTALL_DIR="$prefix"
+fi
+AC_DEFINE_UNQUOTED(PREFIX, "$EDE_INSTALL_DIR", [Default installation place])
+
+
+EDE_OPTIM_FLAGS=""
+EDE_DEBUG_FLAGS=""
+
+AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [turn on debugging support (default=no)]),, enable_debug=no)
+AC_ARG_ENABLE(profile, AC_HELP_STRING([--enable-profile], [turn on profiling support (default=no)]),, enable_profile=no)
+AC_ARG_ENABLE(shape, AC_HELP_STRING([--enable-shape], [enable XShape extension (default=yes)]),, enable_shape=yes)
+AC_ARG_ENABLE(composite, AC_HELP_STRING([--enable-composite], [enable XComposite extension (default=yes)]),, enable_composite=yes)
+AC_ARG_ENABLE(hal, AC_HELP_STRING([--enable-hal], [enable HAL support (default=yes)]),, enable_hal=yes)
+
+dnl set 'with_fltk_path'
+AC_ARG_WITH(fltk_path, AC_HELP_STRING([--with-fltk-path=[DIR]], [alternative directory where FLTK is installed]))
+dnl set 'with_efltk_path'
+AC_ARG_WITH(efltk_path, AC_HELP_STRING([--with-efltk-path=[DIR]], [alternative directory where eFLTK is installed]))
+dnl set 'with_edelib_path'
+AC_ARG_WITH(edelib_path, AC_HELP_STRING([--with-edelib-path=[DIR]], [alternative directory where edelib is installed]))
+
+AC_PROG_CXX
+AC_PROG_CPP
+EDE_PROG_JAM
+
+AC_PATH_PROG(MSGFMT, msgfmt)
+AC_PATH_PROG(XGETTEXT, xgettext)
+AC_PATH_PROG(GDB, gdb)
+AC_PATH_PROG(PYTHON, python)
+
+dnl X_CFLAGS, X_PRE_LIBS, X_LIBS, X_EXTRA_LIBS are replaced iff are X on nonstandard paths
+AC_PATH_XTRA
+
+AC_HEADER_STDC
+
+if test "$enable_profile" = "yes"; then
+	enable_debug=yes
+fi
+
+if test "$enable_debug" = "yes"; then
+	EDE_DEBUG_FLAGS="$EDE_DEBUG_FLAGS -g3 -D_DEBUG -DDEBUG"
+	EDE_OPTIM_FLAGS=""
+fi
+
+if test "$enable_profile" = "yes"; then
+	EDE_DEBUG_FLAGS="$EDE_DEBUG_FLAGS -pg"
+fi
+
+if test "$enable_shape" = "yes"; then
+	AC_CHECK_HEADER(X11/extensions/shape.h, [have_xshape_h=yes],)
+
+	if test "$have_xshape_h" = "yes"; then
+		AC_CHECK_LIB(Xext, XShapeInputSelected, [have_xshape=yes],,$X_LIBS)
+	fi
+
+	if test "$have_xshape" = "yes"; then
+		AC_DEFINE(HAVE_SHAPE, 1, [Define to 1 if you have XShape extension])
+	fi
+fi
+
+if test "$enable_composite" = "yes"; then
+	PKG_CHECK_MODULES(COMPOSITE, [xcomposite, xdamage, xext], [have_xcomposite=yes], [have_composite=no])
+
+	if test "$have_xcomposite" = "yes"; then
+		AC_DEFINE(HAVE_COMPOSITE, 1, [Define to 1 if you have Xcomposite extension])
+	fi
+fi
+
+if test "$enable_hal" = "yes"; then
+	PKG_CHECK_MODULES(HAL, [hal, hal-storage], [have_hal=yes], [have_hal=no])
+
+	if test "$have_hal" = "yes"; then
+		AC_DEFINE(HAVE_HAL, 1, [Define to 1 if you have HAL libraries])
+	fi
+fi
+
+PKG_CHECK_MODULES(LIBSTARTUP_NOTIFICATION, [libstartup-notification-1.0], 
+				  [have_libstartup_notification=yes], [have_libstartup_notification=no])
+if test "$have_libstartup_notification" = "yes"; then
+	AC_DEFINE(HAVE_LIBSTARTUP_NOTIFICATION, 1, [Define to 1 if you have libstartup-notification libraries])
+else
+	AC_MSG_RESULT(no)
+fi
+
+if test -n "$with_edelib_path"; then
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$with_edelib_path"
+else
+	dnl TODO: remove this in release
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/opt/ede/lib/pkgconfig"
+fi
+
+PKG_CHECK_MODULES(EDELIB, [edelib],, [have_edelib=no])
+if test "$have_edelib" = "no"; then
+	AC_MSG_ERROR(edelib not found! You must install it first)
+fi
+
+PKG_CHECK_MODULES(EDELIB_DBUS, [edelib-dbus],, [have_edelib_dbus=no])
+if test "$have_edelib_dbus" = "no"; then
+	AC_MSG_ERROR(edelib-dbus not found! You must install it first)
+fi
+
+dnl find edelib documentation
+EDELIB_API_INDEX=`$PKG_CONFIG --variable=edelibdocdir edelib`
+EDELIB_API_INDEX="$EDELIB_API_INDEX/html/index.html"
+
+if test "x$with_fltk_path" = "x"; then
+	AC_PATH_PROG(FLTK_CONFIG, fltk-config)
+else
+	AC_PATH_PROG(FLTK_CONFIG, fltk-config,, "$with_fltk_path/bin")
+fi
+
+if test -n "$FLTK_CONFIG"; then
+	fltk_version=`$FLTK_CONFIG --version`
+
+	AC_MSG_CHECKING([for FLTK version >= 1.1.7])
+
+	case "$fltk_version" in ["1.1."[789]])
+		AC_MSG_RESULT(yes)
+		;;
+	*)
+		AC_MSG_ERROR([Looks like you have an older FLTK version ($fltk_version). Required is >= 1.1.7])
+	esac
+
+	dnl remove -Wno-non-virtual-dtor from flags
+	FLTK_CFLAGS=`$FLTK_CONFIG --cxxflags | sed -e 's/-Wno-non-virtual-dtor//'`
+	dnl remove -lsupc++ so we can chose what to use
+	FLTK_LIBS_NOIMAGES=`$FLTK_CONFIG --ldflags | sed -e 's/-lsupc++//g'`
+	FLTK_LIBS=`$FLTK_CONFIG --use-images --ldflags | sed -e 's/-lsupc++//g'`
+else
+	AC_MSG_ERROR([You don't have FLTK installed. To compile EDE, you will need it.])
+fi
+
+if test "x$with_efltk_path" = "x"; then
+	AC_PATH_PROG(EFLTK_CONFIG, efltk-config)
+else
+	AC_PATH_PROG(EFLTK_CONFIG, efltk-config,, "$with_efltk_path/bin")
+fi
+
+if test -n "$EFLTK_CONFIG"; then
+	efltk_version=`$EFLTK_CONFIG --version`
+
+	AC_MSG_CHECKING([for eFLTK version >= 2.0.4])
+
+	case "$efltk_version" in ["2.0."[456789]])
+		AC_MSG_RESULT(yes)
+		;;
+	*)
+		AC_MSG_ERROR([Looks like you have an older eFLTK version ($efltk_version). Required is >= 2.0.4])
+	esac
+
+	EFLTK_CFLAGS=`$EFLTK_CONFIG --cxxflags`
+	EFLTK_LIBS_NOIMAGES=`$EFLTK_CONFIG --ldflags`
+	EFLTK_LIBS=`$EFLTK_CONFIG --use-xml --use-images --ldflags`
+else
+	AC_MSG_WARN([You don't have eFLTK installed. EDE will be built without panel and window manager!])
+fi
+
+EDE_CHECK_LIBXPM
+if test "$have_libxpm" = "yes"; then
+	FLTK_LIBS="$FLTK_LIBS $LIBXPM_LIBS"
+	FLTK_LIBS_NOIMAGES="$FLTK_LIBS_NOIMAGES $LIBXPM_LIBS"
+fi
+
+EDE_CHECK_STATFS
+EDE_CHECK_STAT64
+
+EDE_CHECK_DIR(DBUS_SERVICE_DIR, 
+			  [/usr/share/dbus-1/services /usr/local/share/dbus-1/services "$datarootdir/dbus-1/services"])
+
+EDE_INIT_JAM
+
+AC_SUBST(EDE_VERSION)
+AC_SUBST(EDE_OPTIM_FLAGS)
+AC_SUBST(EDE_DEBUG_FLAGS)
+AC_SUBST(FLTK_CFLAGS)
+AC_SUBST(FLTK_LIBS)
+AC_SUBST(FLTK_LIBS_NOIMAGES)
+AC_SUBST(EFLTK_CFLAGS)
+AC_SUBST(EFLTK_LIBS_NOIMAGES)
+AC_SUBST(EFLTK_LIBS)
+AC_SUBST(EDELIB_API_INDEX)
+
+AC_OUTPUT([
+ Jamconfig
+ tools/l10n-prepare.sh
+ data/startede
+ doc/index.txt
+ services/org.equinoxproject.Launch.service
+ services/org.equinoxproject.StartupNotify.service
+])
+
+chmod +x tools/l10n-prepare.sh
+chmod +x data/startede

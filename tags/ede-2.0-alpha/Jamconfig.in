@@ -1,0 +1,117 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2007 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+# directories
+prefix      ?= "@prefix@" ;
+exec_prefix ?= "@exec_prefix@" ;
+datarootdir ?= "@datarootdir@" ;
+bindir      ?= "@bindir@" ;
+datadir     ?= "@datadir@" ;
+docdir      ?= "@datadir@/doc" ;
+includedir  ?= "@includedir@" ;
+libdir      ?= "@libdir@" ;
+mandir      ?= "@mandir@" ;
+srcdir      ?= "@abs_srcdir@" ;
+sysconfdir  ?= "@sysconfdir@" ;
+
+# compiler
+CC           = @CC@ ;
+C++          = @CXX@ ;
+LINK         = $(CC) ;
+
+# tools used by jam rules
+XGETTEXT     ?= @XGETTEXT@ ;
+MSGFMT       ?= @MSGFMT@ ;
+PYTHON       ?= @PYTHON@ ;
+RMDIR_UNSAFE ?= $(RM) -Rf ;
+RMDIR_SAFE   ?= rmdir ;
+CP           ?= cp ;
+COPYDIR      ?= "cp -R" ;
+MV           ?= mv ;
+MKDIRS       ?= "mkdir -p" ;
+LINKCMD      ?= "ln -s" ;
+
+EDE_VERSION ?= "@EDE_VERSION@" ;
+
+# directories used by build system
+PREFIX               ?= "$(prefix)" ;
+EDE_BIN_DIR          ?= "$(bindir)" ;
+EDE_CONFIG_DIR       ?= "/etc/xdg/ede" ; # use XDG default for config dir
+EDE_CONFIG_DIR_OLD   ?= "$(datadir)/config" ;
+EDE_ICON_DIR         ?= "$(datadir)/icons" ;
+EDE_DESKTOP_FILE_DIR ?= "$(datadir)/desktop" ;
+EDE_MIME_DIR         ?= "$(datadir)/mime" ;
+EDE_DOC_DIR          ?= "$(docdir)/ede-$(EDE_VERSION)" ;
+EDE_THEMES_DIR       ?= "$(datadir)/themes" ;
+EDE_TIPS_DIR         ?= "$(datadir)/tips" ;
+
+OPTIMFLAGS ?= @EDE_OPTIM_FLAGS@ ;
+DEBUGFLAGS ?= @EDE_DEBUG_FLAGS@ ;
+
+# FIXME: a quick hack to work everything on SunStudio
+if $(SUN_COMPILER) {
+	WALL          ?= "+w2" ;
+	PEDANTIC      ?= ;
+	WNO_LONG_LONG ?= ;
+} else {
+	# gcc assumed
+	WALL          ?= "-Wall" ;
+	# some C libraries have issues with C++ when given '-pedantic' flag, so
+	# setting 'jam -sPEDANTIC=""' will allow compilation
+	PEDANTIC      ?= "-pedantic" ;
+	WNO_LONG_LONG ?= "-Wno-long-long" ;
+}
+
+# global flags used to be passed to every target
+GLOBALFLAGS ?= $(WALL) $(PEDANTIC) -DHAVE_CONFIG_H -I$(TOP) $(OPTIMFLAGS) $(DEBUGFLAGS) ;
+STDLIB      ?= -lstdc++ ;
+
+# Note that REMOVE_UNUSED_DEPENDENCIES_TRICK _does not_ works when
+# edelib is compiled as shared library (or when is linked with some shared library)
+#REMOVE_UNUSED_DEPENDENCIES_TRICK = 1 ;
+
+# edelib libraries path
+EDELIBINCLUDE       ?= @EDELIB_CFLAGS@ ;
+EDELIBLIB           ?= @EDELIB_LIBS@ ;
+EDELIB_DBUS_INCLUDE ?= @EDELIB_DBUS_CFLAGS@ ;
+EDELIB_DBUS_LIB     ?= @EDELIB_DBUS_LIBS@ ;
+
+# fltk libraries path
+FLTKINCLUDE      ?= @FLTK_CFLAGS@ ;
+FLTKLIB          ?= @FLTK_LIBS@ ;
+FLTKLIB_NOIMAGES ?= @FLTK_LIBS_NOIMAGES@ ;
+
+# backward; efltk libraries path
+EFLTKINCLUDE      ?= @EFLTK_CFLAGS@ ;
+EFLTKLIB          ?= @EFLTK_LIBS@ ;
+EFLTKLIB_NOIMAGES ?= @EFLTK_LIBS_NOIMAGES@ ;
+
+# Xcomposite
+COMPOSITEINCLUDE ?= @COMPOSITE_CFLAGS@ ;
+COMPOSITELIB     ?= @COMPOSITE_LIBS@ ;
+
+# HAL
+HALINCLUDE ?= @HAL_CFLAGS@ ;
+HALLIB     ?= @HAL_LIBS@ ;
+
+# startup-notification
+STARTUP_NOTIFICATION_INCLUDE ?= @LIBSTARTUP_NOTIFICATION_CFLAGS@ ;
+STARTUP_NOTIFICATION_LIB     ?= @LIBSTARTUP_NOTIFICATION_LIBS@ ;
+
+# X libraries (could be empty if are on standard paths)
+X_CFLAGS     ?= @X_CFLAGS@ ;
+X_LIBS       ?= @X_LIBS@ ;
+X_PRE_LIBS   ?= @X_PRE_LIBS@ ;
+X_EXTRA_LIBS ?= @X_EXTRA_LIBS@ ;
+
+DBUS_SERVICE_DIR ?= @DBUS_SERVICE_DIR@ ;
+
+# do not touch this
+JAMCONFIG_READ = "yes" ;
