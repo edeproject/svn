@@ -19,8 +19,9 @@ Stable releases
    </tbody>
 </table>
 
-*NOTE: EDE equires eFLTK, so make sure you download it first.*
+**NOTE:** EDE equires eFLTK, so make sure you download it first.
 
+<br />
 
 Unstable 2.0 releases
 ---------------------
@@ -43,7 +44,7 @@ Unstable 2.0 releases
    </tbody>
 </table>
 
-*NOTE: Unstable 2.0 releases requires eFLTK too.*
+**NOTE:** Unstable 2.0 releases requires eFLTK too and <a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=319505&amp;release_id=677626">jam</a>.
 
 <br />
 
