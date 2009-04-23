@@ -38,7 +38,7 @@ Unstable 2.0 releases
          <td style="vertical-align: top;">edelib</td>
          <td style="vertical-align: top;">2.0 alpha</td>
                  <td style="vertical-align: top;">
-<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=5254&amp;release_id=677628">download</a>
+<a href="http://sourceforge.net/project/showfiles.php?group_id=49891&amp;package_id=52548&amp;release_id=677628">download</a>
                  </td>
       </tr>
    </tbody>
