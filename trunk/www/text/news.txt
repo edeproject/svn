@@ -6,20 +6,20 @@
 
 <news title="EDE 2.0 alpha released">
 <p>
- We are pleased to announce the first, major 2.0 EDE release, we are working
- on for the last tree years. 
+ We are pleased to announce the first, major 2.0 EDE release, we have been working
+ on it for the last three years. 
 </p>
 
 <p>
- There is a lot of the new stuff and code, but the most important are replacing 
+ There is a lot of new stuff and code, but the most important changes are replacing 
  eFLTK usage with <a href="http://www.fltk.org">FLTK</a>, introducing our
  brand new edelib library and syncing with the
  <a href="http://freedesktop.org">fredesktop.org</a> standards.
 </p>
 
 <p>
- Please note how this is still alpha release meant for those who would like to
- contribute to the project.
+ Please note that this is still alpha an release, meant for those who would 
+ like to contribute to the project.
 </p>
 
 <p>
