@@ -17,6 +17,7 @@
 #include <xmlrpc-c/base.h>
 #include <xmlrpc-c/client.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define EDE_BUGZILLA_URL "http://bugs.equinox-project.org/xmlrpc.cgi"
 
@@ -50,8 +51,12 @@ int main(int argc, char** argv) {
 	char* tmp;
 	xmlrpc_decompose_value(&xenv, result, "{s:s,*}", "version", &tmp);
 	printf("version: %s\n", tmp);
+	free(tmp);
 
 	xmlrpc_DECREF(result);
+
+	xmlrpc_client_destroy(xcli);
+	xmlrpc_env_clean(&xenv);
 
 	return 0;
 }
