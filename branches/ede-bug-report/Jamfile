@@ -23,7 +23,7 @@ XMLRPC_C_FLAGS =
 		-I [ FDirName $(XMLRPC_C_SRC_PATH) deps expat xmltok ] ;
 
 # ede-bug-report related builds
-SOURCE = ede-bug-report.cpp ;
+SOURCE = Bugzilla.cpp ede-bug-report.cpp ;
 BINARY = ede-bug-report ;
 
 ObjectC++Flags $(SOURCE) : $(WNO_LONG_LONG) $(XMLRPC_C_FLAGS) ;
