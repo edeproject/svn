@@ -49,7 +49,8 @@ BugzillaData *bugzilla_new(const char *u) {
 }
 
 void bugzilla_free(BugzillaData *data) {
-	E_ASSERT(data != NULL);
+	if(data == NULL)
+		return;
 
 	xmlrpc_client_destroy(data->xcli);
 	xmlrpc_env_clean(&data->xenv);
@@ -78,4 +79,80 @@ String bugzilla_get_version(BugzillaData *data) {
 
 	xmlrpc_DECREF(result);
 	return ret;
+}
+
+int bugzilla_login(BugzillaData *data, const char *user, const char *passwd) {
+	E_ASSERT(data != NULL);
+
+	xmlrpc_value *result;
+	int remember = 0;  /* remember login data */
+	int id = -1; /* bugzilla user id */
+
+	xmlrpc_client_call2f(&data->xenv, data->xcli, data->url.c_str(), "User.login", &result,
+			"({s:s,s:s,s:b})",
+			"login", user,
+			"password", passwd,
+			"remember", remember);
+
+	if(data->xenv.fault_occurred) {
+		E_WARNING(E_STRLOC ": Unable to perform login function (%s)\n", data->xenv.fault_string);
+		return id;
+	}
+
+	xmlrpc_decompose_value(&data->xenv, result, "{s:i,*}", "id", &id);
+	xmlrpc_DECREF(result);
+
+	return id;
+}
+
+void bugzilla_logout(BugzillaData *data) {
+	E_ASSERT(data != NULL);
+
+	xmlrpc_value *result;
+	xmlrpc_client_call2f(&data->xenv, data->xcli, data->url.c_str(), "User.logout", &result, "()");
+
+	if(data->xenv.fault_occurred) {
+		E_WARNING(E_STRLOC ": Unable to call xmlrpc function (%s)\n", data->xenv.fault_string);
+		return;
+	}
+
+	xmlrpc_DECREF(result);
+}
+
+int bugzilla_submit_bug(BugzillaData *data, const char *product,
+											const char *component,
+											const char *summary,
+											const char *version,
+											const char *description,
+											const char *op_sys,
+											const char *platform,
+											const char *priority,
+											const char *severity)
+{
+	E_ASSERT(data != NULL);
+
+	int bug_id = -1;
+	xmlrpc_value *result;
+
+	xmlrpc_client_call2f(&data->xenv, data->xcli, data->url.c_str(), "Bug.create", &result,
+			"({s:s,s:s,s:s,s:s,s:s,s:s,s:s,s:s,s:s})",
+			"product", product,
+			"component", component,
+			"summary", summary,
+			"version", version,
+			"description", description,
+			"op_sys", op_sys,
+			"platform", platform,
+			"priority", priority,
+			"severity", severity);
+
+	if(data->xenv.fault_occurred) {
+		E_WARNING(E_STRLOC ": Unable to perform submit function (%s)\n", data->xenv.fault_string);
+		return bug_id;
+	}
+
+	xmlrpc_decompose_value(&data->xenv, result, "{s:i,*}", "id", &bug_id);
+	xmlrpc_DECREF(result);
+
+	return bug_id;
 }
