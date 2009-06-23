@@ -28,6 +28,7 @@
 #include <edelib/Nls.h>
 #include <edelib/MessageBox.h>
 
+#include "PulseProgress.h"
 #include "Bugzilla.h"
 #include "BugImage.h"
 #include "icons/bug.xpm"
@@ -45,6 +46,7 @@ EDELIB_NS_USING(message)
 static Fl_Input        *bug_title_input;
 static Fl_Input        *email_input;
 static Fl_Text_Buffer  *text_buf;
+static PulseProgress   *progress_bar;
 
 /* check if string has spaces */
 static bool empty_entry(const char *en) {
@@ -102,7 +104,7 @@ static void send_cb(Fl_Widget*, void *w) {
 	text_buf->insert(0, "This issue was reported via EDE Bug Report Tool (BRT).\n\n");
 
 	txt = text_buf->text();
-
+#if 0
 	Fl::check();
 
 	bdata = bugzilla_new(EDE_BUGZILLA_URL);
@@ -125,12 +127,12 @@ static void send_cb(Fl_Widget*, void *w) {
 	}
 
 	bugzilla_logout(bdata);
-
+#endif
 	message(_("Report was sent successfully. Thank you!"));
 	/* close the window */
 	close_cb(0, w);
 cleanup:
-	bugzilla_free(bdata);
+	// bugzilla_free(bdata);
 	free((void *) txt);
 }
 
@@ -161,6 +163,9 @@ int main(int argc, char** argv) {
 
 		text_buf = new Fl_Text_Buffer();
 		te->buffer(text_buf);
+
+		progress_bar = new PulseProgress(10, 330, 225, 25);
+		progress_bar->hide();
 
 		Fl_Button *send = new Fl_Button(285, 330, 90, 25, _("&Send"));
 		send->callback(send_cb, win);

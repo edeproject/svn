@@ -41,5 +41,8 @@ Note: valid email address is required, so developers could contact you for more 
       label {&Cancel}
       xywh {380 330 90 25}
     }
+    Fl_Progress {} {
+      xywh {10 330 225 25} selection_color 146
+    }
   }
 } 
