@@ -14,7 +14,6 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include <FL/Fl.H>
@@ -27,26 +26,24 @@
 #include <edelib/Window.h>
 #include <edelib/Nls.h>
 #include <edelib/MessageBox.h>
+#include <edelib/String.h>
+#include <edelib/Regex.h>
+#include <edelib/Debug.h>
 
-#include "PulseProgress.h"
-#include "Bugzilla.h"
+#include "BugzillaSender.h"
+
 #include "BugImage.h"
 #include "icons/bug.xpm"
 
-#define EDE_BUGZILLA_URL   "http://bugs.equinox-project.org/xmlrpc.cgi"
-
-/* must match to existing user */
-#define EDE_BUGZILLA_USER  "ede-bugs@lists.sourceforge.net"
-#define EDE_BUGZILLA_PASS  "edebugs2709"
-
 EDELIB_NS_USING(String)
+EDELIB_NS_USING(Regex)
 EDELIB_NS_USING(alert)
 EDELIB_NS_USING(message)
+EDELIB_NS_USING(RX_CASELESS)
 
 static Fl_Input        *bug_title_input;
 static Fl_Input        *email_input;
 static Fl_Text_Buffer  *text_buf;
-static PulseProgress   *progress_bar;
 
 /* check if string has spaces */
 static bool empty_entry(const char *en) {
@@ -61,15 +58,26 @@ static bool empty_entry(const char *en) {
 	return true;
 }
 
+static bool valid_email(const char *e) {
+	Regex r;
+
+	/* regex stolen from http://www.regular-expressions.info/email.html */
+	if(!r.compile("\\b[A-Z0-9._%-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", RX_CASELESS)) {
+		E_WARNING(E_STRLOC ": Unable to properly compile regex pattern");
+		return false;
+	}
+
+	return (r.match(e) > 0);
+}
+
 static void close_cb(Fl_Widget*, void *w) {
 	edelib::Window *win = (edelib::Window *)w;
 	win->hide();
 }
 
 static void send_cb(Fl_Widget*, void *w) {
-	const char   *txt;
-	String        title;
-	BugzillaData *bdata;
+	const char     *txt;
+	String         title, content;
 
 	if(empty_entry(bug_title_input->value())) {
 		alert(_("Report title is missing"));
@@ -84,7 +92,13 @@ static void send_cb(Fl_Widget*, void *w) {
 	txt = text_buf->text();
 	if(empty_entry(txt)) {
 		alert(_("Detail problem description is missing"));
-		goto cleanup;
+		free((void *) txt);
+		return;
+	}
+
+	if(!valid_email(email_input->value())) {
+		alert(_("Email address is invalid. Please use the valid email address"));
+		return;
 	}
 
 	/* 
@@ -94,46 +108,21 @@ static void send_cb(Fl_Widget*, void *w) {
 	title = "[BRT] ";
 	title += bug_title_input->value();
 
+	/* reserve space for our content */
+	content.reserve(text_buf->length() + 128);
+
+	/* construct content with some header data */
+	content += "This issue was reported via EDE Bug Report Tool (BRT).\n\n";
+	content += "Reporter:\n";
+	content += email_input->value();
+	content += "\n\n";
+	content += "Detail description:\n";
+	content += txt;
+
 	free((void *) txt);
 
-	/* Prepend content in the buffer. Due this operation, text is inserted in reversed order of showing */
-	text_buf->insert(0, "Detail description:\n");
-	text_buf->insert(0, "\n\n");
-	text_buf->insert(0, email_input->value());
-	text_buf->insert(0, "Reporter:\n");
-	text_buf->insert(0, "This issue was reported via EDE Bug Report Tool (BRT).\n\n");
-
-	txt = text_buf->text();
-#if 0
-	Fl::check();
-
-	bdata = bugzilla_new(EDE_BUGZILLA_URL);
-	if(!bdata) {
-		alert(_("Unable to initialize bugzilla interface"));
-		goto cleanup;
-	}
-
-	if(bugzilla_login(bdata, EDE_BUGZILLA_USER, EDE_BUGZILLA_PASS) < 0) {
-		alert(_("Unable to login on EDE Bugzilla. Please check your connection and try again.\n\nIf this problem persists, please manualy report issue on http://bugs.equinox-project.org"));
-		goto cleanup;
-	}
-
-	/* NOTE: default values must match those values in EDE Bugzilla instance */
-	if(bugzilla_submit_bug(bdata, "ede", "general", title.c_str(), "unspecified", txt, "All", "All", "P5", "normal") < 0) {
-		alert(_("Unable to properly submit the data. Please try again"));
-
-		/* Must jump to the cleanup since xmlrpc will assert. */
-		goto cleanup;
-	}
-
-	bugzilla_logout(bdata);
-#endif
-	message(_("Report was sent successfully. Thank you!"));
-	/* close the window */
-	close_cb(0, w);
-cleanup:
-	// bugzilla_free(bdata);
-	free((void *) txt);
+	if(bugzilla_send_with_progress(title.c_str(), content.c_str()))
+		close_cb(0, w);
 }
 
 int main(int argc, char** argv) {
@@ -164,14 +153,11 @@ int main(int argc, char** argv) {
 		text_buf = new Fl_Text_Buffer();
 		te->buffer(text_buf);
 
-		progress_bar = new PulseProgress(10, 330, 225, 25);
-		progress_bar->hide();
-
 		Fl_Button *send = new Fl_Button(285, 330, 90, 25, _("&Send"));
 		send->callback(send_cb, win);
 
-		Fl_Button *cancel = new Fl_Button(380, 330, 90, 25, _("&Cancel"));
-		cancel->callback(close_cb, win);
+		Fl_Button *close = new Fl_Button(380, 330, 90, 25, _("&Close"));
+		close->callback(close_cb, win);
 
 	win->window_icon(bug_xpm);
 	win->show(argc, argv);
