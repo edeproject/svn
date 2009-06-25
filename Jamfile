@@ -23,8 +23,10 @@ XMLRPC_C_FLAGS =
 		-I [ FDirName $(XMLRPC_C_SRC_PATH) deps expat xmltok ] ;
 
 # ede-bug-report related builds
-SOURCE = Bugzilla.cpp PulseProgress.cpp ede-bug-report.cpp ;
+SOURCE = Bugzilla.cpp BugzillaSender.cpp PulseProgress.cpp ede-bug-report.cpp ;
 BINARY = ede-bug-report ;
+#SOURCE = Bugzilla.cpp PulseProgress.cpp demo.cpp ;
+#BINARY = ebr ;
 
 ObjectC++Flags $(SOURCE) : $(WNO_LONG_LONG) $(XMLRPC_C_FLAGS) ;
 EdeProgram $(BINARY) : $(SOURCE) ;
@@ -37,7 +39,8 @@ LinkAgainst $(BINARY) : -L$(XMLRPC_C_LIB_DIR)
 	-lxmlrpc_obj_local 
 	-lxmlparse_local
 	-lxmltok_local
-	-lcurl ;
+	-lcurl
+	-lpthread ;
 
 # xmlrpc-c related builds
 rule XmlrpcLibrary {

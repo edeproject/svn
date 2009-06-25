@@ -13,15 +13,13 @@
 #ifndef __BUGZILLA_H__
 #define __BUGZILLA_H__
 
-#include <edelib/String.h>
-
 struct BugzillaData;
 
 BugzillaData  *bugzilla_new(const char *url);
 void           bugzilla_free(BugzillaData *data);
 
-/* return bugzilla version or empty string if fails */
-edelib::String bugzilla_get_version(BugzillaData *data);
+/* return bugzilla version or empty string if fails; returned value must be free()-ed */
+char          *bugzilla_get_version(BugzillaData *data);
 
 /* return user id or -1 if fails */
 int            bugzilla_login(BugzillaData *data, const char *user, const char *passwd);

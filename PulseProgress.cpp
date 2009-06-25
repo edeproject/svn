@@ -66,13 +66,13 @@ void PulseProgress::draw(void) {
 	draw_label(x() + bx, y() + by, w() - bw, h() - bh);
 }
 
-#if 0
-static PulseProgress *pp;
-
 void PulseProgress::step(void) {
 	cprogress += slen;
 	redraw();
 }
+
+#if 0
+static PulseProgress *pp;
 
 void cb(void *) {
 	pp->step();

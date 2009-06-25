@@ -14,13 +14,15 @@
 #include <xmlrpc-c/base.h>
 #include <xmlrpc-c/client.h>
 #include <edelib/Debug.h>
+#include <edelib/String.h>
 
 #include "Bugzilla.h"
 
 EDELIB_NS_USING(String)
 
 /* must be static; don't ask me why */
-static struct xmlrpc_clientparms gparms;
+static struct xmlrpc_clientparms     gparms;
+static struct xmlrpc_curl_xportparms gparms_curl;
 
 struct BugzillaData {
 	xmlrpc_env      xenv;
@@ -35,8 +37,16 @@ BugzillaData *bugzilla_new(const char *u) {
 	xmlrpc_client_setup_global_const(&data->xenv);
 	data->url = u;
 
-	/* only cURL transport is supported */
+	/* 
+	 * to allow https connections; curl by default refuse connections without valid certificate
+	 * (at least docs says that ;))
+	 */
+	gparms_curl.no_ssl_verifypeer = 1;
+	gparms_curl.no_ssl_verifyhost = 1;
+
+	/* only curl transport is supported */
 	gparms.transport = "curl";
+	gparms.transportparmsP = &gparms_curl;
 
 	xmlrpc_client_create(&data->xenv, XMLRPC_CLIENT_NO_FLAGS, "ede-bug-report", "0.1", &gparms, sizeof(gparms), &data->xcli);
 	if(data->xenv.fault_occurred) {
@@ -58,7 +68,7 @@ void bugzilla_free(BugzillaData *data) {
 	delete data;
 }
 
-String bugzilla_get_version(BugzillaData *data) {
+char *bugzilla_get_version(BugzillaData *data) {
 	E_ASSERT(data != NULL);
 
 	xmlrpc_value *result;
@@ -69,15 +79,12 @@ String bugzilla_get_version(BugzillaData *data) {
 		return "";
 	}
 
-	char  *tmp;
-	String ret;
+	/* this value will be malloc()-ated by xmlrpc_decompose_value() and should be freeed by user */
+	char *ret;
 
-	xmlrpc_decompose_value(&data->xenv, result, "{s:s,*}", "version", &tmp);
-	ret = tmp;
-	/* xmlrpc_decompose_value() allocates returned string value */
-	free(tmp);
-
+	xmlrpc_decompose_value(&data->xenv, result, "{s:s,*}", "version", &ret);
 	xmlrpc_DECREF(result);
+
 	return ret;
 }
 
