@@ -15,6 +15,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
@@ -126,6 +127,12 @@ static void send_cb(Fl_Widget*, void *w) {
 }
 
 int main(int argc, char** argv) {
+	/* in case if debugger output was given */
+	const char *gdb_output = NULL;
+
+	if(argc == 3 && ((strcmp(argv[1], "--gdb-dump") == 0) || (strcmp(argv[1], "-g") == 0)))
+		gdb_output = argv[2];
+
 	edelib::Window *win = new edelib::Window(480, 365, _("EDE Bug Reporting Tool"));
 	win->begin();
     	Fl_Box *image_box = new Fl_Box(10, 10, 60, 59);
@@ -153,6 +160,14 @@ int main(int argc, char** argv) {
 		text_buf = new Fl_Text_Buffer();
 		te->buffer(text_buf);
 
+		if(gdb_output) {
+			if(text_buf->appendfile(gdb_output) == 0) {
+				text_buf->insert(0, "\nCollected data:\n");
+				text_buf->insert(0, "(please write additional comments here, removing this line)\n\n");
+			} else 
+				E_WARNING(E_STRLOC ": Unable to read '%s' as debugger output. Continuing...\n");
+		}
+
 		Fl_Button *send = new Fl_Button(285, 330, 90, 25, _("&Send"));
 		send->callback(send_cb, win);
 
@@ -160,6 +175,7 @@ int main(int argc, char** argv) {
 		close->callback(close_cb, win);
 
 	win->window_icon(bug_xpm);
-	win->show(argc, argv);
+	/* win->show(argc, argv); */
+	win->show();
 	return Fl::run();
 }
