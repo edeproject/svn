@@ -28,6 +28,7 @@ BINARY = ede-bug-report ;
 
 ObjectC++Flags $(SOURCE) : $(WNO_LONG_LONG) $(XMLRPC_C_FLAGS) $(CURL_CFLAGS) ;
 EdeProgram $(BINARY) : $(SOURCE) ;
+TranslationStrings locale : $(SOURCE) ;
 
 # link against xmlrpc-c libraries 
 LinkAgainst $(BINARY) : -L$(XMLRPC_C_LIB_DIR) 
