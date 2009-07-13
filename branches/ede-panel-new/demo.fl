@@ -1,0 +1,19 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.h} 
+code_name {.cxx}
+Function {} {open
+} {
+  Fl_Window {} {open
+    xywh {414 441 475 75} type Double visible
+  } {
+    Fl_Button {} {
+      label {button 2}
+      xywh {185 25 90 25}
+    }
+    Fl_Button {} {
+      label {button 1} selected
+      xywh {85 25 90 25}
+    }
+  }
+} 
