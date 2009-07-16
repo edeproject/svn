@@ -162,7 +162,7 @@ textarea {
 #mainsubtitle {
     font-size: 0.8em;
 	color: gray;
-    margin-left: 5px;
+    margin-left: 3px;
 }
 
 *[dir="rtl"] #pagetrail span.sep {
