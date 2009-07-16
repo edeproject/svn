@@ -173,7 +173,12 @@ class Theme(ThemeBase):
 
     def footerlinks(self):
         """ Display ede specific footer """
-        return u'''<ul id="credits"><li>Copyright (c) ede team</li><br /><li>Powered with MoinMoin</li></ul>'''
+        intro = u'<br /><li>Hosting provided by:</li><br /><br />'
+        sflogo = u'<li><a href="http://sourceforge.net/projects/ede"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=49891&type=12" width="120" height="30" border="0" alt="Get Equinox Desktop Environment at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></li>'
+        sohliuslogo = u'<li><a href="http://www.sohlius.com"><img src="/sitemedia/images/sohlius.png" border="0" alt="Sohlius.com Logo" /></a></li>'
+        rest= u'<br /><br/><li>Copyright (c) ede team</li><br /><li>Powered with MoinMoin</li>'
+
+        return u'<ul id="credits">%s\n%s\n%s\n%s</ul>' % (intro, sflogo, sohliuslogo, rest)
 
     def title(self, d):
         """ Assemble the title
