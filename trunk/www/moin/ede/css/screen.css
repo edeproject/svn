@@ -231,12 +231,11 @@ textarea {
     padding: 0;
     width: 100%;
     /* sync these values, line-height is needed for IE */
-        height: 4px;
-        line-height: 4px;
-    /*border-bottom: 1px solid #4d7da9;
-    border-top: 1px solid #4d7da9;
-    background: #81BBF2;*/
-    background: #dddddd;
+        height: 2px;
+        line-height: 2px;
+    border-top: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd;
+    background: #e5e5e5;
 }
 
 .editbar {
