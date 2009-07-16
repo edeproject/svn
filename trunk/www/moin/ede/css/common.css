@@ -257,14 +257,12 @@ strong.highlight
 .recentchanges td {
 	vertical-align: top;
 	border: none;
-    background: #e6eaf0;
 }
 
-
 .recentchanges .rcdaybreak td {
-    background: #81BBF2;
-    border: none;
-    border: 1px solid #4d7da9;
+	background: #e5e5e5;
+	border: none;
+	border: 1px solid #4d7da9;
 }
 
 .rcdaybreak td a {
