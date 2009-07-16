@@ -97,9 +97,10 @@ class Theme(ThemeBase):
             self.username(d),
             self.logo(),
             u'<h1 id="locationline">',
-            #self.interwiki(d),
-            self.title(d),
-			u'<br /><span id="mainsubtitle">light and fast...</span>',
+            # do not use title() here, because it is page specific returning page name
+            # and is good only for editorheader()
+            u'<span id="maintitle">Equinox Desktop Environment</span>',
+            u'<br /><span id="mainsubtitle">light and fast...</span>',
             u'</h1>',
             self.navibar(d),
             #u'<hr id="pageline">',
@@ -175,10 +176,15 @@ class Theme(ThemeBase):
         return u'''<ul id="credits"><li>Copyright (c) ede team</li><br /><li>Powered with MoinMoin</li></ul>'''
 
     def title(self, d):
-        """ Assemble EDE title
+        """ Assemble the title
+
         @param d: parameter dictionary
+        @rtype: string
+        @return: title html
         """
-        return '<span id="maintitle">Equinox Desktop Environment</span>'
+
+        return u'<span id="maintitle">%s</span>' % wikiutil.escape(d['title_text'])
+
 
     def username(self, d):
         """ Assemble the username / userprefs link
