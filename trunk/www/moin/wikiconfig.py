@@ -68,7 +68,7 @@ class Config(DefaultConfig):
 
     # Where your mutable wiki pages are. You want to make regular
     # backups of this directory.
-    data_dir = '/home/equinox/public_html/moin-data/data/'
+    data_dir = '/home/equinox/public_html/moin-data/data-working/'
 
     # Where read-only system and help page are. You might want to share
     # this directory between several wikis. When you update MoinMoin,
@@ -99,11 +99,12 @@ class Config(DefaultConfig):
 
     acl_enabled = 1
     acl_rights_before = u"Known:read,write,delete,revert All:read"
+    superuser = ['SanelZukan', 'VedranLjubovic',]
 
     # The default (ENABLED) password_checker will keep users from choosing too
     # short or too easy passwords. If you don't like this and your site has
     # rather low security requirements, feel free to DISABLE the checker by:
-    #password_checker = None # None means "don't do any password strength checks"
+    # password_checker = None # None means "don't do any password strength checks"
 
     # Link spam protection for public wikis (Uncomment to enable)
     # Needs a reliable internet connection.
@@ -119,13 +120,13 @@ class Config(DefaultConfig):
     # or sending forgotten passwords.
 
     # SMTP server, e.g. "mail.provider.com" (None to disable mail)
-    #mail_smarthost = ""
+    mail_smarthost = "mail.equinox-project.org"
 
     # The return address, e.g u"Jürgen Wiki <noreply@mywiki.org>" [Unicode]
-    #mail_from = u""
+    mail_from = u"EDE Wiki <wiki-daemon@equinox-project.org>"
 
     # "user pwd" if you need to use SMTP AUTH
-    #mail_login = ""
+    mail_login = "wiki-daemon@equinox-project.org edewiki2468"
 
 
     # User interface ----------------------------------------------------
@@ -138,6 +139,7 @@ class Config(DefaultConfig):
     # according to the user selected language. [Unicode]
     navi_bar = [
         # If you want to show your page_front_page here:
+        u'[[http://equinox-project.org | Home]]',
         u'%(page_front_page)s',
         u'RecentChanges',
         u'FindPage',
@@ -173,4 +175,3 @@ class Config(DefaultConfig):
 
     # Enable graphical charts, requires gdchart.
     #chart_options = {'width': 600, 'height': 300}
-
