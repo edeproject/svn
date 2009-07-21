@@ -68,7 +68,7 @@ class Config(DefaultConfig):
 
     # Where your mutable wiki pages are. You want to make regular
     # backups of this directory.
-    data_dir = '/home/equinox/public_html/moin-data/data-working/'
+    data_dir = '/home/equinox/public_html/moin-data/data/'
 
     # Where read-only system and help page are. You might want to share
     # this directory between several wikis. When you update MoinMoin,
