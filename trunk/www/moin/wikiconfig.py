@@ -86,6 +86,13 @@ class Config(DefaultConfig):
     # Alias definition pointing to the directory with the static stuff).
     url_prefix_static = '/moin-data/moin_static184'
 
+    # Macro specific ----------------------------------------------------
+
+    # Bugzilla.py macro. Bugzilla default base path is commented
+    #bugzilla_url_prefix = 'http://bugs.equinox-project.org'
+
+    # Screenshot.py macro. Screenshot default prefix path is commented
+    # screenshots_url_prefix = '/sitemedia/screenshots'
 
     # Security ----------------------------------------------------------
 
