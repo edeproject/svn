@@ -27,6 +27,7 @@ class Module:
 		self.package = None
 		self.checksum = None
 		self.patch = None
+		self.url = None
 		self.configure_flags = None
 		self.no_configure = False
 
@@ -87,6 +88,23 @@ def in_path(file):
 			return True
 	return False
 
+def download_from(url, save_as, show_progress = True):
+	"""Download from the given url."""
+
+	if show_progress:
+		# A callback for urllib.urlretrieve()
+		def download_report_hook(transfered, block_size, total):
+			print "\r  [%i B, total: %i B]" % (transfered, total),
+
+	try:
+		if show_progress:
+			urllib.urlretrieve(url, save_as, download_report_hook)
+		else:
+			urllib.urlretrieve(url, save_as)
+		print ""
+	except IOError, e:
+		do_error("Unable to download '%s'. Got: %s" % (save_as, e))
+
 def fetch_and_parse_config(config_name, is_local):
 	"""Download config file and parse it."""
 	global mirrors_url
@@ -94,11 +112,8 @@ def fetch_and_parse_config(config_name, is_local):
 
 	# default is to download it
 	if not is_local:
-		try:
-			path = "%s/%s" % (netinstall_cfg_url, config_name)
-			urllib.urlretrieve(path, config_name)
-		except IOError, e:
-			do_error("Can't connect to the web (%s)" % e)
+		path = "%s/%s" % (netinstall_cfg_url, config_name)
+		download_from(path, config_name)
 
 	config = ConfigParser.ConfigParser()
 
@@ -172,6 +187,9 @@ def fetch_and_parse_config(config_name, is_local):
 
 		if config.has_option(i, "skip_if_found"):
 			m.skip_if_found = config.get(i, "skip_if_found").strip('"')
+
+		if config.has_option(i, "url"):
+			m.url = config.get(i, "url").strip('"')
 
 		# this depends on global 'patches' key; if not existing, from where to fetch
 		# the  patches then ;)
@@ -298,20 +316,19 @@ def fetch_module(module):
 	if validate_md5sum(module):
 		return
 
-	# A callback for urllib.urlretrieve()
-	def download_report_hook(transfered, block_size, total):
-		print "\r  [%i B, total: %i B]" % (transfered, total),
-
 	got_file = False
 
 	do_message("Downloading %s..." % module.package, True)
-	for mirror in mirrors_url:
-		path = "%s/%s" % (mirror, module.package)
 
-		try:
-			urllib.urlretrieve(path, module.package, download_report_hook)
-		except IOError, e:
-			do_error("Can't connect to the web (%s)" % e)
+	# use 'url' if module provides it, skipping global mirrors_url
+	if module.url:
+		urls = [module.url]
+	else:
+		urls = mirrors_url
+
+	for mirror in urls:
+		path = "%s/%s" % (mirror, module.package)
+		download_from(path, module.package)	
 
 		# check if the file is correct
 		if validate_md5sum(module):
@@ -325,22 +342,12 @@ def fetch_module(module):
 	if not got_file:
 		do_error("Unable to download '%s' package. Please try again" % module.package)
 
-	# some newline for the next package
-	print ""
-
 	# now, check for patches
 	if module.patch and patches_url:
 		path = "%s/%s" % (patches_url, module.patch)
 
 		do_message("Getting the patch for %s..." % module.package, True)
-
-		try:
-			urllib.urlretrieve(path, module.patch, download_report_hook)
-		except IOError, e:
-			do_error("Can't connect to the web (%s)" % e)
-
-		# some newline for the next package
-		print ""
+		download_from(patch, module.patch)
 
 def extract_compile_and_install_module(module):
 	"""Extract, patch, compile and install given package."""
@@ -367,13 +374,19 @@ def extract_compile_and_install_module(module):
 
 	# run configure if 'no_configure' wasn't true
 	if not module.no_configure:
-		os.system("%s %s" % (module.configure_cmd, module.configure_flags))
+		ret = os.system("%s %s" % (module.configure_cmd, module.configure_flags))
+		if ret > 0:
+			do_error("configure failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
 
 	# compile
-	os.system(module.compile_cmd)
+	ret = os.system(module.compile_cmd)
+	if ret > 0:
+		do_error("Compilation failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
 
 	# install
-	os.system(module.install_cmd)
+	ret = os.system(module.install_cmd)
+	if ret > 0:
+		do_error("Installation failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
 
 	# return where we started
 	os.chdir(top_dir)
