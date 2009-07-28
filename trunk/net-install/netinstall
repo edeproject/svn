@@ -14,7 +14,7 @@ __author__  = "Sanel Zukan <karijes@users.sourceforge.net>"
 __version__ = "1.0"
 
 # from where to download config files
-netinstall_cfg_url = "http://equinox-project.org"
+netinstall_cfg_url = "http://equinox-project.org/netinstall-configs"
 
 # some mutable globals
 mirrors_url = []
