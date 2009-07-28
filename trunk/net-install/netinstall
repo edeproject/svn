@@ -347,7 +347,7 @@ def fetch_module(module):
 		path = "%s/%s" % (patches_url, module.patch)
 
 		do_message("Getting the patch for %s..." % module.package, True)
-		download_from(patch, module.patch)
+		download_from(path, module.patch)
 
 def extract_compile_and_install_module(module):
 	"""Extract, patch, compile and install given package."""
