@@ -1,310 +1,505 @@
-#!/usr/bin/env sh
-#
-# Ede NetInstall
-# A simple network installer for equinox.
-#
-# Do not attempt to save this file (unless for temporary) 
-# since it will be changed for each new version (of this script or for new package releases)
-#
-# Prefered usage forms: 
-#  1. wget -qO- http://ede.sf.net/netinstall | sh
-#  2. lynx --source http://ede.sf.net/netinstall | sh
-#
-# Some environment stuff which affect further things: 
-#
-#  WGET         - wget path, command, additional parameters
-#  MD5SUM       - path to md5sum
-#  NOROOTCHECK  - do not check if we are root
-#  IGNORECHECK  - if set, do not check if ede/efltk are installed
-#  EDEFLAGS     - configure flags for ede
-#  EFLTKFLAGS   - configure flags for efltk
-#
-# Note: if there is needs for patching, patches should be generated in form eg.:
-#  diff -uNr efltk/ efltksvn/ > efltk-2.0.6.patch
-#
-# Bugs, etc. direct to: "karijes@users.sf.net"
+#!/usr/bin/env python
 
-VERSION="0.2"
+# Note: patches (for patching part in this program) should be generated in form:
+# 'diff -uNr efltk/ efltksvn/ > efltk-2.0.6.patch'
 
-######################################################
+import sys
+import os
+import md5
+import urllib
+import tarfile
+import ConfigParser
 
-EDE_PACKAGE="ede-1.2.tar.gz"
-EDE_SUM="7bffdd825c6a32f3c99e081f2e3a4c73"
-EDE_PATCH=""
+__author__  = "Sanel Zukan <karijes@users.sourceforge.net>"
+__version__ = "1.0"
 
-EFLTK_PACKAGE="efltk-2.0.7.tar.gz"
-EFLTK_SUM="f0300fd2fec47d4b05823297032ddb9f"
+# from where to download config files
+netinstall_cfg_url = "http://equinox-project.org"
 
-# make sure url ends with '/'
-PATCHES_URL="http://ede.sf.net/patches/"
+# some mutable globals
+mirrors_url = []
+patches_url = None
 
-# dirs inside archives
-EDE_DIR="ede"
-EFLTK_DIR="efltk"
+class Module:
+	"""The class that represents each item that will be downloaded, compiled and installed."""
+	def __init__(self):
+		self.name = None
+		self.package = None
+		self.checksum = None
+		self.patch = None
+		self.configure_flags = None
+		self.no_configure = False
 
-# some internal flags for compilation
-EDEFLAGS_INTERNAL=""
-EFLTKFLAGS_INTERNAL=" --disable-unixODBC --disable-mysql"
+		# module will not be compiled if this executable was found
+		self.skip_if_found = False
 
-# make sure links ends with '/'
-MIRRORS="
-http://switch.dl.sourceforge.net/sourceforge/ede/
-http://easynews.dl.sourceforge.net/sourceforge/ede/
-http://optusnet.dl.sourceforge.net/sourceforge/ede/
-http://jaist.dl.sourceforge.net/sourceforge/ede/
-http://ufpr.dl.sourceforge.net/sourceforge/ede/"
+		# default
+		self.configure_cmd = "./configure"
+		self.compile_cmd   = "make"
+		self.install_cmd   = "make install"
 
-######################################################
+	def print_details(self):
+		"""Display module details."""
+		print "name              : %s" % self.name
+		print "archive           : %s" % self.package
+		print "checksum          : %s" % self.checksum
+		print "patch             : %s" % self.patch
+		print "configure flags   : %s" % self.configure_flags
+		print "configure command : %s" % self.configure_cmd
+		print "compile command   : %s" % self.compile_cmd
+		print "install command   : %s" % self.install_cmd
 
-# as far as I know, everyone keeps 'which' to /usr/bin/which;
-# we have to use full path to 'which' since some shells provides
-# builtin one, and that one is different story
-FIND="/usr/bin/which"
+	def print_short_info(self):
+		"""Display module short info."""
+		print " %s (%s)" % (self.name, self.package)
 
-PATCH="`$FIND patch` -t -p0"
 
-EXTRACT_BZ2="tar -xjpf"
-# gz is prefered
-EXTRACT_GZ="tar -xzpf"
+def do_message(msg, is_head = False):
+	"""Prints a message."""
+	if is_head:
+		print("* %s" % msg)
+	else:
+		print("  %s" % msg)
 
-# some vars which users can override
+def do_error(err, quit = True):
+	"""Prints error message and quits."""
+	print("*** %s" % err)
+	if quit:
+		sys.exit(1)
 
-#WGET="${WGET:=`$FIND wget` -c}"
-[ -z $WGET ] && WGET="`$FIND wget` -c"
+def file_remove(file):
+	"""Remove file if exists; if not, do nothing."""
+	try:
+		os.unlink(file)
+	except OSError:
+		pass
 
-if [ "$MD5SUM" = "" ]; then
-	# check if we are on BSDs since they
-	# use md5 -r to obtain the same output
-	platform=`uname`
-	case $platform in
-		*BSD)
-			MD5SUM=`$FIND md5`
-			# bsd's output looks like 'MD5 (XXX) = sum'
-			SUMSTR="s/.*= //g";;
-	 	*)
-			MD5SUM=`$FIND md5sum`
-			# linux output looks like 'sum = XXX'
-			# TODO: solaris, rest ???
-			SUMSTR="s/ .*//g";;
-	esac
-fi
+def file_exists(file):
+	"""Check if file exists and can be read."""
+	return os.access(file, os.F_OK | os.R_OK)
 
-######################################################
+def in_path(file):
+	"""Check if file is in PATH."""
+	lst = os.environ["PATH"].split(":")
+	for l in lst:
+		path = "%s/%s" % (l, file)
+		if os.access(path, os.F_OK | os.X_OK):
+			return True
+	return False
 
-ealert() {
-	echo "!! $1"
-}
+def fetch_and_parse_config(config_name, is_local):
+	"""Download config file and parse it."""
+	global mirrors_url
+	global patches_url
 
-eprint() {
-	echo ": $1"
-}
+	# default is to download it
+	if not is_local:
+		try:
+			path = "%s/%s" % (netinstall_cfg_url, config_name)
+			urllib.urlretrieve(path, config_name)
+		except IOError, e:
+			do_error("Can't connect to the web (%s)" % e)
 
-# modify this according to needs for patchings
-# patch -t -p0 < efltk-2.0.6.patch
-# diff -uNr efltk/ efltksvn/ > efltk-2.0.6.patch
-patch_files() {
-	patch_name=$1
-	patch_url=$2
-	dir_to_patch=$3
+	config = ConfigParser.ConfigParser()
 
-	# ok, patch name empty, do nothing
-	if [ $patch_name = "" ]; then
+	try:
+		config.read(config_name)
+	except ConfigParser.MissingSectionHeaderError, err:
+		file_remove(config_name)
+		do_error("Fatal: Unable to parse config file.\nOutput: %s" % err, False)
+		do_error("Probably the wrong file was downloaded or the target config file wasn't found.", False)
+		do_error("Please try again later, and if problem persists, report this as bug.")
+
+	# check first if out there is something newer
+	if config.has_option("General", "version"):
+		vers = config.getfloat("General", "version")
+		if vers > float(__version__):
+			do_error("", False)
+			do_error("Looks like you have an older version. Please download a newer version and try again.", False)
+			do_error("You can find the latest version at 'http://equinox-project.org/netinstall'", False)
+			do_error("")
+
+	if config.has_option("General", "patches"):
+		patches_url = config.get("General", "patches")
+
+	# something we must have
+	if not config.has_option("General", "mirrors"):
+		do_error("Unable to find 'mirrors' section")
+
+	if not config.has_option("General", "modules"):
+		do_error("Unable to find 'modules' section")
+
+	mirrors_url = config.get("General", "mirrors").split("\n")
+	modules     = config.get("General", "modules").split(",")
+
+	# remove spaces
+	mirrors_url = [i.strip() for i in mirrors_url]
+	modules = [i.strip() for i in modules]
+
+	modules_objects = []
+
+	# now parse each secion
+	for i in modules:
+		m = Module()
+		m.name = i
+
+		# mandatory keys
+		if not config.has_option(i, "package"):
+			do_error("Module '%s' is missing a 'package' section" % i)
+		else:
+			m.package = config.get(i, "package").strip('"')
+
+		if not config.has_option(i, "checksum"):
+			do_error("Module '%s' is missing a 'checksum' section" % i)
+		else:
+			m.checksum = config.get(i, "checksum").strip('"')
+
+		# optional keys
+		if config.has_option(i, "no_configure"):
+			m.no_configure = config.getboolean(i, "no_configure")
+
+		if config.has_option(i, "configure_flags"):
+			m.configure_flags = config.get(i, "configure_flags").strip('"')
+
+		if config.has_option(i, "configure_cmd"):
+			m.configure_cmd = config.get(i, "configure_cmd ").strip('"')
+
+		if config.has_option(i, "compile_cmd"):
+			m.compile_cmd = config.get(i, "compile_cmd").strip('"')
+
+		if config.has_option(i, "install_cmd"):
+			m.install_cmd = config.get(i, "install_cmd").strip('"')
+
+		if config.has_option(i, "skip_if_found"):
+			m.skip_if_found = config.get(i, "skip_if_found").strip('"')
+
+		# this depends on global 'patches' key; if not existing, from where to fetch
+		# the  patches then ;)
+		if config.has_option(i, "patch"):
+			if not patches_url:
+				do_error("Module '%s' needs to be patched, but global patches url is not given" % i)
+			m.patch = config.get(i, "patch").strip('"')
+
+		# add it to the list if possible
+		if m.skip_if_found and in_path(m.skip_if_found):
+			do_message("Skipping '%s' since the command '%s' is found" % (m.name, m.skip_if_found), True)
+			continue
+		else:
+			modules_objects.append(m)
+
+	return modules_objects
+
+def validate_md5sum(module):
+	""" Compute md5 checksum and compare it to the existing one """
+	if not file_exists(module.package):
+		return False
+
+	m = md5.new()
+	f = open(module.package).read()
+	m.update(f)
+	return (m.hexdigest() == module.checksum)
+
+def decompress_file(file):
+	""" Decompress file using system tools. Return a directory name.  """
+	should_extract = True
+
+	cmd     = None
+	tarname = None
+	dirname = None
+
+	stamp_file = None
+	stamp_filename = ".netinstall_extract_stamp"
+
+	if file.endswith(".tar.bz2"):
+		tarname = file[:-4] # remove extension
+		cmd = "bunzip2"
+	elif file.endswith(".tar.gz"):
+		tarname = file[:-3] # remove extension
+		cmd = "gunzip"
+	elif file.endswith(".tgz"):
+		tarname = "%s.tar" % file[:-4] # files with .tgz extension are the same as .tar.gz
+		cmd = "gunzip"
+	else:
+		do_error("Unable to guess '%s' file type. Try to remove this file and run this script again" % file)
+
+	# before we do actual extracting, try to be a smart first; try first to see if tar file exists; if does
+	# find directory entry and see if timestamp of .tar file was changed, by checking in dir/.netinstall_extract_stamp
+	if file_exists(tarname):
+		try:
+			should_extract = False
+			tarobj = tarfile.open(tarname, "r")
+		except IOError:
+			# we can't open it, go the hard way
+			should_extract = True
+
+		# if there is no need to extract the file, just find the first entry; it is expected to be a directory
+		if not should_extract:
+			first = tarobj.next()
+
+			if first.isdir():
+				dirname = first.name
+				tar_ctime = os.stat(tarname).st_ctime
+
+				stamp_file = "%s/%s" % (dirname, stamp_filename)
+
+				if file_exists(stamp_file):
+					s = open(stamp_file).readline()
+					# real check
+					if tar_ctime <= float(s):
+						should_extract = False
+			else:
+				# first entry is not a directory
+				should_extract = True
+
+	if not should_extract:
+		do_message("Archive %s fully extracted. Skipping..." % file)
+		return dirname
+
+	# from here we proceed with extraction; first remove whateve was .tar file since bunzip2
+	# complains about it
+	file_remove(tarname)
+
+	# call gunzip/bunzip2
+	os.system("%s %s" % (cmd, file))
+
+	# TODO: duplication with above code
+	try:
+		tarobj = tarfile.open(tarname, "r")
+	except IOError:
+		do_error("Unable to correctly open '%s' as tar archive" % tarname)
+
+	first = tarobj.next()
+	if not first or not first.isdir():
+		do_error("Expected directory as the first entry in this archive. Please report this as bug in the package")
+
+	dirname = first.name
+	stamp_file = "%s/%s" % (dirname, stamp_filename)
+	tar_ctime = os.stat(tarname).st_ctime
+
+	# extracting; do not call extractall() from TarFile since it is recently added
+	os.system("tar -xpf %s" % tarname)
+
+	# try to write the stamp
+	try:
+		f = open(stamp_file, "w")
+		f.write("%f\n" % tar_ctime)
+		f.close()
+	except IOError:
+		pass
+
+	# strip ending slashes
+	dirname = dirname.strip("/")
+	return dirname
+
+
+def fetch_module(module):
+	"""Handles downloading assuring download were succedded. Also downloads it's patches if they exists"""
+	# file is already downloaded
+	if validate_md5sum(module):
 		return
-	fi
 
-	# file is not here, so download it
-	echo "Fetching patch $patch_name..."
-	patch_real_url="$2$1"
-	if [ ! -f "$patch_name" ]; then
-		$WGET $patch_real_url
+	# A callback for urllib.urlretrieve()
+	def download_report_hook(transfered, block_size, total):
+		print "\r  [%i B, total: %i B]" % (transfered, total),
 
-		if [ $? -ne 0 ]; then
-			ealert "$patch_name can't be downloaded. Quitting..."
-			exit 1
-		fi
-	fi
+	got_file = False
 
-	if [ ! -f "$patch_name" ]; then
-		ealert "FATAL: seems bad file downloaded. Quitting..."
-		exit 1
-	fi
+	do_message("Downloading %s..." % module.package, True)
+	for mirror in mirrors_url:
+		path = "%s/%s" % (mirror, module.package)
 
-	if [ ! -d "$dir_to_patch" ]; then
-		ealert "$dir_to_patch is missing ?!?"
-		exit 1
-	fi
+		try:
+			urllib.urlretrieve(path, module.package, download_report_hook)
+		except IOError, e:
+			do_error("Can't connect to the web (%s)" % e)
 
-	$PATCH < $patch_name
+		# check if the file is correct
+		if validate_md5sum(module):
+			got_file = True
+			break
+		else:
+			# remove what we downloaded (e.g. if sourceforge mirror does not has the file, it will
+			# return html page and urllib will download it)
+			file_remove(module.package)	
 
-	if [ $? -ne 0 ]; then
-		ealert "Seems patching went wrong. Please report this as bug"
-		exit 1
-	else
-		eprint "Patching went fine, continuing..."
-	fi
-}
+	if not got_file:
+		do_error("Unable to download '%s' package. Please try again" % module.package)
 
-# see if we have all things that should be there
-prepare() {
-	# check can we write in current directory
-	currdir=`pwd`
-	if [ ! -w "$currdir" ]; then
-		ealert "Can't write to $currdir, where currently this script resides. Either move this"
-		ealert "script to somewhere else of make this directory writeable"
-		exit 1
-	fi
+	# some newline for the next package
+	print ""
 
-	# check if we are root
-	if [ `id -u` -ne 0 ]; then
-		if [ "$NOROOTCHECK" = "" ]; then
-			ealert "Seems you are not root. You can continue with this, althought installation will"
-			ealert "be skipped. To remove this message, just set NOROOTCHECK=1 in your console"
-			exit 1
-		fi
-	fi
+	# now, check for patches
+	if module.patch and patches_url:
+		path = "%s/%s" % (patches_url, module.patch)
 
-	# check is ede installed via 'efltk-config -g'
-	# but first look for efltk-config
-	efltkc=`$FIND efltk-config 2> /dev/null`
-	if [ "$efltkc" != "" ]; then
-		if [ "$IGNORECHECK" = "" ]; then
-			$efltkc -g 2> /dev/null
+		do_message("Getting the patch for %s..." % module.package, True)
 
-			if [ $? -eq 0 ]; then
-				ealert "Seems an older version of ede or efltk installed. You have to remove it first or you"
-				ealert "can set IGNORECHECK=1 in your console, to remove this message"
-				exit 1
-			fi
-		fi
-	fi
+		try:
+			urllib.urlretrieve(path, module.patch, download_report_hook)
+		except IOError, e:
+			do_error("Can't connect to the web (%s)" % e)
 
-	# check is wget present
-	# first clean $WGET from possible flags, so '-x' don't scream
-	wget_cmd=`echo $WGET | sed -e 's/ .*//g'`
-	if [ ! -x $wget_cmd ]; then
-		ealert "wget is missing! You have to install it first, or set WGET to full path"
-		exit 1
-	fi
+		# some newline for the next package
+		print ""
 
-	# check is md5sum present
-	# do the same as for $WGET (screaming part)
-	md5sum_cmd=`echo $MD5SUM | sed -e 's/ .*//g'`
-	if [ ! -x $md5sum_cmd ]; then
-		ealert "md5sum is missing! You have to install it first, or set MD5SUM to full path"
-		exit 1
-	fi
+def extract_compile_and_install_module(module):
+	"""Extract, patch, compile and install given package."""
 
-	# check is patch present
-	patch_cmd=`echo $PATCH | sed -e 's/ .*//g'`
-	if [ ! -x $patch_cmd ]; then
-		ealert "patch tool is missing! Looks like you have to install it"
-		exit 1
-	fi
-}
+	do_message("Extracting %s..." % module.package, True)
 
-fetch_file() {
-	pkg=$1
+	dirname = decompress_file(module.package)
+	# assure we have something
+	assert(dirname != None)
 
-	# check first is file downloaded
-	if [ -f $pkg ]; then
+	# do actual patching	
+	if module.patch:
+		if not file_exists(module.patch):
+			do_error("Fatal: module patch was downloaded, but can't be found. Please try again")
+		do_message("Patching %s..." % module.package, True)
+		os.system("patch -t -p0 < %s" % module.patch)
+
+	# top directory, so we know how to return
+	top_dir = os.getcwd()
+	# go in this directory
+	os.chdir(dirname)
+
+	do_message("Compiling %s..." % module.name, True)
+
+	# run configure if 'no_configure' wasn't true
+	if not module.no_configure:
+		os.system("%s %s" % (module.configure_cmd, module.configure_flags))
+
+	# compile
+	os.system(module.compile_cmd)
+
+	# install
+	os.system(module.install_cmd)
+
+	# return where we started
+	os.chdir(top_dir)
+
+def check_prerequisites(check_for_root):
+	"""Mandatory things before we do anything useful."""
+	for tool in ["gunzip", "bunzip2", "patch"]:
+		if not in_path(tool):
+			do_error("Unable to find '%s' tool. Please install it first and start this tool again." % tool)
+
+	if check_for_root and not os.getuid() == 0:
+		do_error("You must be a root to run this tool. Since some packages depends on each other", False)
+		do_error("they must be system wide installed. On other hand, if you are not sure what this script", False)
+		do_error("can do, you can always check it's source code or directly ask developers.", False)
+		do_error("", False)
+		do_error("NOTE: always download this script from http://equinox-project.org, NOT from ANY other site.")
+
+def help():
+	print "Usage: netinstall [OPTIONS]" 
+	print "Download, compile and install EDE with a single command :-)" 
+	print ""
+	print "Options:" 
+	print "   --help                  this help" 
+	print "   --version               script version" 
+	print ""
+	print "   --module-info   [NAME]  display information about [NAME] module"
+	print "   --show-modules          list modules that will be compiled" 
+	print "   --build-dir     [NAME]  directory where modules will be downloaded and compiled (default is 'build')"
+	print "   --config        [NAME]  use [NAME] as main config file (default is 'netinstall.cfg')"
+	print "   --config-local  [NAME]  use local config (only for debugging)"
+	print "   --no-root-check         do not check if script was started as root (only for debugging)"
+	print ""
+	print "Report bugs at <http://bugs.equinox-project.org>."
+
+def main():
+	show_modules = False
+	module_name  = None
+	build_dir    = "build"
+	config_name  = "netinstall.cfg"
+	config_local = None
+	check_for_root = True
+
+	if len(sys.argv) > 1:
+		try:
+			import getopt
+			opts, args = getopt.getopt(sys.argv[1:], "h", 
+					["help", "version", "show-modules", "module-info=", "build-dir=", "config=", 
+						"config-local=", "no-root-check"])
+		except getopt.GetoptError, err:
+			print "Bad option; rerun 'netinstall --help' for command details"
+			return
+
+		for o, a in opts:
+			if o == "--help" or o == "-h":
+				help()
+				return
+			if o == "--version":
+				print __version__
+				return
+			if o == "--show-modules":
+				show_modules = True
+			elif o == "--module-info":
+				module_name = a
+			elif o == "--build-dir":
+				build_dir = a
+			elif o == "--config":
+				config_name = a
+			elif o == "--config-local":
+				config_local = a
+			elif o == "--no-root-check":
+				check_for_root = False
+
+	# do prerequisites first
+	check_prerequisites(check_for_root)
+
+	# get the config first and read it
+	if config_local:
+		config_name = config_local
+
+	modules = fetch_and_parse_config(config_name, config_local != None)
+
+	# create build directory and go in it
+	try:
+		os.makedirs(build_dir)
+	except OSError, (errno, strerror):
+		# 17 means directory already exists and that is ok
+		if errno != 17:
+			do_error("Unable to create directory %s (%s)" % (build_dir, strerror))
+
+	# a directory where we started; full path is needed so we can return to it at the end
+	starting_dir = os.getcwd()
+
+	# go into build directory
+	os.chdir(build_dir)
+
+	# show a list of modules
+	if show_modules:
+		for i in modules:
+			i.print_short_info()
 		return
-	fi
 
-	# no, file is not here, let we download it
-	eprint "Fetching $pkg..."
+	# show module details
+	if module_name:
+		found = False
 
-	for i in $MIRRORS; do
-		# assume $i ends with '/'
-		$WGET  $i$pkg
-		if [ $? -eq 0 ]; then
-			return 0
-		fi
-	done
+		for i in modules:
+			if i.name == module_name:
+				i.print_details()
+				found = True
+				break
 
-	ealert "All mirrors failed. $pkg download failed. Quitting..."
-	exit 1
-}
+		if not found:
+			do_error("Module '%s' wasn't found" % module_name)
+		return
 
-extract_file() {
-	pkg_name=$1
-	pkg_sum=$2
+	# or, do the main job; first download all packages
+	for i in modules:
+		fetch_module(i)
 
-	# check md5
-	# extract first column, since it is the hash
-	sum=`$MD5SUM $pkg_name | sed -e "$SUMSTR"`
-	if [ "$sum" != "$pkg_sum" ]; then
-		ealert "Sums for $pkg_name does not match! Either download failed or something went wrong. Please remove"
-		ealert "$pkg_name and rerun download again"
-		exit 1
-	fi
+	# by now we are sure all files are downloaded correctly so we can
+	# proceed to compile and install each of them
+	for i in modules:
+		extract_compile_and_install_module(i)
 
-	eprint "Extracting $pkg_name..."
-	# run extract now, based on file extension
-	case $pkg_name in
-		*.bz2)
-			$EXTRACT_BZ2 $pkg_name;;
-		*.gz)
-			$EXTRACT_GZ $pkg_name;;
-		*.*)
-			ealert "Can't figure out how to extract file. This is a probably packagers fault."
-			ealert "Please report this as a bug"
-			exit 1;;
-	esac
-}
+	# return where we started
+	os.chdir(starting_dir)
 
-compile_install() {
-	pkg_dir=$1
-	flags_internal=$2
-	flags_global=$3
-
-	# go to directory and do standard magic
-	if [ ! -d $pkg_dir ]; then
-		ealert "FATAL: $pkg_dir does not exsists, but should be there. Please report this as a bug"
-		exit 1
-	fi
-	cd $pkg_dir
-
-	eprint "./configure $flags_internal $flags_global && make"
-	./configure $flags_internal $flags_global && make
-
-	if [ $? -ne 0 ]; then
-		ealert "Build failed"
-		exit 1
-	fi
-
-	# we are root, fine, now install
-	if [ `id -u` -eq 0 ]; then
-		make install
-	else
-		ealert "Package not installed, since you don't have permissions to do so. This time"
-		ealert "in your hands is to run 'make install' from $pkg_dir directory"
-	fi
-
-	# we are done, back to the root directory
-	cd ..
-}
-
-main() {
-	echo ""
-	echo "::: Ede NetInstall $VERSION :::"
-	echo ""
-
-	prepare 
-
-	fetch_file "$EFLTK_PACKAGE"
-	fetch_file "$EDE_PACKAGE"
-
-	# first efltk
-	extract_file "$EFLTK_PACKAGE" "$EFLTK_SUM"
-	compile_install "$EFLTK_DIR" "$EFLTKFLAGS_INTERNAL" "$EFLTKFLAGS"
-
-	# then ede
-	extract_file "$EDE_PACKAGE" "$EDE_SUM"
-	compile_install "$EDE_DIR" "$EDEFLAGS_INTERNAL" "$EDEFLAGS"
-
-	echo ""
-	echo "Enjoy!"
-	echo ""
-}
-
-main
+if __name__ == "__main__":
+	main()

@@ -1,0 +1,49 @@
+[General]
+# netinstall version; number is larger than in the script, script will warn user for upgrade (not mandatory)
+version = 1.0
+
+# url for patches (mandatory)
+patches = http://equinox-project.org/patches
+
+# mirror url list (mandatory)
+mirrors = http://heanet.dl.sourceforge.net/sourceforge/ede
+          http://superb-east.dl.sourceforge.net/sourceforge
+          http://mesh.dl.sourceforge.net/sourceforge/ede
+
+# order of modules is order how things are compiled; each entry must have own section below (mandatory)
+modules = efltk, ede
+
+[ede]
+# package name
+package  = "ede-1.1.tar.bz2"
+
+# md5 sum
+checksum = "acb1a82ac79ee2000bf50b204d81ab89"
+
+# patch name for this module; downloaded from 'patches/patch'
+# patch = 
+
+# if given, configure will not be run
+# no_configure =
+
+# flags for configure script
+# configure_flags = 
+
+# configure command (default is ./configure)
+# configure_cmd =
+
+# compilation command (default is make)
+# compile_cmd =
+
+# install command (default is 'make install')
+# install_cmd =
+
+# if found in PATH, module will not be compiled
+#  skip_if_found = 
+
+
+[efltk]
+package  = "efltk-2.0.6.tar.bz2"
+checksum = "125c1deade9da94453758fa3cdac1c6a"
+patch    = "gcc432.patch"
+configure_flags = " --disable-unixODBC --disable-mysql"
