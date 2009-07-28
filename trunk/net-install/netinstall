@@ -99,9 +99,9 @@ def download_from(url, save_as, show_progress = True):
 	try:
 		if show_progress:
 			urllib.urlretrieve(url, save_as, download_report_hook)
+			print ""
 		else:
 			urllib.urlretrieve(url, save_as)
-		print ""
 	except IOError, e:
 		do_error("Unable to download '%s'. Got: %s" % (save_as, e))
 
@@ -125,13 +125,13 @@ def fetch_and_parse_config(config_name, is_local):
 		do_error("Probably the wrong file was downloaded or the target config file wasn't found.", False)
 		do_error("Please try again later, and if problem persists, report this as bug.")
 
-	# check first if out there is something newer
-	if config.has_option("General", "version"):
-		vers = config.getfloat("General", "version")
-		if vers > float(__version__):
+	# check first if we need a newer script
+	if config.has_option("General", "requires"):
+		req = config.getfloat("General", "requires")
+		if req > float(__version__):
 			do_error("", False)
-			do_error("Looks like you have an older version. Please download a newer version and try again.", False)
-			do_error("You can find the latest version at 'http://equinox-project.org/netinstall'", False)
+			do_error("You have an older program version, but this configuration file requires something newer.", False)
+			do_error("You can get the latest version at 'http://equinox-project.org/netinstall'", False)
 			do_error("")
 
 	if config.has_option("General", "patches"):

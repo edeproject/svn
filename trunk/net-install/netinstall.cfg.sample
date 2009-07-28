@@ -1,6 +1,7 @@
 [General]
-# netinstall version; number is larger than in the script, script will warn user for upgrade (not mandatory)
-version = 1.0
+# what version this config requires; if is larger than the current script, the script will
+# report it and quit (optional)
+requires = 1.0
 
 # url for patches (mandatory)
 patches = http://equinox-project.org/patches
@@ -40,9 +41,6 @@ checksum = "acb1a82ac79ee2000bf50b204d81ab89"
 
 # if found in PATH, module will not be compiled
 #  skip_if_found = 
-
-# if given url, package will be downloaded from it, skipping global mirror lis
-# url =
 
 
 [efltk]
