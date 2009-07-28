@@ -113,7 +113,7 @@ def fetch_and_parse_config(config_name, is_local):
 	# default is to download it
 	if not is_local:
 		path = "%s/%s" % (netinstall_cfg_url, config_name)
-		download_from(path, config_name)
+		download_from(path, config_name, False)
 
 	config = ConfigParser.ConfigParser()
 
@@ -465,6 +465,10 @@ def main():
 	# get the config first and read it
 	if config_local:
 		config_name = config_local
+
+	# in case suffix wasn't added, add it
+	if not config_name.endswith(".cfg"):
+		config_name += ".cfg"
 
 	modules = fetch_and_parse_config(config_name, config_local != None)
 
