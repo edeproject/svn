@@ -105,8 +105,8 @@ class Config(DefaultConfig):
     # All acl_rights_xxx options must use unicode [Unicode]
 
     acl_enabled = 1
-    acl_rights_before = u"Known:read,write,delete,revert All:read"
     superuser = ['SanelZukan', 'VedranLjubovic',]
+    acl_rights_default = u"SanelZukan:read,write,delete,revert,admin VedranLjubovic:read,write,delete,revert,admin Known:read,write,delete,revert All:read"
 
     # The default (ENABLED) password_checker will keep users from choosing too
     # short or too easy passwords. If you don't like this and your site has
