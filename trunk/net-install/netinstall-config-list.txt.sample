@@ -1,0 +1,7 @@
+## Config list ##
+
+* ede-2.0.cfg 
+  Builds EDE and eFLTK. It is assument how FLTK is present.
+
+* netinstall.cfg
+  Default config file. Builds EDE 1.2 and eFLTK 2.0.8.
