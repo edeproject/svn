@@ -92,15 +92,27 @@ def download_from(url, save_as, show_progress = True):
 	# don't import it at the top since it's slows startup time
 	import urllib 
 
-	if show_progress:
-		# callback for urllib.urlretrieve()
-		def download_report_hook(transfered, block_size, total):
-			print "\r  [%i B, total: %i B]" % (transfered, total),
+	kbs = 1024
+	mbs = kbs * 1024
 
+	if show_progress:
+		# callback for urllib.urlretrieve(); shows some percentage
+		def download_report_hook(transfered, block_size, total):
+			if total > mbs:
+				# use float so we can get better precision
+				total_str = "%.1f MB" % (float(total) / mbs)
+			elif total > kbs:
+				total_str = "%.1f kB" % (float(total) / kbs)
+			else:
+				total_str = "%i B" % total
+
+			percent = (transfered * block_size * 100) / total
+			sys.stdout.write("\r  [%i%% of %s]" % (percent, total_str))
+			sys.stdout.flush()
 	try:
 		if show_progress:
 			urllib.urlretrieve(url, save_as, download_report_hook)
-			print ""
+			sys.stdout.write("\n")
 		else:
 			urllib.urlretrieve(url, save_as)
 	except IOError, e:
