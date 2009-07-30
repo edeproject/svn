@@ -384,14 +384,16 @@ def extract_compile_and_install_module(module):
 
 def check_prerequisites(check_for_root):
 	"""Mandatory things before we do anything useful."""
-	for tool in ["gunzip", "bunzip2", "patch"]:
-		if not in_path(tool):
-			do_error("Unable to find '%s' tool. Please install it first and start this tool again." % tool)
+	if not in_path("patch"):
+		do_error("Unable to find 'patch' tool. Please install it first and start this script again.")
 
 	if check_for_root and not os.getuid() == 0:
 		do_error("You must be a root to run this tool. Since some packages depends on each other", False)
 		do_error("they must be system wide installed. On other hand, if you are not sure what this script", False)
 		do_error("can do, you can always check it's source code or directly ask developers.", False)
+		do_error("", False)
+		do_error("If you would like to run this script anyway, use '--no-root-check' flag, but this", False)
+		do_error("will probably result with failed build.", False)
 		do_error("", False)
 		do_error("NOTE: always download this script from http://equinox-project.org, NOT from ANY other site.")
 
