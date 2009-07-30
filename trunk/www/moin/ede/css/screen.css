@@ -323,6 +323,10 @@ textarea {
     */
 }
 
+#page h1, #page h2, #page h3, #page h4, #page h5, #page h6 {
+	color: #3f4747;
+}
+
 /* We use here dumb css1 ids because of IE suckiness */
 #editor-textarea, #editor-help {
     font-family: monospace;
