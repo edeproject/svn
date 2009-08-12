@@ -10,4 +10,22 @@
 
 SubDir TOP ede-panel-new ;
 
-FltkProgram ede-panel : Panel.cpp ede-panel.cpp ;
+EdeProgram ede-panel : Panel.cpp AppletManager.cpp ede-panel.cpp ;
+# also must use this flag or program will crash
+LINKFLAGS on ede-panel = -rdynamic ;
+
+rule PanelApplet
+{
+	local target ;
+	target = $(<:S=$(SUFLIB_SHARED)) ;
+
+	Main $(target) : $(>) ;
+	ObjectC++Flags $(>) : -fPIC -I [ FDirName $(TOP) ede-panel-new ] ;
+
+	LinkAgainst $(target) : $(FLTKLIB) $(STDLIB) ;
+	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] ;
+
+	Clean clean : $(target) ;
+}
+
+SubInclude TOP ede-panel-new applets ;
