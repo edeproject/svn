@@ -19,9 +19,7 @@ public:
 EDE_PANEL_APPLET_EXPORT (
  MyButton, 
  "Panel button",
- "Shows a simple panel button",
  "0.1",
  "empty",
- "Sanel Zukan",
- "karijes@users.sourceforge.net"
+ "Sanel Zukan"
 )

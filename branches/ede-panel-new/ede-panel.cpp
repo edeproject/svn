@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 
 	AppletManager mgr;
 	mgr.load("./applets/demo/edepanel_demo.so");
+	mgr.load("./applets/clock/edepanel_clock.so");
 	mgr.fill_group(panel);
 
 	panel->show();

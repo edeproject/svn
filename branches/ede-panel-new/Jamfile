@@ -20,10 +20,10 @@ rule PanelApplet
 	target = $(<:S=$(SUFLIB_SHARED)) ;
 
 	Main $(target) : $(>) ;
-	ObjectC++Flags $(>) : -fPIC -I [ FDirName $(TOP) ede-panel-new ] ;
+	ObjectC++Flags $(>) : -fPIC -I [ FDirName $(TOP) ede-panel-new ] $(EDELIBINCLUDE) ;
 
 	LinkAgainst $(target) : $(FLTKLIB) $(STDLIB) ;
-	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] ;
+	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] $(EDELIBLIB) ;
 
 	Clean clean : $(target) ;
 }
