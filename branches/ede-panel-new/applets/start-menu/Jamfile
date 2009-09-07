@@ -8,8 +8,6 @@
 # GNU General Public License version 2 or newer.
 # See COPYING for details.
 
-SubDir TOP ede-panel-new applets ;
+SubDir TOP ede-panel-new applets start-menu ;
 
-SubInclude TOP ede-panel-new applets demo ;
-SubInclude TOP ede-panel-new applets start-menu ;
-SubInclude TOP ede-panel-new applets clock ;
+PanelApplet edepanel_start_menu : StartMenu.cpp XdgMenuReader.cpp ;

@@ -1,7 +1,7 @@
 #ifndef __APPLET_H__
 #define __APPLET_H__
 
-#define EDE_PANEL_APPLET_INTERFACE_VERSION 0.1
+#define EDE_PANEL_APPLET_INTERFACE_VERSION 0x01
 
 class Fl_Widget;
 
@@ -56,7 +56,7 @@ extern "C" void ede_panel_applet_destroy_info(AppletInfo *a) {          \
 	delete a;                                                           \
 }                                                                       \
                                                                         \
-extern "C" float ede_panel_applet_get_iface_version(void) {             \
+extern "C" int ede_panel_applet_get_iface_version(void) {               \
 	return EDE_PANEL_APPLET_INTERFACE_VERSION;                          \
 }
 

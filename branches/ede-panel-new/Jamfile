@@ -22,8 +22,8 @@ rule PanelApplet
 	Main $(target) : $(>) ;
 	ObjectC++Flags $(>) : -fPIC -I [ FDirName $(TOP) ede-panel-new ] $(EDELIBINCLUDE) ;
 
-	LinkAgainst $(target) : $(FLTKLIB) $(STDLIB) ;
-	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] $(EDELIBLIB) ;
+	LinkAgainst $(target) : $(EDELIBLIB) $(EDELIB_GUI_LIB) $(FLTKLIB) $(STDLIB) ;
+	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] ;
 
 	Clean clean : $(target) ;
 }
