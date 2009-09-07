@@ -6,10 +6,13 @@
 #include <edelib/List.h>
 #include <edelib/Util.h>
 #include <edelib/Directory.h>
+#include <edelib/Config.h>
 
 #include "XdgMenuReader.h"
+#include "XdgMenuCategory.h"
 
 EDELIB_NS_USING(String)
+EDELIB_NS_USING(Config)
 EDELIB_NS_USING(list)
 EDELIB_NS_USING(system_data_dirs)
 
@@ -33,7 +36,7 @@ struct XdgMenu {
 
 	StrList app_dirs;          /* <AppDirs> elements */
 	StrList dir_dirs;          /* <DirectoryDirs> elements */
-	StrList exclude_list;      /* <Exclude> elements */
+	StrList merge_dirs;        /* <MergeDir> elements */
 
 	XdgMenuList submenus;      /* submenus */
 };
@@ -43,9 +46,12 @@ static void strlist_append(StrList &sl, const char *name) {
 	sl.push_back(s);
 }
 
-static void strlist_append_xdg_data_path(StrList &sl, const char *suffix) {
+static void strlist_append_with_xdg_path(StrList &sl, const char *suffix, bool is_config) {
 	list<String> lst;
-	if(system_data_dirs(lst) < 1)
+	int ret;
+
+	ret = is_config ? system_config_dirs(lst) : system_data_dirs(lst);
+	if(ret < 1)
 		return;
 
 	list<String>::iterator it = lst.begin(), it_end = lst.end();
@@ -81,7 +87,7 @@ static void xdg_menu_delete(XdgMenu *m) {
 	strlist_delete(m->directory_stack);
 	strlist_delete(m->app_dirs);
 	strlist_delete(m->dir_dirs);
-	strlist_delete(m->exclude_list);
+	strlist_delete(m->merge_dirs);
 
 	if(!m->submenus.empty()) {
 		XdgMenuListIter it = m->submenus.begin(), it_end = m->submenus.end();
@@ -92,6 +98,8 @@ static void xdg_menu_delete(XdgMenu *m) {
 
 		m->submenus.clear();
 	}
+
+	delete m;
 }
 
 static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
@@ -101,12 +109,12 @@ static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
 	TiXmlText *txt;
 	XdgMenu   *m = xdg_menu_new();
 
-	bool got_default_app_dirs = false, got_default_dir_dirs = false;
+	bool got_default_app_dirs = false, got_default_dir_dirs = false, got_default_merge_dirs = false;
 
 	for(elem = elem->FirstChildElement(); elem; elem = elem->NextSibling()) {
 		/* in case we got '<Menu>' as submenu, dive in it recursively */
 		if(strcmp(elem->Value(), "Menu") == 0)
-			scan_menu_tag(elem, menus);
+			scan_menu_tag(elem, m->submenus);
 
 		if(strcmp(elem->Value(), "Name") == 0) {
 			if(!m->name) {
@@ -141,10 +149,17 @@ static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
 			continue;
 		}
 
-		/* according to the spec, '<DefaultAppDirs>' expands to $XDG_DATA_DIRS/applications */
+		if(strcmp(elem->Value(), "MergeDir") == 0) {
+			txt = elem->FirstChild()->ToText();
+			if(txt)
+				strlist_append(m->merge_dirs, txt->Value());
+			continue;
+		}
+
+		/* spec: '<DefaultAppDirs>' expands to $XDG_DATA_DIRS/applications */
 		if(strcmp(elem->Value(), "DefaultAppDirs") == 0) {
 			if(!got_default_app_dirs) {
-				strlist_append_xdg_data_path(m->app_dirs, "applications");
+				strlist_append_with_xdg_path(m->app_dirs, "applications", false);
 				/* scan it only once */
 				got_default_app_dirs = true;
 			}
@@ -152,11 +167,21 @@ static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
 			continue;
 		}
 
-		/* according to the spec, '<DefaultDirectoryDirs>' expands to $XDG_DATA_DIRS/desktop-directories */
+		/* spec: '<DefaultDirectoryDirs>' expands to $XDG_DATA_DIRS/desktop-directories */
 		if(strcmp(elem->Value(), "DefaultDirectoryDirs") == 0) {
 			if(!got_default_dir_dirs) {
-				strlist_append_xdg_data_path(m->dir_dirs, "desktop-directories");
+				strlist_append_with_xdg_path(m->dir_dirs, "desktop-directories", false);
 				got_default_dir_dirs = true;
+			}
+
+			continue;
+		}
+
+		/* spec: '<DefaultMergeDirs>' expands to $XDG_CONFIG_DIRS/applications-merged */
+		if(strcmp(elem->Value(), "DefaultMergeDirs") == 0) {
+			if(!got_default_merge_dirs) {
+				strlist_append_with_xdg_path(m->merge_dirs, "applications-merged", true);
+				got_default_merge_dirs = true;
 			}
 
 			continue;
@@ -168,7 +193,8 @@ static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
 
 void xdg_menu_load(void) {
 	TiXmlDocument doc;
-	if(!doc.LoadFile("applets/start-menu/applications.menu")) {
+	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
+	if(!doc.LoadFile("applications.menu")) {
 		E_WARNING(E_STRLOC ": Can't load menu\n");
 		return;
 	}
@@ -194,6 +220,10 @@ void xdg_menu_load(void) {
 		for(; sit != sit_end; ++sit)
 			E_DEBUG("dirdir: %s\n", (*sit)->c_str());
 
+		sit = m->merge_dirs.begin(), sit_end = m->merge_dirs.end();
+		for(; sit != sit_end; ++sit)
+			E_DEBUG("mergedir: %s\n", (*sit)->c_str());
+
 		sit = m->directory_stack.begin(), sit_end = m->directory_stack.end();
 		for(; sit != sit_end; ++sit)
 			E_DEBUG("directory: %s\n", (*sit)->c_str());
@@ -201,4 +231,10 @@ void xdg_menu_load(void) {
 
 	for(it = menus.begin(); it != it_end; ++it)
 		xdg_menu_delete(*it);
+}
+
+int main() {
+	xdg_menu_load();
+	xdg_deduce_category("Application;Qt;Network;WebBrowser;X-Ximian-Main;X-Ximian-Toplevel");
+	return 0;
 }
