@@ -8,31 +8,28 @@
 EDELIB_NS_USING(String)
 
 struct AppletData {
-	void             *dl;
-	Fl_Widget        *awidget; /* widget from the applet */
-	String            name;
+	void                  *dl;
+	Fl_Widget             *awidget; /* widget from the applet */
+	AppletInfo            *ainfo;   /* applet informations */
 
-	applet_create_t   create_func;
-	applet_destroy_t  destroy_func;
+	applet_create_t        create_func;
+	applet_destroy_t       destroy_func;
+
+	applet_destroy_info_t  destroy_info_func;
 };
-
-static char* get_basename(const char* path) {
-	char* p = strrchr(path, '/');
-	if(p)
-		return (p + 1);
-
-	return (char*)path;
-}
 
 static void clear_applet(AppletData *a) {
 	E_RETURN_IF_FAIL(a != NULL);
 
+	/* clear applet information first */
+	(a->destroy_info_func)(a->ainfo);
+
 	/* clear applet specific suff */
 	(a->destroy_func)(a->awidget);
+
 	dlclose(a->dl);
 	delete a;
 }
-
 
 AppletManager::~AppletManager() {
 	clear();
@@ -76,15 +73,35 @@ bool AppletManager::load(const char *path) {
 		return false;
 	}
 
+	void *agi = (applet_get_info_t*)dlsym(a, "ede_panel_applet_get_info");
+	if(!agi) {
+		dl_err = dlerror();
+		E_WARNING(E_STRLOC ": Don't know how to fetch applet information: '%s'\n", dl_err);
+		return false;
+	}
+
+	void *adi = (applet_destroy_info_t*)dlsym(a, "ede_panel_applet_destroy_info");
+	if(!adi) {
+		dl_err = dlerror();
+		E_WARNING(E_STRLOC ": Don't know how to clean applet information: '%s'\n", dl_err);
+		return false;
+	}
+
+
 	AppletData *data = new AppletData;
 	data->dl = a;
 	data->awidget = NULL;
 
-	data->create_func = (applet_create_t)ac;
-	data->destroy_func = (applet_destroy_t)ad;
+	data->create_func       = (applet_create_t)ac;
+	data->destroy_func      = (applet_destroy_t)ad;
+	data->destroy_info_func = (applet_destroy_info_t)adi;
 
-	/* see it's base as name */
-	data->name = get_basename(path);
+	applet_get_info_t get_info_func = (applet_get_info_t)agi;
+
+	/* load applet info first, so we can even use it when widget wasn't created yet */
+	data->ainfo = (get_info_func)();
+
+	E_DEBUG(E_STRLOC ": Loading class %s\n", data->ainfo->klass_name);
 
 	applet_list.push_back(data);
 	return true;
