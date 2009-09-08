@@ -10,6 +10,7 @@ struct CategoryTable {
 
 /* a static list of known main categories */
 static CategoryTable ctable[] = {
+	{ "Application",     XDG_MENU_CATEGORY_APPLICATION },
 	{ "AudioVideo",      XDG_MENU_CATEGORY_AUDIO_VIDEO },
 	{ "Audio",           XDG_MENU_CATEGORY_AUDIO_VIDEO },
 	{ "Video",           XDG_MENU_CATEGORY_AUDIO_VIDEO },
