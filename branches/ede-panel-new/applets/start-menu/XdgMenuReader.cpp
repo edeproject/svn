@@ -9,14 +9,16 @@
 #include <edelib/List.h>
 #include <edelib/Util.h>
 #include <edelib/Directory.h>
-#include <edelib/Config.h>
 #include <edelib/FileTest.h>
+#include <edelib/Config.h>
+#include <edelib/DesktopFile.h>
 
 #include "XdgMenuReader.h"
 #include "XdgMenuCategory.h"
 
 EDELIB_NS_USING(String)
 EDELIB_NS_USING(Config)
+EDELIB_NS_USING(DesktopFile)
 EDELIB_NS_USING(list)
 EDELIB_NS_USING(system_data_dirs)
 EDELIB_NS_USING(build_filename)
@@ -26,19 +28,29 @@ EDELIB_NS_USING(FILE_TEST_IS_DIR)
 
 #define DOT_OR_DOTDOT(base) (base[0] == '.' && (base[1] == '\0' || (base[1] == '.' && base[2] == '\0')))
 
+struct MenuNode;
+struct DeskFileUndone;
+struct DeskFileDone;
 struct XdgMenu;
-struct MenuDesktopEntry;
 
-typedef list<String*> StrList;
-typedef list<String*>::iterator StrListIter;
+typedef list<String*> PStrList;
+typedef list<String*>::iterator PStrListIter;
+
+typedef list<MenuNode*> MenuNodeList;
+typedef list<MenuNode*>::iterator MenuNodeListIter;
+
+typedef list<DeskFileUndone*> UndoneList;
+typedef list<DeskFileUndone*>::iterator UndoneListIter;
+
+typedef list<DeskFileDone*> DoneList;
+typedef list<DeskFileDone*>::iterator DoneListIter;
 
 typedef list<XdgMenu*> XdgMenuList;
 typedef list<XdgMenu*>::iterator XdgMenuListIter;
 
-typedef list<MenuDesktopEntry*> DesktopEntryList;
-typedef list<MenuDesktopEntry*>::iterator DesktopEntryListIter;
 
-struct XdgMenu {
+/* contains data from <Menu> tag */
+struct MenuNode {
 	String *name;               /* menu name */
 
 	/* 
@@ -46,27 +58,44 @@ struct XdgMenu {
 	 * one should be used only if is valid file; if not, use one before and so on. Duplicate entries are
 	 * allowed, and last one is used too.
 	 */
-	StrList directory_stack;      
+	PStrList directory_stack;      
 
-	StrList app_dirs;          /* <AppDirs> elements */
-	StrList dir_dirs;          /* <DirectoryDirs> elements */
-	StrList merge_dirs;        /* <MergeDir> elements */
+	PStrList app_dirs;          /* <AppDirs> elements */
+	PStrList dir_dirs;          /* <DirectoryDirs> elements */
+	PStrList merge_dirs;        /* <MergeDir> elements */
 
-	XdgMenuList submenus;      /* submenus */
+	MenuNodeList submenus;      /* submenus */
 };
 
 /* each .desktop file in <AppDir> must have own Desktop-File Id */
-struct MenuDesktopEntry {
+struct DeskFileUndone {
 	String name;
 	String desktop_file_id;
 };
 
-static void strlist_append(StrList &sl, const char *name) {
+/* .desktop file with completedly collected information */
+struct DeskFileDone {
+	String local_name;
+	String icon;
+	int    category;
+};
+
+/* final menu populated in Fl_Menu_Item */
+struct XdgMenu {
+	String name;
+	String icon;
+
+	DoneList menu_items;
+
+	XdgMenuList submenus;
+};
+
+static void strlist_append(PStrList &sl, const char *name) {
 	String *s = new String(name);
 	sl.push_back(s);
 }
 
-static void strlist_append_with_xdg_path(StrList &sl, const char *suffix, bool is_config) {
+static void strlist_append_with_xdg_path(PStrList &sl, const char *suffix, bool is_config) {
 	list<String> lst;
 	int ret;
 
@@ -84,24 +113,24 @@ static void strlist_append_with_xdg_path(StrList &sl, const char *suffix, bool i
 	}
 }
 
-static void strlist_delete(StrList &sl) {
+static void strlist_delete(PStrList &sl) {
 	if(sl.empty())
 		return;
 
-	StrList::iterator it = sl.begin(), it_end = sl.end();
+	PStrList::iterator it = sl.begin(), it_end = sl.end();
 	for(; it != it_end; ++it)
 		delete *it;
 	sl.clear();
 }
 
-static XdgMenu *xdg_menu_new(void) {
-	XdgMenu *m = new XdgMenu;
+static MenuNode *menu_node_new(void) {
+	MenuNode *m = new MenuNode;
 	m->name = NULL;
 
 	return m;
 }
 
-static void xdg_menu_delete(XdgMenu *m) {
+static void menu_node_delete(MenuNode *m) {
 	delete m->name;
 
 	strlist_delete(m->directory_stack);
@@ -110,11 +139,11 @@ static void xdg_menu_delete(XdgMenu *m) {
 	strlist_delete(m->merge_dirs);
 
 	if(!m->submenus.empty()) {
-		XdgMenuListIter it = m->submenus.begin(), it_end = m->submenus.end();
+		MenuNodeListIter it = m->submenus.begin(), it_end = m->submenus.end();
 
 		/* recursively clean submenus */
 		for(; it != it_end; ++it)
-			xdg_menu_delete(*it);
+			menu_node_delete(*it);
 
 		m->submenus.clear();
 	}
@@ -122,12 +151,12 @@ static void xdg_menu_delete(XdgMenu *m) {
 	delete m;
 }
 
-static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
+static void scan_menu_tag(TiXmlNode *elem, MenuNodeList& menus) {
 	if(!elem)
 		return;
 
 	TiXmlText *txt;
-	XdgMenu   *m = xdg_menu_new();
+	MenuNode  *m = menu_node_new();
 
 	bool got_default_app_dirs = false, got_default_dir_dirs = false, got_default_merge_dirs = false;
 
@@ -211,7 +240,7 @@ static void scan_menu_tag(TiXmlNode *elem, XdgMenuList& menus) {
 	menus.push_back(m);
 }
 
-static bool load_desktop_files_internal(const String *dir, DesktopEntryList &lst) {
+static bool load_desktop_files_internal(const String *dir, UndoneList &lst) {
 	DIR *dirp = opendir(dir->c_str());
 	if(!dirp)
 		return false;
@@ -235,7 +264,7 @@ static bool load_desktop_files_internal(const String *dir, DesktopEntryList &lst
 
 		/* it must have .desktop extension */
 		if(str_ends(path.c_str(), ".desktop")) {
-			MenuDesktopEntry *en = new MenuDesktopEntry;
+			DeskFileUndone *en = new DeskFileUndone;
 			en->name = path;
 			lst.push_back(en);	
 		}
@@ -245,7 +274,7 @@ static bool load_desktop_files_internal(const String *dir, DesktopEntryList &lst
 	return status;
 }
 
-static void load_desktop_files(const String *dir, DesktopEntryList &lst) {
+static void load_desktop_files(const String *dir, UndoneList &lst) {
 	/* 
 	 * do not process further if failed, because 'lst' will be filled with
 	 * the content of previous directory
@@ -253,10 +282,10 @@ static void load_desktop_files(const String *dir, DesktopEntryList &lst) {
 	if(!load_desktop_files_internal(dir, lst))
 		return;
 
-	const char *ptr;
-	MenuDesktopEntry *en;
-	DesktopEntryListIter it = lst.begin(), it_end = lst.end();
-	String tmp;
+	const char     *ptr;
+	DeskFileUndone *en;
+	String         tmp;
+	UndoneListIter it = lst.begin(), it_end = lst.end();
 
 	/* Now, scan the list and construct Desktop File Id and fill desktop_file_id for each member.
 	 * Desktop File Id is constructed by replacing '/' with '-' in subdirectory path, e.g.:
@@ -300,16 +329,16 @@ void xdg_menu_load(void) {
 		return;
 	}
 
-	DesktopEntryList dlst;
-	StrListIter      sit, sit_end;
+	UndoneList   dlst;
+	PStrListIter sit, sit_end;
 
-	XdgMenuList menus;
+	MenuNodeList menus;
 	scan_menu_tag(elem, menus);
 
-	XdgMenuListIter it = menus.begin(), it_end = menus.end();
+	MenuNodeListIter it = menus.begin(), it_end = menus.end();
 
 	for(; it != it_end; ++it) {
-		XdgMenu* m = (*it);
+		MenuNode* m = (*it);
 
 		sit = m->app_dirs.begin(), sit_end = m->app_dirs.end();
 		for(; sit != sit_end; ++sit) {
@@ -330,14 +359,15 @@ void xdg_menu_load(void) {
 			E_DEBUG("directory: %s\n", (*sit)->c_str());
 	}
 
-	DesktopEntryListIter dit = dlst.begin(), dit_end = dlst.end();
+	UndoneListIter dit = dlst.begin(), dit_end = dlst.end();
 	for(; dit != dit_end; ++dit) {
 		E_DEBUG("%s => %s\n", (*dit)->name.c_str(), (*dit)->desktop_file_id.c_str());
 		delete *dit;
 	}
 
+
 	for(it = menus.begin(); it != it_end; ++it)
-		xdg_menu_delete(*it);
+		menu_node_delete(*it);
 }
 
 int main() {
