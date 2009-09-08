@@ -28,6 +28,8 @@ EDELIB_NS_USING(FILE_TEST_IS_DIR)
 
 #define DOT_OR_DOTDOT(base) (base[0] == '.' && (base[1] == '\0' || (base[1] == '.' && base[2] == '\0')))
 
+static int global_age_counter;
+
 struct MenuNode;
 struct DeskFileUndone;
 struct DeskFileDone;
@@ -69,13 +71,15 @@ struct MenuNode {
 
 /* each .desktop file in <AppDir> must have own Desktop-File Id */
 struct DeskFileUndone {
-	String name;
-	String desktop_file_id;
+	String path;
+	String id;         /* Desktop File Id */
+	int    age;        /* so we know which file was found first; this increments on each new file */
 };
 
 /* .desktop file with completedly collected information */
 struct DeskFileDone {
-	String local_name;
+	String name;
+	String gen_name;
 	String icon;
 	int    category;
 };
@@ -85,14 +89,23 @@ struct XdgMenu {
 	String name;
 	String icon;
 
-	DoneList menu_items;
+	DoneList items;
 
 	XdgMenuList submenus;
 };
 
+static bool desk_file_indone_sorter(DeskFileUndone* const& u1, DeskFileUndone* const& u2) {
+	return (u1->id < u2->id) && (u1->age < u2->age);
+}
+
 static void strlist_append(PStrList &sl, const char *name) {
 	String *s = new String(name);
 	sl.push_back(s);
+}
+
+static void strlist_prepend(PStrList &sl, const char *name) {
+	String *s = new String(name);
+	sl.push_front(s);
 }
 
 static void strlist_append_with_xdg_path(PStrList &sl, const char *suffix, bool is_config) {
@@ -151,7 +164,31 @@ static void menu_node_delete(MenuNode *m) {
 	delete m;
 }
 
-static void scan_menu_tag(TiXmlNode *elem, MenuNodeList& menus) {
+static XdgMenu *xdg_menu_new(void) {
+	XdgMenu *m = new XdgMenu;
+	return m;
+}
+
+static void xdg_menu_delete(XdgMenu *m) {
+	DoneListIter dit = m->items.begin(), dit_end = m->items.end();
+	while(dit != dit_end) {
+		delete (*dit);
+		dit = m->items.erase(dit);
+	}
+
+	if(!m->submenus.empty()) {
+		XdgMenuListIter it = m->submenus.begin(), it_end = m->submenus.end();
+		/* recursively clean submenus */
+		for(; it != it_end; ++it)
+			xdg_menu_delete(*it);
+
+		m->submenus.clear();
+	}
+
+	delete m;
+}
+
+static void scan_menu_tag(TiXmlNode *elem, MenuNodeList &menus) {
 	if(!elem)
 		return;
 
@@ -193,8 +230,14 @@ static void scan_menu_tag(TiXmlNode *elem, MenuNodeList& menus) {
 		
 		if(strcmp(elem->Value(), "DirectoryDir") == 0) {
 			txt = elem->FirstChild()->ToText();
-			if(txt)
-				strlist_append(m->dir_dirs, txt->Value());
+			if(txt) {
+				/* 
+				 * the spec said we must use "further down" in case multiple ones are given,
+				 * so we prepends each of them, getting last one at the top
+				 */
+				strlist_prepend(m->dir_dirs, txt->Value());
+			}
+
 			continue;
 		}
 
@@ -265,7 +308,9 @@ static bool load_desktop_files_internal(const String *dir, UndoneList &lst) {
 		/* it must have .desktop extension */
 		if(str_ends(path.c_str(), ".desktop")) {
 			DeskFileUndone *en = new DeskFileUndone;
-			en->name = path;
+
+			en->path = path;
+			en->age  = global_age_counter++;
 			lst.push_back(en);	
 		}
 	}
@@ -275,6 +320,9 @@ static bool load_desktop_files_internal(const String *dir, UndoneList &lst) {
 }
 
 static void load_desktop_files(const String *dir, UndoneList &lst) {
+	/* reset age counter */
+	global_age_counter = 0;
+
 	/* 
 	 * do not process further if failed, because 'lst' will be filled with
 	 * the content of previous directory
@@ -287,7 +335,7 @@ static void load_desktop_files(const String *dir, UndoneList &lst) {
 	String         tmp;
 	UndoneListIter it = lst.begin(), it_end = lst.end();
 
-	/* Now, scan the list and construct Desktop File Id and fill desktop_file_id for each member.
+	/* Now, scan the list and construct Desktop File Id and fill id for each member.
 	 * Desktop File Id is constructed by replacing '/' with '-' in subdirectory path, e.g.:
 	 *
 	 *   <AppDir>/foo.desktop           => foo.desktop
@@ -297,13 +345,13 @@ static void load_desktop_files(const String *dir, UndoneList &lst) {
 	for(; it != it_end; ++it) {
 		en = *it;
 
-		if(en->name.length() < dir->length()) {
+		if(en->path.length() < dir->length()) {
 			E_WARNING(E_STRLOC ": '%s' length is smaller than allowed. This entry will be skipped\n");
 			continue;
 		}
 
 		/* skip directory path + starting separator */
-		ptr = en->name.c_str() + dir->length();
+		ptr = en->path.c_str() + dir->length();
 
 		while(*ptr == E_DIR_SEPARATOR)
 			ptr++;
@@ -311,8 +359,128 @@ static void load_desktop_files(const String *dir, UndoneList &lst) {
 		tmp.assign(ptr);
 		tmp.replace(E_DIR_SEPARATOR, '-');
 
-		en->desktop_file_id = tmp;
+		en->id = tmp;
 	}
+}
+
+static void menu_node_app_dirs_to_xdg_menu_items(MenuNode *node, XdgMenu *menu) {
+	UndoneList   undone_list;
+
+	PStrListIter it = node->app_dirs.begin(), it_end = node->app_dirs.end();
+
+	/* load unscanned .desktop files from app dirs */
+	for(; it != it_end; ++it)
+		load_desktop_files(*it, undone_list);
+
+	if(undone_list.empty())
+		return;
+
+	/* 
+	 * sort them and via consecutive unique remove duplicates; things are sorted
+	 * respecting id and age
+	 */
+	undone_list.sort(desk_file_indone_sorter);
+
+	UndoneListIter uit = undone_list.begin(), uit_end = undone_list.end();
+	UndoneListIter uit_next = uit;
+
+	while(++uit_next != uit_end) {
+		if((*uit)->id == (*uit_next)->id) {
+			delete *uit_next;
+			undone_list.erase(uit_next);
+		} else {
+			uit = uit_next;
+		}
+
+		uit_next = uit;
+	}
+
+	/* now load each of .desktop files, and fill menu items */
+	DesktopFile df;
+	char buf[128];
+
+	uit = undone_list.begin();
+	E_DEBUG("items: %i\n", undone_list.size());
+
+	while(uit != uit_end) {
+		df.load((*uit)->path.c_str());
+		if(!df) {
+			E_WARNING(E_STRLOC ": Unable to load '%s'. Skipping this file\n", (*uit)->path.c_str());
+			++uit;
+			continue;
+		}
+
+		DeskFileDone *d = new DeskFileDone;
+
+		if(df.generic_name(buf, sizeof(buf)))
+			d->gen_name = buf;
+		if(df.name(buf, sizeof(buf)))
+			d->name = buf;
+		if(df.icon(buf, sizeof(buf)))
+			d->icon = buf;
+
+		/* TODO: extend edelib for this */
+		if(df.get("Desktop Entry", "Category", buf, sizeof(buf)))
+			d->category = xdg_deduce_category(buf);
+
+		menu->items.push_back(d);
+
+		/* clean it at the same time, increasing iterator */
+		delete *uit;
+		uit = undone_list.erase(uit);
+	}
+
+	/* now, recurse for submenus */
+	if(!node->submenus.empty()) {
+		MenuNodeListIter mit = node->submenus.begin(), mit_end = node->submenus.end();
+
+		for(; mit != mit_end; ++mit) {
+			XdgMenu *m = xdg_menu_new();
+			menu_node_app_dirs_to_xdg_menu_items(*mit, m);
+
+			menu->submenus.push_back(m);
+		}
+	}
+}
+
+void menu_node_dir_to_xdg_menu_name(MenuNode *node, XdgMenu *menu) {
+	/* spec require we use last name in <Directory> tag stack */
+	String *dirname = node->directory_stack.back();
+
+	if(!str_ends(dirname->c_str(), ".directory"))
+		return;
+
+	String path;
+
+	PStrListIter it = node->dir_dirs.begin(), it_end = node->dir_dirs.end();
+	Config conf;
+
+	for(; it != it_end; ++it) {
+		path = build_filename((*it)->c_str(), dirname->c_str());
+		if(conf.load(path.c_str()))
+			break;
+	}
+
+	bool name_found = false;
+
+	if(conf) {
+		char buf[128];
+
+		if(conf.get("Desktop Entry", "Icon", buf, sizeof(buf)))
+			menu->icon = buf;
+
+		if(conf.get_localized("Desktop Entry", "Name", buf, sizeof(buf))) {
+			menu->name = buf;
+			name_found = true;
+		}
+	}
+
+	if(!name_found) {
+		/* if name wasn't found, use directory name, stripping .directory extension */
+		menu->name = dirname->substr(0, dirname->length() - 10);
+	}
+
+	E_DEBUG("%s\n", menu->name.c_str());
 }
 
 void xdg_menu_load(void) {
@@ -329,42 +497,24 @@ void xdg_menu_load(void) {
 		return;
 	}
 
-	UndoneList   dlst;
-	PStrListIter sit, sit_end;
-
 	MenuNodeList menus;
 	scan_menu_tag(elem, menus);
 
 	MenuNodeListIter it = menus.begin(), it_end = menus.end();
 
+	XdgMenuList xmenus;
+
 	for(; it != it_end; ++it) {
-		MenuNode* m = (*it);
+		XdgMenu *m = xdg_menu_new();
 
-		sit = m->app_dirs.begin(), sit_end = m->app_dirs.end();
-		for(; sit != sit_end; ++sit) {
-			load_desktop_files(*sit, dlst);
-			E_DEBUG("appdir: %s\n", (*sit)->c_str());
-		}
+		menu_node_app_dirs_to_xdg_menu_items(*it, m);
+		menu_node_dir_to_xdg_menu_name(*it, m);
 
-		sit = m->dir_dirs.begin(), sit_end = m->dir_dirs.end();
-		for(; sit != sit_end; ++sit)
-			E_DEBUG("dirdir: %s\n", (*sit)->c_str());
-
-		sit = m->merge_dirs.begin(), sit_end = m->merge_dirs.end();
-		for(; sit != sit_end; ++sit)
-			E_DEBUG("mergedir: %s\n", (*sit)->c_str());
-
-		sit = m->directory_stack.begin(), sit_end = m->directory_stack.end();
-		for(; sit != sit_end; ++sit)
-			E_DEBUG("directory: %s\n", (*sit)->c_str());
+		xmenus.push_back(m);
 	}
 
-	UndoneListIter dit = dlst.begin(), dit_end = dlst.end();
-	for(; dit != dit_end; ++dit) {
-		E_DEBUG("%s => %s\n", (*dit)->name.c_str(), (*dit)->desktop_file_id.c_str());
-		delete *dit;
-	}
-
+	for(XdgMenuListIter mit = xmenus.begin(), mite = xmenus.end(); mit != mite; ++mit)
+		xdg_menu_delete(*mit);
 
 	for(it = menus.begin(); it != it_end; ++it)
 		menu_node_delete(*it);
