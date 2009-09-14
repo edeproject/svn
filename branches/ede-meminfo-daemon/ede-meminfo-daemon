@@ -1,0 +1,80 @@
+#!/bin/env perl
+# Broadcast a memory status as D-BUS signal every $monitor_sec_delay seconds.
+# The signal will be in form 'org.equinoxproject.Meminfo(double memtotal, double memfree)
+
+$meminfo_dbus_object = "/org/equinoxproject/Meminfo";
+$meminfo_dbus_iface  = "org.equinoxproject.Meminfo";
+$monitor_sec_delay   = 5;
+
+$dbus_send = "dbus-send";
+
+sub read_meminfo {
+	open(MEMINFO,"/proc/meminfo");
+	@lines = <MEMINFO>;
+	close(MEMINFO);
+
+	my $memtotal = 0;
+	my $memfree  = 0;
+
+	foreach $line (@lines) {
+		if($line =~ /^MemTotal:/) {
+			@sp = split(/\s+/, $line);
+			$memtotal = $sp[1];
+		}
+
+		if($line =~ /^MemFree:/) {
+			@sp = split(/\s+/, $line);
+			$memfree = $sp[1];
+		}
+	}
+
+	my $cmd = "$dbus_send --type=signal $meminfo_dbus_object $meminfo_dbus_iface double:$memtotal double:$memfree";
+	system($cmd);
+}
+
+sub do_fork {
+	use POSIX qw(setsid);
+
+	chdir "/";
+
+	open(STDIN,  "/dev/null") or die "Can't open /dev/null: $!";
+	open(STDOUT, ">>/dev/null") or die "Can't write to /dev/null: $!";
+	open(STDERR, ">>/dev/null") or die "Can't write to /dev/null: $!";
+
+	defined(my $pid = fork) or die "Can't fork: $!";
+	exit if $pid;
+
+	setsid or die "Can't start a new session: $!";
+	umask 0;
+}
+
+sub main {
+	my $argc = @ARGV;
+	my $daemonize = 1;
+
+	if($argc > 0) {
+		if($ARGV[0] eq "--no-daemon") {
+			$daemonize = 0;
+		} else {
+			print "Usage: ede-meminfo-daemon [--no-daemon]\n";
+			print "Collect total and free memory and broadcast it via D-BUS\n";
+			exit 1;
+		}
+	}
+
+	if($^O ne "linux") {
+		print "*** This program works only on Linux. At least for now...\n";
+		exit 1;
+	}
+
+	if($daemonize) {
+		&do_fork;
+	}
+
+	while(1) {
+		&read_meminfo;
+		sleep $monitor_sec_delay;
+	}
+}
+
+&main;
