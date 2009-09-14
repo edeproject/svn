@@ -1,0 +1,24 @@
+ede-meminfo-daemon documentation
+================================
+
+ede-meminfo-daemon is a simple daemon tool that collects memory status
+and sends it via D-BUS.
+
+Options
+-------
+
+--no-daemon::
+	Do not run in background.
+
+Details
+-------
+
+ede-meminfo-daemon will try to read '/proc/meminfo' and parse needed fields.
+Then will broadcast 'org.equinoxproject.Meminfo(double memtotal, double memfree)'
+signal via '/org/equinoxproject/Meminfo' object, doing it every 5 seconds (default).
+
+Because ede-meminfo-daemon relies on '/proc/meminfo', available only on Linux, it
+only works on this OS.
+
+ede-meminfo-daemon is written in perl and require 'dbus-send' tool (already comes with 
+D-BUS package).
