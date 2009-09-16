@@ -70,8 +70,8 @@ bool DesktopEntry::load(void) {
 		return false;
 	}
 
-	/* check if we are 'Hidden = true'; these must not be loaded */
-	if(df.hidden())
+	/* check if we are 'Hidden = true' or 'NoDisplay = true'; these must not be loaded */
+	if(df.hidden() || df.no_display())
 		return false;
 
 	/* it must be application type */
