@@ -386,7 +386,7 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 											 MenuParseContext *top, 
 											 MenuRulesList &rules)
 {
-	MenuRulesListIt    rit = rules.begin(), rit_end = rules.end();
+	MenuRulesListIt    rit, rit_end = rules.end();
 	DesktopEntryListIt dit = m->desk_files.begin(), dit_end = m->desk_files.end();
 
 	/* check rules for the current list */
@@ -398,6 +398,9 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 			if(menu_rules_eval(*rit, *dit)) {
 				(*dit)->mark_as_allocated();
 				ctx->items.push_back(*dit);
+
+				/* do not scan rules any more */
+				break;
 			}
 		}
 	}
@@ -412,8 +415,39 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 			if(menu_rules_eval(*rit, *dit)) {
 				(*dit)->mark_as_allocated();
 				ctx->items.push_back(*dit);
+
+				/* do not scan rules any more */
+				break;
 			}
 		}
+	}
+}
+
+static void menu_context_apply_exclude_rules(MenuContext *ctx, 
+											 MenuParseContext *m, 
+											 MenuParseContext *top, 
+											 MenuRulesList &rules)
+{
+	MenuRulesListIt    rit, rit_end = rules.end();
+	/* we exclude 'included' items */
+	DesktopEntryListIt dit = ctx->items.begin(), dit_end = ctx->items.end();
+	bool found;
+
+	while(dit != dit_end) {
+		found = false;
+
+		for(rit = rules.begin(); rit != rit_end; ++rit) {
+			/* pop entry if matches */
+			if(menu_rules_eval(*rit, *dit)) {
+				/* E_DEBUG("Dumping %s\n", (*dit)->get_path()); */
+				dit = ctx->items.erase(dit);
+				found = true;
+				break;
+			}
+		}
+
+		if(!found) 
+			++dit;
 	}
 }
 
@@ -426,7 +460,11 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	ctx->name = menu_context_construct_name(m, top);
 	E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
 
+	/* fill MenuContext items */
 	menu_context_apply_include_rules(ctx, m, top, m->include_rules);
+
+	/* pop filled MenuContext items if match the rule */
+	menu_context_apply_exclude_rules(ctx, m, top, m->exclude_rules);
 
 	/* process submenus */
 	if(!m->submenus.empty()) {
@@ -454,19 +492,11 @@ static void menu_context_delete(MenuContext *c) {
 	delete c;
 }
 
-static void print_list(StrList &s) {
-	StrListIt it = s.begin(), it_end = s.end();
-	while(it != it_end) {
-		E_DEBUG(" %s\n", (*it).c_str());
-		++it;
-	}
-}
-
 void xdg_menu_load(void) {
 	TiXmlDocument doc;
 	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
-	//if(!doc.LoadFile("applications.menu")) {
-	if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
+	if(!doc.LoadFile("applications.menu")) {
+	//if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
 	//if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
 	//if(!doc.LoadFile("/etc/kde/xdg/menus/applications.menu")) {
 		E_WARNING(E_STRLOC ": Can't load menu\n");
