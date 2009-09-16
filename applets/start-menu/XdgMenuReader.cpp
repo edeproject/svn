@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <edelib/TiXml.h>
 #include <edelib/Debug.h>
@@ -425,7 +426,6 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 
 static void menu_context_apply_exclude_rules(MenuContext *ctx, 
 											 MenuParseContext *m, 
-											 MenuParseContext *top, 
 											 MenuRulesList &rules)
 {
 	MenuRulesListIt    rit, rit_end = rules.end();
@@ -458,13 +458,14 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 
 	/* figure out the name first */
 	ctx->name = menu_context_construct_name(m, top);
-	E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
+	//E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
 
 	/* fill MenuContext items */
 	menu_context_apply_include_rules(ctx, m, top, m->include_rules);
 
 	/* pop filled MenuContext items if match the rule */
-	menu_context_apply_exclude_rules(ctx, m, top, m->exclude_rules);
+	menu_context_apply_exclude_rules(ctx, m, m->exclude_rules);
+	//E_DEBUG("- Menu: %s %i\n", ctx->name->c_str(), ctx->items.size());
 
 	/* process submenus */
 	if(!m->submenus.empty()) {
@@ -492,8 +493,25 @@ static void menu_context_delete(MenuContext *c) {
 	delete c;
 }
 
+static void menu_context_dump_for_test_suite(MenuContext *c) {
+	DesktopEntryListIt it = c->items.begin(), it_end = c->items.end();
+
+	for(; it != it_end; ++it) {
+		printf("%s/\t%s\t%s\n", c->name->c_str(),
+							   (*it)->get_id(),
+							   (*it)->get_path());
+	}
+
+	if(!c->submenus.empty()) {
+		MenuContextListIt cit = c->submenus.begin(), cit_end = c->submenus.end();
+		for(; cit != cit_end; ++cit)
+			menu_context_dump_for_test_suite(*cit);
+	}
+}
+
 void xdg_menu_load(void) {
 	TiXmlDocument doc;
+	
 	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
 	if(!doc.LoadFile("applications.menu")) {
 	//if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
@@ -502,6 +520,36 @@ void xdg_menu_load(void) {
 		E_WARNING(E_STRLOC ": Can't load menu\n");
 		return;
 	}
+
+#if 0
+	char   *xdg_prefix = getenv("XDG_MENU_PREFIX");
+	String  menu_name = "/menus/";
+	if(xdg_prefix) {
+		menu_name = "/menus/";
+		menu_name += xdg_prefix;
+	}
+
+	menu_name += "applications.menu";
+
+	StrList xdg_paths;
+	String  tmp;
+	system_config_dirs(xdg_paths);
+
+	bool loaded = false;
+
+	StrListIt sit = xdg_paths.begin();
+	for(; sit != xdg_paths.end(); ++sit) {
+		tmp = build_filename((*sit).c_str(), menu_name.c_str());
+
+		if(doc.LoadFile(tmp.c_str())) {
+			loaded = true;
+			break;
+		}
+	}
+
+	if(!loaded)
+		return;
+#endif
 
 	TiXmlNode *elem = doc.FirstChild("Menu");
 	if(!elem) {
@@ -524,6 +572,7 @@ void xdg_menu_load(void) {
 		desktop_entry_list_load_all(ctx->desk_files);
 
 		MenuContext *cc = menu_parse_context_to_menu_context(ctx, ctx, elem);
+		menu_context_dump_for_test_suite(cc);
 		menu_context_delete(cc);
 
 		/* cleanup desktop entries */
