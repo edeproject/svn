@@ -3,6 +3,13 @@
  make sure html/xml entities be escaped correctly
 -->
 <document>
+<news title="Wiki changed">
+<p>
+ We are switched to <a href="http://moinmo.in">MoinMoin</a>, merging previous 
+ wiki pages. Things are little bit updated and some page content is moved to
+ wiki, mainly for easier maintenance.
+</p>
+</news>
 
 <news title="EDE 2.0 alpha released">
 <p>
@@ -34,20 +41,6 @@
  The new issue tracker, powered by <a href="http://bugzilla.org">Bugzilla</a>
  is now on <a href="http://bugs.equinox-project.org">http://bugs.equinox-project.org</a>, so
  please report future requests there.
-</p>
-</news>
-
-<news title="gcc 4.3.2 patch">
-<p>
- Thierry, from <a href="http://www.nutyx.org/">Nutyx</a> project, completed
- a long standing eFLTK patch for the newer gcc version(s). Currently a patch
- is located <a href="http://equinox-project.org/patches/gcc432.patch">here</a>
- and I'm hoping to apply it on the svn soon.
-</p>
-
-<p>
- You can see <a href="http://sourceforge.net/forum/forum.php?thread_id=2633352&amp;forum_id=249614">
- whole thread</a> about this problem and provided solution.
 </p>
 </news>
 
