@@ -13,11 +13,17 @@ class DesktopEntry;
 typedef list<DesktopEntry*> DesktopEntryList;
 typedef list<DesktopEntry*>::iterator DesktopEntryListIt;
 
+typedef list<String> StrList;
+typedef list<String>::iterator StrListIt;
+
 /* Represents entry for a menu. Do not confuse it with DesktopFile from edelib */
 class DesktopEntry {
 private:
 	/* used to load "later" found .desktop file, in case duplicate desktop file id's was found */
 	unsigned int age;
+
+	/* used for <OnlyUnallocated> and <NotOnlyUnallocated> */
+	bool allocated;
 
 	/* absolute path to .desktop file */
 	String *path;
@@ -46,9 +52,12 @@ private:
 	/* TryExec value from .desktop file; filled with load() */
 	String *try_exec;
 
+	/* tokenized 'categories' */
+	StrList category_list;
+
 	E_DISABLE_CLASS_COPY(DesktopEntry)
 public:
-	DesktopEntry() : age(0), path(NULL), id(NULL),
+	DesktopEntry() : age(0), allocated(false), path(NULL), id(NULL),
 	categories(NULL), name(NULL), generic_name(NULL), comment(NULL), icon(NULL), exec(NULL), try_exec(NULL) { }
 
 	~DesktopEntry();
@@ -68,15 +77,24 @@ public:
 	/* loads actual .desktop file and reads it */
 	bool load(void);
 
+	/* check if Categories key contains given category */
+	bool in_category(const char *cat);
+
+	void mark_as_allocated(void) { allocated = true; }
+	bool is_allocated(void) { return allocated; }
+
 	const char   *get_path(void) { return path ? path->c_str() : NULL; }
 	const char   *get_id(void)   { return id ? id->c_str() : NULL; }
 	unsigned int  get_age(void)  { return age; }
 };
 
 /* remove duplicate items in the list, by looking at DesktopEntry id */
-void desktop_entry_remove_duplicates(DesktopEntryList &lst);
+void desktop_entry_list_remove_duplicates(DesktopEntryList &lst);
 
 /* call 'load()' on each member; if 'load()' fails, that member will be removed */
-void desktop_entry_load_all(DesktopEntryList &lst);
+void desktop_entry_list_load_all(DesktopEntryList &lst);
+
+/* find a file with target id in the list and return iterator pointing to it */
+bool desktop_entry_list_find_fileid(DesktopEntryList &lst, const char *id, DesktopEntryListIt &it_ret);
 
 #endif

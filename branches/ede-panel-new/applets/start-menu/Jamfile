@@ -12,4 +12,4 @@ SubDir TOP ede-panel-new applets start-menu ;
 
 #PanelApplet edepanel_start_menu : StartMenu.cpp XdgMenuReader.cpp ;
 
-EdeProgram xxx : XdgMenuReader.cpp DesktopEntry.cpp ;
+EdeProgram xxx : XdgMenuReader.cpp DesktopEntry.cpp MenuRules.cpp ;

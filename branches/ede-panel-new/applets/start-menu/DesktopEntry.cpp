@@ -1,5 +1,7 @@
 #include <string.h>
+
 #include <edelib/Util.h>
+#include <edelib/StrUtil.h>
 #include <edelib/Directory.h>
 #include <edelib/DesktopFile.h>
 
@@ -7,6 +9,7 @@
 
 EDELIB_NS_USING(DesktopFile)
 EDELIB_NS_USING(build_filename)
+EDELIB_NS_USING(stringtok)
 EDELIB_NS_USING(DESK_FILE_TYPE_APPLICATION)
 
 static int age_counter = 1;
@@ -102,12 +105,40 @@ bool DesktopEntry::load(void) {
 	return true;
 }
 
+bool DesktopEntry::in_category(const char *cat) {
+	E_RETURN_VAL_IF_FAIL(cat != NULL, false);
+
+	if(!categories)
+		return false;
+
+	StrListIt it, it_end;
+
+	if(category_list.empty()) {
+		stringtok(category_list, *categories, ";");
+
+		/* remove starting/ending spaces if exists */
+		it = category_list.begin();
+		it_end = category_list.end();
+		for(; it != it_end; ++it)
+			(*it).trim();
+	}
+
+	it = category_list.begin();
+	it_end = category_list.end();
+	for(; it != it_end; ++it) {
+		if((*it) == cat)
+			return true;
+	}
+
+	return false;
+}
+
 /* TODO: bug in edelib */
 static bool id_age_sorter(DesktopEntry* const& u1, DesktopEntry* const& u2) {
 	return (strcmp(u1->get_id(), u2->get_id()) < 0) && (u1->get_age() < u2->get_age()); 
 }
 
-void desktop_entry_remove_duplicates(DesktopEntryList &lst) {
+void desktop_entry_list_remove_duplicates(DesktopEntryList &lst) {
 	if(lst.empty())
 		return;
 
@@ -130,7 +161,7 @@ void desktop_entry_remove_duplicates(DesktopEntryList &lst) {
 	}
 }
 
-void desktop_entry_load_all(DesktopEntryList &lst) {
+void desktop_entry_list_load_all(DesktopEntryList &lst) {
 	if(lst.empty())
 		return;
 
@@ -143,4 +174,20 @@ void desktop_entry_load_all(DesktopEntryList &lst) {
 			++it;
 		}
 	}
+}
+
+bool desktop_entry_list_find_fileid(DesktopEntryList &lst, const char *id, DesktopEntryListIt &it) {
+	if(lst.empty())
+		return false;
+
+	it = lst.begin();
+	DesktopEntryListIt it_end = lst.end();
+
+	for(; it != it_end; ++it) {
+		if(strcmp((*it)->get_id(), id) == 0) {
+			return true;
+		}
+	}
+
+	return false;
 }
