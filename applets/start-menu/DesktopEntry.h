@@ -86,6 +86,11 @@ public:
 	const char   *get_path(void) { return path ? path->c_str() : NULL; }
 	const char   *get_id(void)   { return id ? id->c_str() : NULL; }
 	unsigned int  get_age(void)  { return age; }
+
+	const char   *get_name(void) { return name ? name->c_str() : NULL; }
+	const char   *get_icon(void) { return icon ? icon->c_str() : NULL; }
+	const char   *get_exec(void) { return exec ? exec->c_str() : NULL; }
+	const char   *get_try_exec(void) { return try_exec ? try_exec->c_str() : NULL; }
 };
 
 /* remove duplicate items in the list, by looking at DesktopEntry id */

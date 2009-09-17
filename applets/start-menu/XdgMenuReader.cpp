@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <FL/Fl_Shared_Image.H>
 #include <edelib/TiXml.h>
 #include <edelib/Debug.h>
 #include <edelib/String.h>
@@ -12,13 +13,16 @@
 #include <edelib/FileTest.h>
 #include <edelib/Directory.h>
 #include <edelib/DesktopFile.h>
+#include <edelib/IconLoader.h>
 
 #include "DesktopEntry.h"
 #include "MenuRules.h"
+#include "XdgMenuReader.h"
 
 EDELIB_NS_USING(String)
 EDELIB_NS_USING(DesktopFile)
 EDELIB_NS_USING(list)
+EDELIB_NS_USING(IconLoader)
 EDELIB_NS_USING(system_config_dirs)
 EDELIB_NS_USING(system_data_dirs)
 EDELIB_NS_USING(user_data_dir)
@@ -27,6 +31,7 @@ EDELIB_NS_USING(file_test)
 EDELIB_NS_USING(str_ends)
 EDELIB_NS_USING(FILE_TEST_IS_DIR)
 EDELIB_NS_USING(DESK_FILE_TYPE_DIRECTORY)
+EDELIB_NS_USING(ICON_SIZE_SMALL)
 
 #define DOT_OR_DOTDOT(base)    (base[0] == '.' && (base[1] == '\0' || (base[1] == '.' && base[2] == '\0')))
 #define ELEMENT_IS(elem, val)  (strcmp(elem->Value(), val) == 0)
@@ -73,6 +78,9 @@ struct MenuParseContext {
 struct MenuContext {
 	/* menu label */
 	String *name;
+
+	/* menu icon */
+	String *icon;
 
 	/* a list of .desktop files; at the same time also items in menu list */
 	DesktopEntryList items;
@@ -343,9 +351,14 @@ static void scan_menu_tag(TiXmlNode *elem, MenuParseList &parse_list) {
 	parse_list.push_back(ctx);
 }
 
-static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext *top) {
-	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
+static bool menu_context_construct_name_and_get_icon(MenuParseContext *m, 
+													 MenuParseContext *top, 
+													 String **ret_name, 
+													 String **ret_icon) 
+{
+	E_RETURN_VAL_IF_FAIL(m != NULL, false);
 
+	*ret_name = *ret_icon = NULL;
 	bool should_be_displayed = true;
 
 	if(!m->dir_files.empty()) {
@@ -379,8 +392,16 @@ static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext
 					}
 
 					char buf[NAME_BUFSZ];
-					if(df.name(buf, NAME_BUFSZ))
-						return new String(buf);
+
+					/* try icon first */
+					if(!(*ret_icon) && df.icon(buf, NAME_BUFSZ))
+						*ret_icon = new String(buf);
+
+					/* then name, so we can quit nicely */
+					if(!(*ret_name) && df.name(buf, NAME_BUFSZ)) {
+						*ret_name = new String(buf);
+						return true;
+					}
 				}
 			}
 		}
@@ -403,21 +424,29 @@ static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext
 					}
 
 					char buf[NAME_BUFSZ];
-					if(df.name(buf, NAME_BUFSZ))
-						return new String(buf);
+
+					/* try icon first */
+					if(!(*ret_icon) && df.icon(buf, NAME_BUFSZ))
+						*ret_icon = new String(buf);
+
+					/* then name, so we can quit nicely */
+					if(!(*ret_name) && df.name(buf, NAME_BUFSZ)) {
+						*ret_name = new String(buf);
+						return true;
+					}
 				}
 			}
 		}
 	}	
 
-	if(!should_be_displayed) {
-		E_DEBUG("!!!!!!!!> %s\n", m->name->c_str());
-		return NULL;
-	}
+	if(!should_be_displayed)
+		return false;
 
-	E_RETURN_VAL_IF_FAIL(m->name != NULL, NULL);
-	/* if there are no files and can be displayed, use context name */
-	return new String(*(m->name));
+	E_RETURN_VAL_IF_FAIL(m->name != NULL, false);
+
+	/* if there are no files and can be displayed, use context name; let icon name be NULL */
+	*ret_name = new String(*(m->name));
+	return true;
 }
 
 static void menu_context_apply_include_rules(MenuContext *ctx, 
@@ -499,15 +528,19 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 		return NULL;
 
 	/* 
-	 * figure out the name first; if returns NULL, either menu should not be displayed, or something
+	 * figure out the name first; if returns false, either menu should not be displayed, or something
 	 * went wrong
 	 */
-	String *n = menu_context_construct_name(m, top);
-	if(!n)
+	String *n, *ic;
+	if(!menu_context_construct_name_and_get_icon(m, top, &n, &ic))
 		return NULL;
+
+	/* assure we got name here; icon can be NULL */
+	E_RETURN_VAL_IF_FAIL(n != NULL, NULL);
 
 	MenuContext *ctx = new MenuContext;
 	ctx->name = n;
+	ctx->icon = ic;
 
 	//E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
 
@@ -538,6 +571,9 @@ static void menu_context_delete(MenuContext *c) {
 	E_RETURN_IF_FAIL(c != NULL);
 
 	delete c->name;
+	delete c->icon;
+
+	c->items.clear();
 
 	if(!c->submenus.empty()) {
 		MenuContextListIt it = c->submenus.begin(), it_end = c->submenus.end();
@@ -548,34 +584,95 @@ static void menu_context_delete(MenuContext *c) {
 	delete c;
 }
 
-static void menu_context_dump_for_test_suite(MenuContext *c) {
-	DesktopEntryListIt it = c->items.begin(), it_end = c->items.end();
+static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_list, 
+														 TiXmlNode *head, 
+														 MenuContextList &ret)
+{
+	MenuParseListIt it = parse_list.begin(), it_end = parse_list.end();
+	MenuParseContext *parse_ctx;
+	MenuContext      *ctx;
 
 	for(; it != it_end; ++it) {
-		printf("%s/\t%s\t%s\n", c->name->c_str(),
-							   (*it)->get_id(),
-							   (*it)->get_path());
-	}
+		parse_ctx = *it;
+		
+		/* remove duplicate id's */
+		desktop_entry_list_remove_duplicates(parse_ctx->desk_files);
 
-	if(!c->submenus.empty()) {
-		MenuContextListIt cit = c->submenus.begin(), cit_end = c->submenus.end();
-		for(; cit != cit_end; ++cit)
-			menu_context_dump_for_test_suite(*cit);
+		/* read all .desktop files from disk */
+		desktop_entry_list_load_all(parse_ctx->desk_files);
+
+		/* now convert it to usable menu node */
+		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx, head);
+		if(ctx)
+			ret.push_back(ctx);
 	}
 }
 
-static bool menu_find_menu_file(TiXmlDocument &doc) {
+/* 
+ * Count the number of items in each submenu + submenu node itself; used to allocate 
+ * array for edelib::MenuItem list.
+ */
+static unsigned int menu_context_list_count(MenuContextList &lst) {
+	if(lst.empty())
+		return 0;
+
+	unsigned int ret = lst.size();
+
+	MenuContextListIt it = lst.begin(), it_end = lst.end();
+	MenuContext *cc;
+
+	for(; it != it_end; ++it) {
+		cc = *it;
+		ret += cc->items.size();
+
+		if(!cc->submenus.empty()) {
+			ret += 1; /* a room for NULL to deduce submenus in edelib::MenuItem */
+			ret += menu_context_list_count(cc->submenus);
+		}
+	}
+
+	return ret;
+}
+
+static void menu_all_parse_lists_clear(MenuParseList &parse_list, MenuContextList &ctx_list) {
+	MenuContextListIt cit = ctx_list.begin(), cit_end = ctx_list.end();
+	MenuParseListIt   pit = parse_list.begin(), pit_end = parse_list.end();
+
+	MenuParseContext *cc;
+
+	while(cit != cit_end) {
+		menu_context_delete(*cit);
+		cit = ctx_list.erase(cit);
+	}
+
+	while(pit != pit_end) {
+		cc = *pit;
+		/* 
+		 * Desktop entries are shared among MenuContext and MenuParseContext, so they
+		 * must be explicitly deleted. This sharing depends on 'Include' rules, so some MenuParseContext
+		 * entries are on MenuContext list and all MenuContext entries are in MenuParseContext.
+		 */
+		DesktopEntryListIt it = cc->desk_files.begin(), it_end = cc->desk_files.end();
+		while(it != it_end) {
+			delete *it;
+			it = cc->desk_files.erase(it);
+		}
+
+		menu_parse_context_delete(cc);
+		pit = parse_list.erase(pit);
+	}
+}
+
+static TiXmlNode *load_menu_file(TiXmlDocument &doc) {
 #if 0
 	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
 	//if(!doc.LoadFile("applications.menu")) {
-	//if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
-	if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
+	if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
+	//if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
 	//if(!doc.LoadFile("/etc/kde/xdg/menus/applications.menu")) {
 		E_WARNING(E_STRLOC ": Can't load menu\n");
-		return false;
+		return NULL;
 	}
-
-	return true;
 #endif
 
 	char   *menu_prefix = getenv("XDG_MENU_PREFIX");
@@ -590,7 +687,7 @@ static bool menu_find_menu_file(TiXmlDocument &doc) {
 
 	StrList paths;
 	if(system_config_dirs(paths) < 1)
-		return false;
+		return NULL;
 
 	String    tmp;
 	StrListIt it = paths.begin(), it_end = paths.end();
@@ -599,57 +696,189 @@ static bool menu_find_menu_file(TiXmlDocument &doc) {
 		tmp = build_filename((*it).c_str(), "menus", menu_file.c_str());
 
 		if(doc.LoadFile(tmp.c_str()))
-			return true;
+			goto done;
 	}
 
-	return false;
+	return NULL;
+
+done:
+	return doc.FirstChild("Menu");
 }
 
-void xdg_menu_load(void) {
+static void menu_context_list_dump(MenuContextList &lst) {
+	if(lst.empty())
+		return;
+
+	MenuContextListIt  it = lst.begin(), it_end = lst.end();
+	DesktopEntryListIt ds, de;
+
+	for(; it != it_end; ++it) {
+		ds = (*it)->items.begin();
+		de = (*it)->items.end();
+
+		/* print each desktop entry with menu name */
+		for(; ds != de; ++ds) {
+			printf("%s/\t%s\t%s\n", (*it)->name->c_str(),
+								   (*ds)->get_id(),
+								   (*ds)->get_path());
+		}
+
+		menu_context_list_dump((*it)->submenus);
+	}
+}
+
+static void menu_all_parse_lists_load(MenuParseList &parse_list, MenuContextList &content) {
+	/* 
+	 * TiXmlDocument object must be used externaly, so as long as this object is
+	 * alive, the whole XML tree is alive too (see DOM reference).
+	 */
 	TiXmlDocument doc;
 
-	if(!menu_find_menu_file(doc))
+	TiXmlNode *elem = load_menu_file(doc);
+	if(!elem)
 		return;
 
-	TiXmlNode *elem = doc.FirstChild("Menu");
-	if(!elem) {
-		E_WARNING(E_STRLOC ": No 'Menu' tag\n");
-		return;
-	}
-
-	MenuParseList parse_list;
+	/* parse XML file */
 	scan_menu_tag(elem, parse_list);
 
-	MenuParseListIt first = parse_list.begin(), last = parse_list.end();
-	MenuParseContext *ctx;
-
-	while(first != last) {
-		ctx = *first;
-		//E_DEBUG("Menu: %s\n", ctx->name->c_str());
-
-		desktop_entry_list_remove_duplicates(ctx->desk_files);
-
-		desktop_entry_list_load_all(ctx->desk_files);
-
-		MenuContext *cc = menu_parse_context_to_menu_context(ctx, ctx, elem);
-		if(cc) {
-			menu_context_dump_for_test_suite(cc);
-			menu_context_delete(cc);
-		}
-
-		/* cleanup desktop entries */
-		DesktopEntryListIt dit = ctx->desk_files.begin(), dit_end = ctx->desk_files.end();
-		while(dit != dit_end) {
-			delete *dit;
-			dit = ctx->desk_files.erase(dit);
-		}
-
-		menu_parse_context_delete(*first);
-		first = parse_list.erase(first);
-	}
+	/* convert it to our list */
+	menu_parse_context_list_to_menu_context_list(parse_list, elem, content);
 }
 
-int main() {
-	xdg_menu_load();
-	return 0;
+void xdg_menu_dump_for_test_suite(void) {
+	MenuParseList   pl;
+	MenuContextList cl;
+
+	/* load everything */
+	menu_all_parse_lists_load(pl, cl);
+
+	menu_context_list_dump(cl);
+
+	/* clear everything */
+	menu_all_parse_lists_clear(pl, cl);
+}
+
+/* used only for xdg_menu_load() and xdg_menu_delete() */
+static MenuParseList   global_parse_list;
+static MenuContextList global_context_list;
+
+static void item_cb(Fl_Widget *, void *en) {
+	DesktopEntry *entry = (DesktopEntry*)en;
+
+	E_DEBUG("RUN %s\n", entry->get_exec());
+}
+
+static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, unsigned int pos) {
+	if(lst.empty())
+		return pos;
+
+	MenuContextListIt it = lst.begin(), it_end = lst.end();
+	MenuContext *cc;
+
+	DesktopEntryListIt ds, de;
+
+	for(; it != it_end; ++it) {
+		cc = *it;
+
+		mi[pos].text = cc->name->c_str();
+		mi[pos].flags = FL_SUBMENU;
+
+		/* some default values that must be filled */
+		mi[pos].shortcut_ = 0;
+		mi[pos].callback_ = 0;
+		mi[pos].user_data_ = 0;
+		mi[pos].labeltype_ = FL_NORMAL_LABEL;
+		mi[pos].labelfont_ = FL_HELVETICA;
+		mi[pos].labelsize_ = 12;
+		mi[pos].labelcolor_ = FL_BLACK;
+
+		mi[pos].image(NULL);
+
+		/* set image for menu */
+		if(cc->icon && IconLoader::inited()) {
+			Fl_Image *img = IconLoader::get(cc->icon->c_str(), ICON_SIZE_SMALL);
+			mi[pos].image(img);
+		}
+
+		/* every MenuContext is submenu for itself */
+		mi[pos].flags = FL_SUBMENU;
+
+		/* now, add the real items if they exists*/
+		if(!cc->items.empty()) {
+			ds = cc->items.begin();
+			de = cc->items.end();
+
+			for(; ds != de; ++ds) {
+				/* a room for item */
+				pos++;
+
+				mi[pos].text = (*ds)->get_name();
+				mi[pos].flags = 0;
+
+				/* some default values that must be filled */
+				mi[pos].shortcut_ = 0;
+
+				/* set callback and callback data to be current entry */
+				mi[pos].callback_ = item_cb;
+				mi[pos].user_data_ = *ds;
+
+				mi[pos].labeltype_ = FL_NORMAL_LABEL;
+				mi[pos].labelfont_ = FL_HELVETICA;
+				mi[pos].labelsize_ = 12;
+				mi[pos].labelcolor_ = FL_BLACK;
+				mi[pos].image(NULL);
+
+				/* set image for menu item*/
+				if((*ds)->get_icon() && IconLoader::inited()) {
+					Fl_Image *img = IconLoader::get((*ds)->get_icon(), ICON_SIZE_SMALL);
+					mi[pos].image(img);
+				}
+			}
+		} else {
+			/* increase position for submenu end marker */
+			pos++;
+		}
+
+		/* end this submenu */
+		mi[pos].text = NULL;
+		mi[pos].image(NULL);
+		pos++;
+
+		/* now try with MenuContext submenus */
+		if(!cc->submenus.empty())
+			pos = construct_edelib_menu(cc->submenus, mi, pos);
+	}
+
+	/* return position to next item */
+	return pos;
+}
+
+MenuItem *xdg_menu_load(void) {
+	/* assure they are empty */
+	E_RETURN_VAL_IF_FAIL(global_parse_list.empty() == true, NULL);
+	E_RETURN_VAL_IF_FAIL(global_context_list.empty() == true, NULL);
+
+	/* load everything */
+	menu_all_parse_lists_load(global_parse_list, global_context_list);
+
+	unsigned int sz = menu_context_list_count(global_context_list);
+	E_RETURN_VAL_IF_FAIL(sz > 0, NULL);
+
+	MenuItem *mi = new MenuItem[sz + 1]; /* plus ending NULL */
+
+	unsigned int pos = construct_edelib_menu(global_context_list, mi, 0);
+	mi[pos].text = NULL;
+
+	/* 
+	 * MenuItem does not have constructor, so everywhere where we access MenuItem object, image
+	 * member must be NULL-ed too
+	 */
+	mi[pos].image(NULL);
+
+	return mi;
+}
+
+void xdg_menu_delete(MenuItem *m) {
+	delete [] m;
+	menu_all_parse_lists_clear(global_parse_list, global_context_list);
 }

@@ -10,6 +10,12 @@
 
 SubDir TOP ede-panel-new applets start-menu ;
 
-#PanelApplet edepanel_start_menu : StartMenu.cpp XdgMenuReader.cpp ;
+MENU_SRC = XdgMenuReader.cpp DesktopEntry.cpp MenuRules.cpp ;
 
-EdeProgram xxx : XdgMenuReader.cpp DesktopEntry.cpp MenuRules.cpp ;
+# TODO: MENU_SRC files will be compiled twice, once for applet and once for test program. 
+
+# applet
+PanelApplet edepanel_start_menu : StartMenu.cpp $(MENU_SRC) ;
+
+# test program
+EdeProgram  ede-menu-spec-test : ede-menu-spec-test.cpp $(MENU_SRC) ;
