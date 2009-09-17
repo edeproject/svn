@@ -11,6 +11,7 @@
 SubDir TOP ede-panel-new ;
 
 EdeProgram ede-panel : Panel.cpp AppletManager.cpp ede-panel.cpp ;
+
 # also must use this flag or program will crash
 LINKFLAGS on ede-panel = -rdynamic ;
 
@@ -24,6 +25,7 @@ rule PanelApplet
 
 	LinkAgainst $(target) : $(EDELIBLIB) $(EDELIB_GUI_LIB) $(FLTKLIB) $(STDLIB) ;
 	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] ;
+	LINKLIBS  on $(target) = [ on $(target) return $(LINKLIBS) ] $(3) ;
 
 	Clean clean : $(target) ;
 }
