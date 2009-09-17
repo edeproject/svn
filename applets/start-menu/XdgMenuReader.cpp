@@ -21,6 +21,7 @@ EDELIB_NS_USING(DesktopFile)
 EDELIB_NS_USING(list)
 EDELIB_NS_USING(system_config_dirs)
 EDELIB_NS_USING(system_data_dirs)
+EDELIB_NS_USING(user_data_dir)
 EDELIB_NS_USING(build_filename)
 EDELIB_NS_USING(file_test)
 EDELIB_NS_USING(str_ends)
@@ -44,6 +45,9 @@ typedef list<MenuContext*> MenuContextList;
 typedef list<MenuContext*>::iterator MenuContextListIt;
 
 struct MenuParseContext {
+	/* for <Deleted> <NotDeled> tags */
+	bool deleted;
+
 	/* menu tag content */
 	String *name;
 
@@ -80,6 +84,7 @@ struct MenuContext {
 static MenuParseContext *menu_parse_context_new(void) {
 	MenuParseContext *m = new MenuParseContext;
 	m->name = NULL;
+	m->deleted = false;
 	return m;
 }
 
@@ -180,6 +185,15 @@ static void menu_parse_context_append_desktop_files_from_xdg_data_dirs(MenuParse
 		tmp = build_filename((*it).c_str(), "applications");
 		menu_parse_context_append_desktop_files(ctx, tmp.c_str(), tmp.c_str());
 	}
+
+	/* 
+	 * Add user directory too; the spec is unclear about this, but official menu spec tests
+	 * requires it. Also, users will be able to add menu items without superuser permissions.
+	 */
+	String user_dir = user_data_dir();
+
+	tmp = build_filename(user_dir.c_str(), "applications");
+	menu_parse_context_append_desktop_files(ctx, tmp.c_str(), tmp.c_str());
 }
 
 static void scan_include_exclude_tag(TiXmlNode *elem, MenuRulesList &rules) {
@@ -314,6 +328,16 @@ static void scan_menu_tag(TiXmlNode *elem, MenuParseList &parse_list) {
 			scan_include_exclude_tag(elem, ctx->exclude_rules);
 			continue;
 		}
+
+		if(ELEMENT_IS(elem, "Deleted")) {
+			ctx->deleted = true;
+			continue;
+		}
+
+		if(ELEMENT_IS(elem, "NotDeleted")) {
+			ctx->deleted = false;
+			continue;
+		}
 	}
 
 	parse_list.push_back(ctx);
@@ -321,6 +345,8 @@ static void scan_menu_tag(TiXmlNode *elem, MenuParseList &parse_list) {
 
 static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext *top) {
 	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
+
+	bool should_be_displayed = true;
 
 	if(!m->dir_files.empty()) {
 		/*
@@ -344,13 +370,17 @@ static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext
 
 				/* load it and see if it is real .desktop file */
 				df.load(tmp.c_str());
-				if(df && df.type() == DESK_FILE_TYPE_DIRECTORY) {
-					char buf[NAME_BUFSZ];
 
+				if(df && (df.type() == DESK_FILE_TYPE_DIRECTORY)) {
+					/* check if it can be displayed */
+					if(df.no_display()) {
+						should_be_displayed = false;
+						continue;
+					}
+
+					char buf[NAME_BUFSZ];
 					if(df.name(buf, NAME_BUFSZ))
 						return new String(buf);
-					else 
-						continue;
 				}
 			}
 		}
@@ -365,20 +395,28 @@ static String *menu_context_construct_name(MenuParseContext *m, MenuParseContext
 
 				/* load it and see if it is real .desktop file */
 				df.load(tmp.c_str());
-				if(df && df.type() == DESK_FILE_TYPE_DIRECTORY) {
-					char buf[NAME_BUFSZ];
+				if(df && (df.type() == DESK_FILE_TYPE_DIRECTORY)) {
+					/* check if it can be displayed */
+					if(df.no_display()) {
+						should_be_displayed = false;
+						continue;
+					}
 
+					char buf[NAME_BUFSZ];
 					if(df.name(buf, NAME_BUFSZ))
 						return new String(buf);
-					else 
-						continue;
 				}
 			}
 		}
 	}	
 
+	if(!should_be_displayed) {
+		E_DEBUG("!!!!!!!!> %s\n", m->name->c_str());
+		return NULL;
+	}
+
 	E_RETURN_VAL_IF_FAIL(m->name != NULL, NULL);
-	/* if there are no files, use context name */
+	/* if there are no files and can be displayed, use context name */
 	return new String(*(m->name));
 }
 
@@ -389,14 +427,16 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 {
 	MenuRulesListIt    rit, rit_end = rules.end();
 	DesktopEntryListIt dit = m->desk_files.begin(), dit_end = m->desk_files.end();
+	bool eval_true;
 
 	/* check rules for the current list */
 	for(; dit != dit_end; ++dit) {
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			/* E_DEBUG("%i %s\n", menu_rules_eval(*rit, *dit), (*dit)->get_path()); */
+			eval_true = menu_rules_eval(*rit, *dit);
+			/* E_DEBUG("%i %s\n", eval_true, (*dit)->get_path()); */
 
 			/* append entry if matches to the rule, and mark it as allocated */
-			if(menu_rules_eval(*rit, *dit)) {
+			if(eval_true) {
 				(*dit)->mark_as_allocated();
 				ctx->items.push_back(*dit);
 
@@ -410,10 +450,11 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 	dit = top->desk_files.begin(), dit_end = top->desk_files.end();
 	for(; dit != dit_end; ++dit) {
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			/* E_DEBUG("%i %s\n", menu_rules_eval(*rit, *dit), (*dit)->get_path()); */
+			eval_true = menu_rules_eval(*rit, *dit);
+			/* E_DEBUG("%i %s\n", eval_true, (*dit)->get_path()); */
 
 			/* append entry if matches to the rule, and mark it as allocated */
-			if(menu_rules_eval(*rit, *dit)) {
+			if(eval_true) {
 				(*dit)->mark_as_allocated();
 				ctx->items.push_back(*dit);
 
@@ -454,10 +495,20 @@ static void menu_context_apply_exclude_rules(MenuContext *ctx,
 static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, MenuParseContext *top, TiXmlNode *menu_node) {
 	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
 
-	MenuContext *ctx = new MenuContext;
+	if(m->deleted)
+		return NULL;
 
-	/* figure out the name first */
-	ctx->name = menu_context_construct_name(m, top);
+	/* 
+	 * figure out the name first; if returns NULL, either menu should not be displayed, or something
+	 * went wrong
+	 */
+	String *n = menu_context_construct_name(m, top);
+	if(!n)
+		return NULL;
+
+	MenuContext *ctx = new MenuContext;
+	ctx->name = n;
+
 	//E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
 
 	/* fill MenuContext items */
@@ -474,7 +525,9 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 
 		for(; mit != mit_end; ++mit) {
 			sub_ctx = menu_parse_context_to_menu_context(*mit, top, menu_node);
-			ctx->submenus.push_back(sub_ctx);
+
+			if(sub_ctx)
+				ctx->submenus.push_back(sub_ctx);
 		}
 	}
 
@@ -482,6 +535,8 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 }
 
 static void menu_context_delete(MenuContext *c) {
+	E_RETURN_IF_FAIL(c != NULL);
+
 	delete c->name;
 
 	if(!c->submenus.empty()) {
@@ -509,47 +564,52 @@ static void menu_context_dump_for_test_suite(MenuContext *c) {
 	}
 }
 
-void xdg_menu_load(void) {
-	TiXmlDocument doc;
-	
+static bool menu_find_menu_file(TiXmlDocument &doc) {
+#if 0
 	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
-	if(!doc.LoadFile("applications.menu")) {
+	//if(!doc.LoadFile("applications.menu")) {
 	//if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
-	//if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
+	if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
 	//if(!doc.LoadFile("/etc/kde/xdg/menus/applications.menu")) {
 		E_WARNING(E_STRLOC ": Can't load menu\n");
-		return;
+		return false;
 	}
 
-#if 0
-	char   *xdg_prefix = getenv("XDG_MENU_PREFIX");
-	String  menu_name = "/menus/";
-	if(xdg_prefix) {
-		menu_name = "/menus/";
-		menu_name += xdg_prefix;
-	}
-
-	menu_name += "applications.menu";
-
-	StrList xdg_paths;
-	String  tmp;
-	system_config_dirs(xdg_paths);
-
-	bool loaded = false;
-
-	StrListIt sit = xdg_paths.begin();
-	for(; sit != xdg_paths.end(); ++sit) {
-		tmp = build_filename((*sit).c_str(), menu_name.c_str());
-
-		if(doc.LoadFile(tmp.c_str())) {
-			loaded = true;
-			break;
-		}
-	}
-
-	if(!loaded)
-		return;
+	return true;
 #endif
+
+	char   *menu_prefix = getenv("XDG_MENU_PREFIX");
+	String  menu_file;
+
+	if(menu_prefix) {
+		menu_file = menu_prefix;
+		menu_file += "applications.menu";
+	} else {
+		menu_file = "applications.menu";
+	}
+
+	StrList paths;
+	if(system_config_dirs(paths) < 1)
+		return false;
+
+	String    tmp;
+	StrListIt it = paths.begin(), it_end = paths.end();
+
+	for(; it != paths.end(); ++it) {
+		tmp = build_filename((*it).c_str(), "menus", menu_file.c_str());
+
+		if(doc.LoadFile(tmp.c_str()))
+			return true;
+	}
+
+	return false;
+}
+
+void xdg_menu_load(void) {
+	TiXmlDocument doc;
+
+	if(!menu_find_menu_file(doc))
+		return;
 
 	TiXmlNode *elem = doc.FirstChild("Menu");
 	if(!elem) {
@@ -572,15 +632,16 @@ void xdg_menu_load(void) {
 		desktop_entry_list_load_all(ctx->desk_files);
 
 		MenuContext *cc = menu_parse_context_to_menu_context(ctx, ctx, elem);
-		menu_context_dump_for_test_suite(cc);
-		menu_context_delete(cc);
+		if(cc) {
+			menu_context_dump_for_test_suite(cc);
+			menu_context_delete(cc);
+		}
 
 		/* cleanup desktop entries */
-		DesktopEntryListIt df = ctx->desk_files.begin(), de = ctx->desk_files.end();
-		while(df != de) {
-			//E_DEBUG("%i %s => %s\n", (*df)->get_age(), (*df)->get_path(), (*df)->get_id());
-			delete *df;
-			df = ctx->desk_files.erase(df);
+		DesktopEntryListIt dit = ctx->desk_files.begin(), dit_end = ctx->desk_files.end();
+		while(dit != dit_end) {
+			delete *dit;
+			dit = ctx->desk_files.erase(dit);
 		}
 
 		menu_parse_context_delete(*first);
