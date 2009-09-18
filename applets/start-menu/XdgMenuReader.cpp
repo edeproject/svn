@@ -53,6 +53,9 @@ struct MenuParseContext {
 	/* for <Deleted> <NotDeled> tags */
 	bool deleted;
 
+	/* for <OnlyUnallocated> and <NotOnlyUnallocated> (default) */
+	bool only_unallocated;
+
 	/* menu tag content */
 	String *name;
 
@@ -93,6 +96,7 @@ static MenuParseContext *menu_parse_context_new(void) {
 	MenuParseContext *m = new MenuParseContext;
 	m->name = NULL;
 	m->deleted = false;
+	m->only_unallocated = false;
 	return m;
 }
 
@@ -346,6 +350,16 @@ static void scan_menu_tag(TiXmlNode *elem, MenuParseList &parse_list) {
 			ctx->deleted = false;
 			continue;
 		}
+
+		if(ELEMENT_IS(elem, "OnlyUnallocated")) {
+			ctx->only_unallocated = true;
+			continue;
+		}
+
+		if(ELEMENT_IS(elem, "NotOnlyUnallocated")) {
+			ctx->only_unallocated = false;
+			continue;
+		}
 	}
 
 	parse_list.push_back(ctx);
@@ -550,7 +564,7 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	/* pop filled MenuContext items if match the rule */
 	menu_context_apply_exclude_rules(ctx, m, m->exclude_rules);
 	//E_DEBUG("- Menu: %s %i\n", ctx->name->c_str(), ctx->items.size());
-
+	
 	/* process submenus */
 	if(!m->submenus.empty()) {
 		MenuParseListIt mit = m->submenus.begin(), mit_end = m->submenus.end();
@@ -603,6 +617,7 @@ static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_li
 
 		/* now convert it to usable menu node */
 		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx, head);
+
 		if(ctx)
 			ret.push_back(ctx);
 	}
@@ -625,10 +640,13 @@ static unsigned int menu_context_list_count(MenuContextList &lst) {
 		cc = *it;
 		ret += cc->items.size();
 
-		if(!cc->submenus.empty()) {
-			ret += 1; /* a room for NULL to deduce submenus in edelib::MenuItem */
-			ret += menu_context_list_count(cc->submenus);
-		}
+		ret += menu_context_list_count(cc->submenus);
+
+		/* 
+		 * a room for NULL to deduce submenus in edelib::MenuItem, no matter if submenus are empty
+		 * in case empty menus are going to be displayed
+		 */
+		ret += 1;
 	}
 
 	return ret;
@@ -719,8 +737,8 @@ static void menu_context_list_dump(MenuContextList &lst) {
 		/* print each desktop entry with menu name */
 		for(; ds != de; ++ds) {
 			printf("%s/\t%s\t%s\n", (*it)->name->c_str(),
-								   (*ds)->get_id(),
-								   (*ds)->get_path());
+								    (*ds)->get_id(),
+								    (*ds)->get_path());
 		}
 
 		menu_context_list_dump((*it)->submenus);
@@ -781,6 +799,8 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 		cc = *it;
 
 		mi[pos].text = cc->name->c_str();
+
+		/* every MenuContext is submenu for itself */
 		mi[pos].flags = FL_SUBMENU;
 
 		/* some default values that must be filled */
@@ -800,18 +820,15 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 			mi[pos].image(img);
 		}
 
-		/* every MenuContext is submenu for itself */
-		mi[pos].flags = FL_SUBMENU;
+		/* a room for item */
+		pos++;
 
 		/* now, add the real items if they exists*/
 		if(!cc->items.empty()) {
 			ds = cc->items.begin();
 			de = cc->items.end();
 
-			for(; ds != de; ++ds) {
-				/* a room for item */
-				pos++;
-
+			for(; ds != de; ++ds, ++pos) {
 				mi[pos].text = (*ds)->get_name();
 				mi[pos].flags = 0;
 
@@ -834,19 +851,17 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 					mi[pos].image(img);
 				}
 			}
-		} else {
-			/* increase position for submenu end marker */
-			pos++;
-		}
+		} 
 
 		/* end this submenu */
 		mi[pos].text = NULL;
 		mi[pos].image(NULL);
+
+		/* make a room for the next item */
 		pos++;
 
 		/* now try with MenuContext submenus */
-		if(!cc->submenus.empty())
-			pos = construct_edelib_menu(cc->submenus, mi, pos);
+		pos = construct_edelib_menu(cc->submenus, mi, pos);
 	}
 
 	/* return position to next item */
@@ -875,6 +890,7 @@ MenuItem *xdg_menu_load(void) {
 	 */
 	mi[pos].image(NULL);
 
+	E_ASSERT(pos <= sz + 1);
 	return mi;
 }
 
