@@ -136,7 +136,9 @@ void AppletManager::fill_group(Panel *p) {
 
 void AppletManager::unfill_group(Panel *p) {
 	AListIter it = applet_list.begin(), it_end = applet_list.end();
-	/* slow !!! */
-	for(; it != it_end; ++it) 
+
+	while(it != it_end) {
 		p->remove((*it)->awidget);
+		it = applet_list.erase(it);
+	}
 }
