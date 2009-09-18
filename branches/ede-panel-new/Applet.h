@@ -6,19 +6,16 @@
 class Fl_Widget;
 
 enum {
-	EDE_PANEL_APPLET_ALIGN_LEFT,
-	EDE_PANEL_APPLET_ALIGN_FAR_LEFT,
-	EDE_PANEL_APPLET_ALIGN_RIGHT,
-	EDE_PANEL_APPLET_ALIGN_FAR_RIGHT,
-	EDE_PANEL_APPLET_ALIGN_ABSOLUTE
+	EDE_PANEL_APPLET_OPTION_RESIZEABLE = (1 << 1)
 };
 
 struct AppletInfo {
-	const char *name;
-	const char *klass_name;
-	const char *version;
-	const char *icon;
-	const char *author;
+	const char    *name;
+	const char    *klass_name;
+	const char    *version;
+	const char    *icon;
+	const char    *author;
+	unsigned long  options;
 };
 
 typedef Fl_Widget*  (*applet_create_t)(void);
@@ -32,32 +29,33 @@ typedef float       (*applet_version_t)(void);
 
 /* the main macro each applet library must implement */
 
-#define EDE_PANEL_APPLET_EXPORT(klass, aname, aversion, aicon, aauthor) \
-extern "C" Fl_Widget *ede_panel_applet_create(void) {                   \
-	return new klass;                                                   \
-}                                                                       \
-                                                                        \
-extern "C" void ede_panel_applet_destroy(Fl_Widget *w) {                \
-	klass *k = (klass*)w;                                               \
-	delete k;                                                           \
-}                                                                       \
-                                                                        \
-extern "C" AppletInfo *ede_panel_applet_get_info(void) {                \
-	AppletInfo *a = new AppletInfo;                                     \
-	a->name = aname;                                                    \
-	a->klass_name = #klass;                                             \
-	a->version = aversion;                                              \
-	a->icon = aicon;                                                    \
-	a->author = aauthor;                                                \
-	return a;                                                           \
-}                                                                       \
-                                                                        \
-extern "C" void ede_panel_applet_destroy_info(AppletInfo *a) {          \
-	delete a;                                                           \
-}                                                                       \
-                                                                        \
-extern "C" int ede_panel_applet_get_iface_version(void) {               \
-	return EDE_PANEL_APPLET_INTERFACE_VERSION;                          \
+#define EDE_PANEL_APPLET_EXPORT(klass, aoptions, aname, aversion, aicon, aauthor) \
+extern "C" Fl_Widget *ede_panel_applet_create(void) {                             \
+	return new klass;                                                             \
+}                                                                                 \
+                                                                                  \
+extern "C" void ede_panel_applet_destroy(Fl_Widget *w) {                          \
+	klass *k = (klass*)w;                                                         \
+	delete k;                                                                     \
+}                                                                                 \
+                                                                                  \
+extern "C" AppletInfo *ede_panel_applet_get_info(void) {                          \
+	AppletInfo *a = new AppletInfo;                                               \
+	a->name = aname;                                                              \
+	a->klass_name = #klass;                                                       \
+	a->version = aversion;                                                        \
+	a->icon = aicon;                                                              \
+	a->author = aauthor;                                                          \
+	a->options = aoptions;                                                        \
+	return a;                                                                     \
+}                                                                                 \
+                                                                                  \
+extern "C" void ede_panel_applet_destroy_info(AppletInfo *a) {                    \
+	delete a;                                                                     \
+}                                                                                 \
+                                                                                  \
+extern "C" int ede_panel_applet_get_iface_version(void) {                         \
+	return EDE_PANEL_APPLET_INTERFACE_VERSION;                                    \
 }
 
 #endif

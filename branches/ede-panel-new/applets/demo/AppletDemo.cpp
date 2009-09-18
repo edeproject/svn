@@ -18,6 +18,7 @@ public:
 
 EDE_PANEL_APPLET_EXPORT (
  MyButton, 
+ 0,
  "Panel button",
  "0.1",
  "empty",
