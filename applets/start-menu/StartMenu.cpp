@@ -25,6 +25,7 @@ StartMenu::~StartMenu() {
 
 EDE_PANEL_APPLET_EXPORT (
  StartMenu, 
+ 0,
  "Main menu",
  "0.1",
  "empty",
