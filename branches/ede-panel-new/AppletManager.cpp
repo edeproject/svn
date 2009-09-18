@@ -115,10 +115,10 @@ void AppletManager::clear(void) {
 		return;
 
 	AListIter it = applet_list.begin(), it_end = applet_list.end();
-	for(; it != it_end; ++it)
+	while(it != it_end) {
 		clear_applet(*it);
-
-	applet_list.clear();
+		it = applet_list.erase(it);
+	}
 }
 
 /*
@@ -137,8 +137,6 @@ void AppletManager::fill_group(Panel *p) {
 void AppletManager::unfill_group(Panel *p) {
 	AListIter it = applet_list.begin(), it_end = applet_list.end();
 
-	while(it != it_end) {
+	for(; it != it_end; ++it)
 		p->remove((*it)->awidget);
-		it = applet_list.erase(it);
-	}
 }
