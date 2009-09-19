@@ -99,7 +99,7 @@ void desktop_entry_list_remove_duplicates(DesktopEntryList &lst);
 /* call 'load()' on each member; if 'load()' fails, that member will be removed */
 void desktop_entry_list_load_all(DesktopEntryList &lst);
 
-/* find a file with target id in the list and return iterator pointing to it */
-bool desktop_entry_list_find_fileid(DesktopEntryList &lst, const char *id, DesktopEntryListIt &it_ret);
+/* sort a list of entries */
+void desktop_entry_list_sort(DesktopEntryList &lst);
 
 #endif
