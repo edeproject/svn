@@ -138,6 +138,11 @@ static bool id_age_sorter(DesktopEntry* const& u1, DesktopEntry* const& u2) {
 	return (strcmp(u1->get_id(), u2->get_id()) < 0) && (u1->get_age() < u2->get_age()); 
 }
 
+/* TODO: bug in edelib */
+static bool name_sorter(DesktopEntry* const& u1, DesktopEntry* const& u2) {
+	return (strcmp(u1->get_name(), u2->get_name()) < 0);
+}
+
 void desktop_entry_list_remove_duplicates(DesktopEntryList &lst) {
 	if(lst.empty())
 		return;
@@ -176,18 +181,6 @@ void desktop_entry_list_load_all(DesktopEntryList &lst) {
 	}
 }
 
-bool desktop_entry_list_find_fileid(DesktopEntryList &lst, const char *id, DesktopEntryListIt &it) {
-	if(lst.empty())
-		return false;
-
-	it = lst.begin();
-	DesktopEntryListIt it_end = lst.end();
-
-	for(; it != it_end; ++it) {
-		if(strcmp((*it)->get_id(), id) == 0) {
-			return true;
-		}
-	}
-
-	return false;
+void desktop_entry_list_sort(DesktopEntryList &lst) {
+	lst.sort(name_sorter);
 }

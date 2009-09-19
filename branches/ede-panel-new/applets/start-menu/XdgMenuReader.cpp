@@ -40,6 +40,9 @@ EDELIB_NS_USING(ICON_SIZE_SMALL)
 /* max. name size */
 #define NAME_BUFSZ 128
 
+/* do not allow empty menus to be shown */
+#define NO_EMPTY_MENUS 1
+
 struct MenuParseContext;
 struct MenuContext;
 
@@ -468,20 +471,24 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 											 MenuParseContext *top, 
 											 MenuRulesList &rules)
 {
-	MenuRulesListIt    rit, rit_end = rules.end();
-	DesktopEntryListIt dit = m->desk_files.begin(), dit_end = m->desk_files.end();
-	bool eval_true;
+	MenuRulesListIt     rit, rit_end = rules.end();
+	DesktopEntryListIt  dit = m->desk_files.begin(), dit_end = m->desk_files.end();
+
+	DesktopEntry *entry;
+	bool         eval_true;
 
 	/* check rules for the current list */
 	for(; dit != dit_end; ++dit) {
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			eval_true = menu_rules_eval(*rit, *dit);
-			/* E_DEBUG("%i %s\n", eval_true, (*dit)->get_path()); */
+			entry = *dit;
+
+			eval_true = menu_rules_eval(*rit, entry);
+			/* E_DEBUG("%i %s\n", eval_true, entry->get_path()); */
 
 			/* append entry if matches to the rule, and mark it as allocated */
 			if(eval_true) {
-				(*dit)->mark_as_allocated();
-				ctx->items.push_back(*dit);
+				entry->mark_as_allocated();
+				ctx->items.push_back(entry);
 
 				/* do not scan rules any more */
 				break;
@@ -489,17 +496,23 @@ static void menu_context_apply_include_rules(MenuContext *ctx,
 		}
 	}
 
+	/* be sure to not compare the same node twice */
+	if(m == top)
+		return;
+
 	/* check rules for the top list */
 	dit = top->desk_files.begin(), dit_end = top->desk_files.end();
 	for(; dit != dit_end; ++dit) {
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			eval_true = menu_rules_eval(*rit, *dit);
-			/* E_DEBUG("%i %s\n", eval_true, (*dit)->get_path()); */
+			entry = *dit;
+
+			eval_true = menu_rules_eval(*rit, entry);
+			/* E_DEBUG("%i %s\n", eval_true, entry->get_path()); */
 
 			/* append entry if matches to the rule, and mark it as allocated */
 			if(eval_true) {
-				(*dit)->mark_as_allocated();
-				ctx->items.push_back(*dit);
+				entry->mark_as_allocated();
+				ctx->items.push_back(entry);
 
 				/* do not scan rules any more */
 				break;
@@ -535,6 +548,11 @@ static void menu_context_apply_exclude_rules(MenuContext *ctx,
 	}
 }
 
+#if NO_EMPTY_MENUS
+/* forward decl */
+static void menu_context_delete(MenuContext *c);
+#endif
+
 static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, MenuParseContext *top, TiXmlNode *menu_node) {
 	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
 
@@ -565,6 +583,9 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	menu_context_apply_exclude_rules(ctx, m, m->exclude_rules);
 	//E_DEBUG("- Menu: %s %i\n", ctx->name->c_str(), ctx->items.size());
 	
+	/* sort entries via their full names */
+	desktop_entry_list_sort(ctx->items);
+	
 	/* process submenus */
 	if(!m->submenus.empty()) {
 		MenuParseListIt mit = m->submenus.begin(), mit_end = m->submenus.end();
@@ -577,6 +598,14 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 				ctx->submenus.push_back(sub_ctx);
 		}
 	}
+
+#if NO_EMPTY_MENUS
+	/* do not allow empty menus */
+	if(ctx->items.empty() && ctx->submenus.empty()) {
+		menu_context_delete(ctx);
+		ctx = NULL;
+	}
+#endif
 
 	return ctx;
 }
@@ -803,6 +832,8 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 		/* every MenuContext is submenu for itself */
 		mi[pos].flags = FL_SUBMENU;
 
+		//E_DEBUG("{%s submenu}\n", mi[pos].text);
+
 		/* some default values that must be filled */
 		mi[pos].shortcut_ = 0;
 		mi[pos].callback_ = 0;
@@ -831,6 +862,8 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 			for(; ds != de; ++ds, ++pos) {
 				mi[pos].text = (*ds)->get_name();
 				mi[pos].flags = 0;
+				
+				//E_DEBUG("  {%s item}\n", mi[pos].text);
 
 				/* some default values that must be filled */
 				mi[pos].shortcut_ = 0;
@@ -853,15 +886,18 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 			}
 		} 
 
-		/* end this submenu */
+		/* now try with nested submenus */
+		pos = construct_edelib_menu(cc->submenus, mi, pos);
+
+		/* end this menu */
 		mi[pos].text = NULL;
 		mi[pos].image(NULL);
 
-		/* make a room for the next item */
+		//E_DEBUG("{0}\n");
+
+		/* make a room for next item */
 		pos++;
 
-		/* now try with MenuContext submenus */
-		pos = construct_edelib_menu(cc->submenus, mi, pos);
 	}
 
 	/* return position to next item */
