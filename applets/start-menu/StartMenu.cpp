@@ -16,7 +16,14 @@ public:
 
 StartMenu::StartMenu() : MenuButton(600, 0, 90, 25, "EDE"), mcontent(NULL) {
 	mcontent = xdg_menu_load();
-	menu(mcontent);
+
+	/* skip the first item, since it often contains only one submenu */
+	if(mcontent->submenu()) {
+		MenuItem *mc = mcontent + 1;
+		menu(mc);
+	} else {
+		menu(mcontent);
+	}
 }
 
 StartMenu::~StartMenu() {
@@ -25,7 +32,7 @@ StartMenu::~StartMenu() {
 
 EDE_PANEL_APPLET_EXPORT (
  StartMenu, 
- 0,
+ EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT,
  "Main menu",
  "0.1",
  "empty",

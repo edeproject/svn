@@ -6,6 +6,7 @@
 #include "Panel.h"
 
 EDELIB_NS_USING(String)
+EDELIB_NS_USING(list)
 
 struct AppletData {
 	void                  *dl;
@@ -122,15 +123,19 @@ void AppletManager::clear(void) {
 }
 
 /*
- * Must be called so widget can actually be added to FLTK parent.
- * Widgets will be created when this function was called
+ * Must be called so widget can actually be added to FLTK parent. Widgets will be created and
+ * added to the group.
  */
 void AppletManager::fill_group(Panel *p) {
 	AListIter it = applet_list.begin(), it_end = applet_list.end();
+	AppletData *applet;
 
 	for(; it != it_end; ++it) {
-		(*it)->awidget = (*it)->create_func();
-		p->add((*it)->awidget);
+		applet = *it;
+
+		/* allocate memory for widget and append it to group */
+		applet->awidget = applet->create_func();
+		p->add(applet->awidget);
 	}
 }
 
@@ -139,4 +144,17 @@ void AppletManager::unfill_group(Panel *p) {
 
 	for(; it != it_end; ++it)
 		p->remove((*it)->awidget);
+}
+
+bool AppletManager::get_applet_options(Fl_Widget *o, unsigned long &opts) {
+	AListIter it = applet_list.begin(), it_end = applet_list.end();
+
+	for(; it != it_end; ++it) {
+		if(o == (*it)->awidget) {
+			opts = (*it)->ainfo->options;
+			return true;
+		}
+	}
+
+	return false;
 }

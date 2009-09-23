@@ -3,13 +3,25 @@
 #include <FL/x.H>
 #include <X11/Xproto.h>
 #include <edelib/Debug.h>
+#include <edelib/List.h>
 
 #include "Panel.h"
+
+/* empty space from left and right panel border */
+#define INITIAL_SPACING 5
+
+/* space between each applet */
+#define DEFAULT_SPACING 5
 
 #undef MIN
 #define MIN(x,y)  ((x) < (y) ? (x) : (y))
 #undef MAX
 #define MAX(x,y)  ((x) > (y) ? (x) : (y))
+
+EDELIB_NS_USING(list)
+
+typedef list<Fl_Widget*> WidgetList;
+typedef list<Fl_Widget*>::iterator WidgetListIt;
 
 inline bool intersects(Fl_Widget *o1, Fl_Widget *o2) {
 	    return (MAX(o1->x(), o2->x()) <= MIN(o1->x() + o1->w(), o2->x() + o2->w()) &&
@@ -60,6 +72,37 @@ static void center_widget_h(Fl_Widget *o, Panel *self) {
 	ph = self->panel_h() / 2;
 	wy = ph - (o->h() / 2);
 	o->position(o->x(), wy);
+}
+
+static void add_from_list(WidgetList &lst, Panel *self, int &X, bool inc) {
+	WidgetListIt it = lst.begin(), it_end = lst.end();
+	Fl_Widget    *o;
+
+	while(it != it_end) {
+		o = *it;
+
+		/* fix y position */
+		center_widget_h(o, self);
+
+		/* 'inc == false' means we are going from right to left */
+		if(!inc)
+			X -= o->w();
+
+		/* fix x position */
+		o->position(X, o->y());
+
+		/* add it to the group */
+		self->add(o);
+
+		if(inc) {
+			X += DEFAULT_SPACING;
+			X += o->w();
+		} else {
+			X -= DEFAULT_SPACING;
+		}
+
+		it = lst.erase(it);
+	}
 }
 
 static void move_widget(Panel *self, Fl_Widget *o, int &sx, int &sy) {
@@ -134,6 +177,67 @@ void Panel::set_window_strut(int left, int right, int top, int bottom) {
 			PropModeReplace, (unsigned char *)&strut, sizeof(CARD32) * 4);
 }
 
+void Panel::do_layout(void) {
+	E_RETURN_IF_FAIL(mgr.napplets() > 0);
+
+	Fl_Widget     *o;
+	unsigned long  opts;
+	unsigned int   lsz;
+	int            X = INITIAL_SPACING;
+
+	WidgetList far_left, center, far_right, unmanaged;
+
+	for(int i = 0; i < children(); i++) {
+		o = child(i);
+
+		/* could be slow, but I'm relaying how number of loaded applets will not be huge */
+		if(!mgr.get_applet_options(o, opts)) {
+			/* here are put widgets not loaded as applets */
+			unmanaged.push_back(o);
+			continue;
+		}
+
+		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT) {
+			far_left.push_back(o);
+			continue;
+		}
+
+		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_FAR_RIGHT) {
+			far_right.push_front(o);
+			continue;
+		}
+
+		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_LEFT) {
+			center.push_back(o);
+			continue;
+		}
+
+		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_RIGHT) {
+			/* so we can process the rightest first, by incremental iteration */
+			center.push_back(o);
+			continue;
+		}
+	}
+
+	/* make sure we at the end have all widgets, so we can overwrite group array */
+	lsz = far_left.size() + center.size() + far_right.size() + unmanaged.size();
+	E_ASSERT(lsz == (unsigned int)children() && "Size of layout lists size not equal to group size");
+
+	/* 
+	 * Call add() on each element, processing lists in order. add() will remove element
+	 * in group array and put it at the end of array. At the end, we should have array ordered by
+	 * layout flags.
+	 */
+	add_from_list(far_left, this, X, true);
+	add_from_list(center, this, X, true);
+	add_from_list(unmanaged, this, X, true);
+
+	/* elements right will be put from starting from the right panel border */
+	X = w();
+	X -= INITIAL_SPACING;
+	add_from_list(far_right, this, X, false);
+}
+
 void Panel::show(void) {
 	if(shown()) {
 		Fl_Window::show();
@@ -147,6 +251,8 @@ void Panel::show(void) {
 	/* position it */
 	net_get_workarea(X, Y, W, H);
 	resize(X, Y + H - 35, W, 35);
+
+	do_layout();
 
 	for(int i = 0; i < children(); i++)
 		center_widget_h(child(i), this);
@@ -190,4 +296,11 @@ int Panel::handle(int e) {
 	}
 
 	return Fl_Window::handle(e);
+}
+
+void Panel::load_applets(void) {
+	mgr.load("./applets/clock/edepanel_clock.so");
+	mgr.load("./applets/start-menu/edepanel_start_menu.so");
+	mgr.load("./applets/quick-launch/edepanel_quick_launch.so");
+	mgr.fill_group(this);
 }
