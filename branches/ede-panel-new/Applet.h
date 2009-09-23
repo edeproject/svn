@@ -6,7 +6,12 @@
 class Fl_Widget;
 
 enum {
-	EDE_PANEL_APPLET_OPTION_RESIZEABLE = (1 << 1)
+	EDE_PANEL_APPLET_OPTION_RESIZEABLE_H    = (1 << 1),
+	EDE_PANEL_APPLET_OPTION_RESIZEABLE_V    = (1 << 2),
+	EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT  = (1 << 3),
+	EDE_PANEL_APPLET_OPTION_ALIGN_FAR_RIGHT = (1 << 4),
+	EDE_PANEL_APPLET_OPTION_ALIGN_LEFT      = (1 << 5),
+	EDE_PANEL_APPLET_OPTION_ALIGN_RIGHT     = (1 << 6)
 };
 
 struct AppletInfo {
@@ -25,7 +30,6 @@ typedef AppletInfo* (*applet_get_info_t)(void);
 typedef void        (*applet_destroy_info_t)(AppletInfo *a);
 
 typedef float       (*applet_version_t)(void);
-
 
 /* the main macro each applet library must implement */
 

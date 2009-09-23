@@ -21,6 +21,9 @@ public:
 	void clear(void);
 	void fill_group(Panel *p);
 	void unfill_group(Panel *p);
+
+	bool get_applet_options(Fl_Widget *o, unsigned long &opts);
+	unsigned int napplets(void) const { return applet_list.size(); }
 };
 
 #endif

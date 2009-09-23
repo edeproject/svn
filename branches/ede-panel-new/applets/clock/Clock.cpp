@@ -56,7 +56,7 @@ int Clock::handle(int e) {
 
 EDE_PANEL_APPLET_EXPORT (
  Clock, 
- 0,
+ EDE_PANEL_APPLET_OPTION_ALIGN_FAR_RIGHT,
  "Clock applet",
  "0.1",
  "empty",

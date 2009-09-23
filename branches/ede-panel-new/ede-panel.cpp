@@ -7,17 +7,7 @@
 
 int main(int argc, char **argv) {
 	Panel* panel = new Panel();
-	panel->begin();
-		new Fl_Button(195, 25, 90, 25, "button 2");
-		new Fl_Button(95, 25, 90, 25, "button 1");
-	panel->end();
-
-	AppletManager mgr;
-	//mgr.load("./applets/demo/edepanel_demo.so");
-	mgr.load("./applets/clock/edepanel_clock.so");
-	mgr.load("./applets/start-menu/edepanel_start_menu.so");
-	mgr.fill_group(panel);
-
+	panel->load_applets();
 	panel->show();
 	return Fl::run();
 }
