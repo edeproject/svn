@@ -95,6 +95,11 @@ struct MenuContext {
 	MenuContextList submenus;
 };
 
+/* TODO: bug in edelib */
+static bool menu_parse_context_sorter(MenuParseContext* const& c1, MenuParseContext* const& c2) {
+	return *(c1->name) < *(c2->name);
+}
+
 static MenuParseContext *menu_parse_context_new(void) {
 	MenuParseContext *m = new MenuParseContext;
 	m->name = NULL;
@@ -588,6 +593,9 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	
 	/* process submenus */
 	if(!m->submenus.empty()) {
+		/* sort submenus via menu names */
+		m->submenus.sort(menu_parse_context_sorter);
+
 		MenuParseListIt mit = m->submenus.begin(), mit_end = m->submenus.end();
 		MenuContext *sub_ctx;
 
@@ -851,8 +859,11 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 			mi[pos].image(img);
 		}
 
-		/* a room for item */
+		/* a room for an item */
 		pos++;
+
+		/* try with nested submenus first, so submenus be before desktop entries in current menu node */
+		pos = construct_edelib_menu(cc->submenus, mi, pos);
 
 		/* now, add the real items if they exists*/
 		if(!cc->items.empty()) {
@@ -886,16 +897,13 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 			}
 		} 
 
-		/* now try with nested submenus */
-		pos = construct_edelib_menu(cc->submenus, mi, pos);
-
 		/* end this menu */
 		mi[pos].text = NULL;
 		mi[pos].image(NULL);
 
 		//E_DEBUG("{0}\n");
 
-		/* make a room for next item */
+		/* make a room for the next item */
 		pos++;
 
 	}
