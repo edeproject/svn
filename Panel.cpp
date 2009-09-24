@@ -183,9 +183,9 @@ void Panel::do_layout(void) {
 	Fl_Widget     *o;
 	unsigned long  opts;
 	unsigned int   lsz;
-	int            X = INITIAL_SPACING;
+	int            X;
 
-	WidgetList far_left, center, far_right, unmanaged;
+	WidgetList left, right, center, unmanaged;
 
 	for(int i = 0; i < children(); i++) {
 		o = child(i);
@@ -197,45 +197,41 @@ void Panel::do_layout(void) {
 			continue;
 		}
 
-		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT) {
-			far_left.push_back(o);
-			continue;
-		}
-
-		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_FAR_RIGHT) {
-			far_right.push_front(o);
-			continue;
-		}
-
 		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_LEFT) {
-			center.push_back(o);
+			/* first item will be most leftest */
+			left.push_back(o);
 			continue;
 		}
 
 		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_RIGHT) {
-			/* so we can process the rightest first, by incremental iteration */
-			center.push_back(o);
+			/* first item will be most rightest */
+			right.push_back(o);
 			continue;
 		}
+
+		/* rest of them */
+		center.push_back(o);
 	}
 
 	/* make sure we at the end have all widgets, so we can overwrite group array */
-	lsz = far_left.size() + center.size() + far_right.size() + unmanaged.size();
+	lsz = left.size() + center.size() + right.size() + unmanaged.size();
 	E_ASSERT(lsz == (unsigned int)children() && "Size of layout lists size not equal to group size");
+
+	X = INITIAL_SPACING;
 
 	/* 
 	 * Call add() on each element, processing lists in order. add() will remove element
 	 * in group array and put it at the end of array. At the end, we should have array ordered by
 	 * layout flags.
 	 */
-	add_from_list(far_left, this, X, true);
+	add_from_list(left, this, X, true);
 	add_from_list(center, this, X, true);
 	add_from_list(unmanaged, this, X, true);
 
 	/* elements right will be put from starting from the right panel border */
 	X = w();
 	X -= INITIAL_SPACING;
-	add_from_list(far_right, this, X, false);
+	add_from_list(right, this, X, false);
 }
 
 void Panel::show(void) {
