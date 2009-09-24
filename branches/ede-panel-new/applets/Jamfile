@@ -14,3 +14,4 @@ SubInclude TOP ede-panel-new applets demo ;
 SubInclude TOP ede-panel-new applets start-menu ;
 SubInclude TOP ede-panel-new applets clock ;
 SubInclude TOP ede-panel-new applets quick-launch ;
+SubInclude TOP ede-panel-new applets pager ;

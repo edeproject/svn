@@ -295,8 +295,9 @@ int Panel::handle(int e) {
 }
 
 void Panel::load_applets(void) {
-	mgr.load("./applets/clock/edepanel_clock.so");
 	mgr.load("./applets/start-menu/edepanel_start_menu.so");
 	mgr.load("./applets/quick-launch/edepanel_quick_launch.so");
+	mgr.load("./applets/clock/edepanel_clock.so");
+	mgr.load("./applets/pager/edepanel_pager.so");
 	mgr.fill_group(this);
 }
