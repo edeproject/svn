@@ -26,7 +26,7 @@ static void enter_cb(Fl_Widget*, void *o) {
 
 EDE_PANEL_APPLET_EXPORT (
  QuickLaunch, 
- EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT,
+ EDE_PANEL_APPLET_OPTION_ALIGN_LEFT,
  "Quick Launch applet",
  "0.1",
  "empty",

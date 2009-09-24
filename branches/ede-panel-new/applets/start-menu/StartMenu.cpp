@@ -32,7 +32,7 @@ StartMenu::~StartMenu() {
 
 EDE_PANEL_APPLET_EXPORT (
  StartMenu, 
- EDE_PANEL_APPLET_OPTION_ALIGN_FAR_LEFT,
+ EDE_PANEL_APPLET_OPTION_ALIGN_LEFT,
  "Main menu",
  "0.1",
  "empty",
