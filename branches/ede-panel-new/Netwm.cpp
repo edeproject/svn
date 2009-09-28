@@ -19,6 +19,7 @@ typedef list<NetwmCallbackData> CbList;
 typedef list<NetwmCallbackData>::iterator CbListIt;
 
 static CbList callback_list;
+static bool input_selected = false;
 
 static Atom _XA_NET_WORKAREA;
 static Atom _XA_NET_WM_WINDOW_TYPE;
@@ -32,6 +33,7 @@ static Atom _XA_NET_DESKTOP_NAMES;
 static Atom _XA_NET_CLIENT_LIST;
 static Atom _XA_NET_WM_DESKTOP;
 static Atom _XA_NET_WM_NAME;
+static Atom _XA_NET_WM_VISIBLE_NAME;
 static Atom _XA_NET_ACTIVE_WINDOW;
 
 /* this macro is set in xlib when X-es provides UTF-8 extension (since XFree86 4.0.2) */
@@ -59,6 +61,7 @@ static void init_atoms_once(void) {
 	_XA_NET_CLIENT_LIST = XInternAtom(fl_display, "_NET_CLIENT_LIST", False);
 	_XA_NET_WM_DESKTOP = XInternAtom(fl_display, "_NET_WM_DESKTOP", False);
 	_XA_NET_WM_NAME = XInternAtom(fl_display, "_NET_WM_NAME", False);
+	_XA_NET_WM_VISIBLE_NAME = XInternAtom(fl_display, "_NET_WM_VISIBLE_NAME", False);
 	_XA_NET_ACTIVE_WINDOW = XInternAtom(fl_display, "_NET_ACTIVE_WINDOW", False);
 
 #ifdef X_HAVE_UTF8_STRING
@@ -72,6 +75,8 @@ static int xevent_handler(int e) {
 	if(fl_xevent->type == PropertyNotify) {
 		int action = 0;
 
+		E_DEBUG("==> %s\n", XGetAtomName(fl_display, fl_xevent->xproperty.atom));
+
 		if(fl_xevent->xproperty.atom == _XA_NET_NUMBER_OF_DESKTOPS)
 			action = NETWM_CHANGED_WORKSPACE_COUNT;
 		else if(fl_xevent->xproperty.atom == _XA_NET_DESKTOP_NAMES)
@@ -84,6 +89,8 @@ static int xevent_handler(int e) {
 			action = NETWM_CHANGED_ACTIVE_WINDOW;
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_NAME || fl_xevent->xproperty.atom == XA_WM_NAME)
 			action = NETWM_CHANGED_WINDOW_NAME;
+		else if(fl_xevent->xproperty.atom == _XA_NET_WM_VISIBLE_NAME)
+			action = NETWM_CHANGED_WINDOW_VISIBLE_NAME;
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_DESKTOP)
 			action = NETWM_CHANGED_WINDOW_DESKTOP;
 		else if(fl_xevent->xproperty.atom == _XA_NET_CLIENT_LIST)
@@ -111,6 +118,13 @@ void netwm_callback_add(NetwmCallback cb, void *data) {
 
 	fl_open_display();
 	init_atoms_once();
+
+#if 0
+	if(!input_selected) {
+		XSelectInput(fl_display, RootWindow(fl_display, fl_screen), PropertyChangeMask | StructureNotifyMask);
+		input_selected = true;
+	}
+#endif
 
 	NetwmCallbackData cb_data;
 	cb_data.cb = cb;
@@ -164,7 +178,6 @@ bool netwm_get_workarea(int& x, int& y, int& w, int &h) {
 	}
 
 	return false;
-
 }
 
 void netwm_make_me_dock(Fl_Window *win) {
@@ -195,7 +208,7 @@ int netwm_get_workspace_count(void) {
 			_XA_NET_NUMBER_OF_DESKTOPS, 0L, 0x7fffffff, False, XA_CARDINAL, &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 
-	if(status != Success && !prop)
+	if(status != Success || !prop)
 		return -1;
 
 	int ns = int(*(long*)prop);
@@ -237,7 +250,7 @@ int netwm_get_current_workspace(void) {
 			_XA_NET_CURRENT_DESKTOP, 0L, 0x7fffffff, False, XA_CARDINAL, &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 
-	if(status != Success && !prop)
+	if(status != Success || !prop)
 		return -1;
 
 	int ns = int(*(long*)prop);
@@ -284,7 +297,7 @@ int netwm_get_mapped_windows(Window **windows) {
 			_XA_NET_CLIENT_LIST, 0L, 0x7fffffff, False, XA_WINDOW, &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 
-	if(status != Success && !prop)
+	if(status != Success || !prop)
 		return -1;
 
 	*windows = (Window*)prop;
@@ -292,6 +305,8 @@ int netwm_get_mapped_windows(Window **windows) {
 }
 
 int netwm_get_window_workspace(Window win) {
+	E_RETURN_VAL_IF_FAIL(win >= 0, -1);
+
 	init_atoms_once();
 
 	Atom real;
@@ -303,9 +318,10 @@ int netwm_get_window_workspace(Window win) {
 			_XA_NET_WM_DESKTOP, 0L, 0x7fffffff, False, XA_CARDINAL, &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 
-	if(status != Success && !prop)
+	if(status != Success || !prop)
 		return -1;
 
+	//int ns = int(*(long*)prop);
 	unsigned long desk = (unsigned long)(*(long*)prop);
 	XFree(prop);
 
@@ -359,22 +375,18 @@ char *netwm_get_window_title(Window win) {
 			_XA_NET_WM_NAME, 0L, 0x7fffffff, False, _XA_UTF8_STRING , &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 
-	if(status != Success && !prop)
-		return NULL;
-
-	title = (char *)prop;
-
-	if(title) {
+	if(status == Success && prop) {
+		title = (char *)prop;
 		ret = strdup(title);
 		XFree(prop);
-		goto done;
-	}
+	} else {
+		/* try WM_NAME */
+		if(!XGetWMName(fl_display, win, &xtp))
+			return NULL;
 
-	/* try WM_NAME */
-	if(!title && XGetWMName(fl_display, win, &xtp)) {
-		if(xtp.encoding == XA_STRING)
+		if(xtp.encoding == XA_STRING) {
 			ret = strdup((const char*)xtp.value);
-		else {
+		} else {
 #if X_HAVE_UTF8_STRING
 			char **lst;
 			int lst_sz;
@@ -394,7 +406,6 @@ char *netwm_get_window_title(Window win) {
 		XFree(xtp.value);
 	}
 
-done:
 	return ret;
 }
 
