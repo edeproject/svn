@@ -1,11 +1,13 @@
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/x.H>
-#include <X11/Xproto.h>
+
 #include <edelib/Debug.h>
 #include <edelib/List.h>
+#include <edelib/WindowXid.h>
 
 #include "Panel.h"
+#include "Netwm.h"
 
 /* empty space from left and right panel border */
 #define INITIAL_SPACING 5
@@ -13,12 +15,16 @@
 /* space between each applet */
 #define DEFAULT_SPACING 5
 
+/* default panel height */
+#define DEFAULT_PANEL_H 35
+
 #undef MIN
 #define MIN(x,y)  ((x) < (y) ? (x) : (y))
 #undef MAX
 #define MAX(x,y)  ((x) > (y) ? (x) : (y))
 
 EDELIB_NS_USING(list)
+EDELIB_NS_USING(window_xid_create)
 
 typedef list<Fl_Widget*> WidgetList;
 typedef list<Fl_Widget*>::iterator WidgetListIt;
@@ -26,43 +32,6 @@ typedef list<Fl_Widget*>::iterator WidgetListIt;
 inline bool intersects(Fl_Widget *o1, Fl_Widget *o2) {
 	    return (MAX(o1->x(), o2->x()) <= MIN(o1->x() + o1->w(), o2->x() + o2->w()) &&
 	            MAX(o1->y(), o2->y()) <= MIN(o1->y() + o1->h(), o2->y() + o2->h()));
-}
-
-static bool net_get_workarea(int& x, int& y, int& w, int &h) {
-	static Atom _net_workarea = XInternAtom(fl_display, "_NET_WORKAREA", False);
-	Atom real;
-
-	int format;
-	unsigned long n, extra;
-	unsigned char* prop;
-	x = y = w = h = 0;
-
-	int status = XGetWindowProperty(fl_display, RootWindow(fl_display, fl_screen), 
-			_net_workarea, 0L, 0x7fffffff, False, XA_CARDINAL, &real, &format, &n, &extra, (unsigned char**)&prop);
-
-	if(status != Success)
-		return false;
-
-	CARD32* val = (CARD32*)prop;
-	if(val) {
-		x = val[0];
-		y = val[1];
-		w = val[2];
-		h = val[3];
-
-		XFree((char*)val);
-		return true;
-	}
-
-	return false;
-}
-
-static void net_make_me_dock(Fl_Window *win) {
-	static Atom _net_wm_window_type      = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE", False);
-	static Atom _net_wm_window_type_dock = XInternAtom(fl_display, "_NET_WM_WINDOW_TYPE_DOCK", False);
-
-	XChangeProperty(fl_display, fl_xid(win), _net_wm_window_type, XA_ATOM, 32, PropModeReplace, 
-			(unsigned char*)&_net_wm_window_type_dock, sizeof(Atom));
 }
 
 /* horizontaly centers widget in the panel */
@@ -81,17 +50,13 @@ static void add_from_list(WidgetList &lst, Panel *self, int &X, bool inc) {
 	while(it != it_end) {
 		o = *it;
 
-		/* fix y position */
-		center_widget_h(o, self);
-
 		/* 'inc == false' means we are going from right to left */
 		if(!inc)
 			X -= o->w();
 
-		/* fix x position */
+		/* place it correctly */
 		o->position(X, o->y());
 
-		/* add it to the group */
 		self->add(o);
 
 		if(inc) {
@@ -164,38 +129,31 @@ static void move_widget(Panel *self, Fl_Widget *o, int &sx, int &sy) {
 	o->parent()->redraw();
 }
 
-void Panel::set_window_strut(int left, int right, int top, int bottom) {
-	static Atom _net_wm_strut = XInternAtom(fl_display, "_NET_WM_STRUT", False);
-	CARD32 strut[4];
-
-	strut[0] = left;
-	strut[1] = right;
-	strut[2] = top;
-	strut[3] = bottom;
-
-	XChangeProperty(fl_display, fl_xid(this), _net_wm_strut, XA_CARDINAL, 32, 
-			PropModeReplace, (unsigned char *)&strut, sizeof(CARD32) * 4);
-}
-
 void Panel::do_layout(void) {
 	E_RETURN_IF_FAIL(mgr.napplets() > 0);
 
 	Fl_Widget     *o;
 	unsigned long  opts;
 	unsigned int   lsz;
-	int            X;
+	int            X, W, free_w;
 
-	WidgetList left, right, center, unmanaged;
+	WidgetList left, right, center, unmanaged, resizable_h;
 
 	for(int i = 0; i < children(); i++) {
 		o = child(i);
 
-		/* could be slow, but I'm relaying how number of loaded applets will not be huge */
+		/* first center it vertically */
+		center_widget_h(o, this);
+
+		/* could be slow, but I'm relaying how number of loaded applets will not be that large */
 		if(!mgr.get_applet_options(o, opts)) {
 			/* here are put widgets not loaded as applets */
 			unmanaged.push_back(o);
 			continue;
 		}
+
+		if(opts & EDE_PANEL_APPLET_OPTION_RESIZABLE_H)
+			resizable_h.push_back(o);
 
 		if(opts & EDE_PANEL_APPLET_OPTION_ALIGN_LEFT) {
 			/* first item will be most leftest */
@@ -228,10 +186,43 @@ void Panel::do_layout(void) {
 	add_from_list(center, this, X, true);
 	add_from_list(unmanaged, this, X, true);
 
+	free_w = X;
+
 	/* elements right will be put from starting from the right panel border */
-	X = w();
-	X -= INITIAL_SPACING;
+	X = w() - INITIAL_SPACING;
 	add_from_list(right, this, X, false);
+
+	/* 
+	 * Code for horizontal streching. 
+	 *
+	 * FIXME: This code pretty sucks and need better rewrite in future.
+	 * To work properly, applets that will be streched must be successive or everything will be
+	 * messed up. Also, applets that are placed right2left does not work with it; they will be resized to right.
+	 */
+	if(resizable_h.empty())
+		return;
+
+	/* calculate free space for horizontal alignement, per item in resizable_h list */
+	free_w = (X - free_w) / resizable_h.size();
+	if(!free_w) free_w = 0;
+
+	/* 
+	 * since add_from_list() will already reserve some space by current child width and default spacing,
+	 * those values will be used again or holes will be made
+	 */
+	WidgetListIt it = resizable_h.begin(), it_end = resizable_h.end();
+	o = resizable_h.front();
+	X = o->x();
+
+	while(it != it_end) {
+		o = *it;
+
+		W = o->w() + free_w;
+		o->resize(X, o->y(), W, o->h());
+		X += W + DEFAULT_SPACING;
+
+		it = resizable_h.erase(it);
+	}
 }
 
 void Panel::show(void) {
@@ -245,49 +236,74 @@ void Panel::show(void) {
 	fl_open_display();
 
 	/* position it */
-	net_get_workarea(X, Y, W, H);
-	resize(X, Y + H - 35, W, 35);
+	if(!netwm_get_workarea(X, Y, W, H))
+		Fl::screen_xywh(X, Y, W, H);
+
+	resize(X, Y + H - DEFAULT_PANEL_H, W, DEFAULT_PANEL_H);
+	screen_w = W;
+	screen_h = H;
 
 	do_layout();
-
-	for(int i = 0; i < children(); i++)
-		center_widget_h(child(i), this);
-
-	Fl_X::make_xid(this);
-	net_make_me_dock(this);
+	window_xid_create(this, netwm_make_me_dock);
 }
 
 int Panel::handle(int e) {
 	switch(e) {
-		case FL_PUSH:
-			sx = Fl::event_x();
-			sy = Fl::event_y();
+		case FL_SHOW: {
+			int ret = PanelWindow::handle(e);
+			if(shown())
+				netwm_set_window_strut(this, 0, 0, 0, h());
+			position(0, screen_h - h());
+			return ret;
+		}
 
+		case FL_PUSH:
 			clicked = Fl::belowmouse();
 			if(clicked == this)
 				clicked = 0;
 			else
 				clicked->handle(e);
 
+			/* record push position for possible child drag */
 			sx = Fl::event_x();
 			sy = Fl::event_y();
 			return 1;
 
 		case FL_DRAG:
+			cursor(FL_CURSOR_MOVE);
+
 			if(clicked) {
-				fl_cursor(FL_CURSOR_MOVE);
-				move_widget(this, clicked, sx, sy);
+				/* moving the child */
+				//move_widget(this, clicked, sx, sy);
 				clicked->handle(e);
+			} else {
+				/* are moving the panel; only vertical moving is supported */
+				int sh = screen_h / 2;
+
+				/* snap it to the top or bottom, depending on pressed mouse location */
+				if(Fl::event_y_root() <= sh && y() > sh) {
+					/* TODO: use area x and area y */
+					position(0, 0);
+					netwm_set_window_strut(this, 0, 0, h(), 0);
+				} 
+				
+				if(Fl::event_y_root() > sh && y() < sh) {
+					/* TODO: use area x and area y */
+					position(0, screen_h - h());
+					netwm_set_window_strut(this, 0, 0, 0, h());
+				}
 			}
+
 			return 1;
 
 		case FL_RELEASE:
-			fl_cursor(FL_CURSOR_DEFAULT);
+			cursor(FL_CURSOR_DEFAULT);
 
 			if(clicked) {
 				clicked->handle(e);
 				clicked = 0;
 			}
+
 			return 1;
 	}
 
@@ -297,7 +313,8 @@ int Panel::handle(int e) {
 void Panel::load_applets(void) {
 	mgr.load("./applets/start-menu/edepanel_start_menu.so");
 	mgr.load("./applets/quick-launch/edepanel_quick_launch.so");
-	mgr.load("./applets/clock/edepanel_clock.so");
 	mgr.load("./applets/pager/edepanel_pager.so");
+	mgr.load("./applets/clock/edepanel_clock.so");
+	mgr.load("./applets/taskbar/edepanel_taskbar.so");
 	mgr.fill_group(this);
 }

@@ -12,16 +12,17 @@ class Panel : public PanelWindow {
 private:
 	Fl_Widget *clicked;
 	int        sx, sy;
+	int        screen_w, screen_h;
 	bool       can_move_widgets;
 
 	AppletManager mgr;
 
-	void set_window_strut(int left, int right, int top, int bottom);
 	void do_layout(void);
 
 public:
-	Panel() : PanelWindow(300, 30), clicked(0), sx(0), sy(0), can_move_widgets(false) { box(FL_UP_BOX); }
-	~Panel() { }
+	Panel() : PanelWindow(300, 30), clicked(0), sx(0), sy(0), screen_w(0), screen_h(0), can_move_widgets(false) 
+	{ box(FL_UP_BOX); }
+
 	int  handle(int e);
 	void show(void);
 	void load_applets(void);
