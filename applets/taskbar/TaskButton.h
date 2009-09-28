@@ -17,10 +17,7 @@ public:
 	void    set_window_xid(Window win) { xid = win; }
 	Window  get_window_xid(void) { return xid; }
 
-	void copy_label_with_tooltip(const char *l) { 
-		copy_label(l); 
-		tooltip(label()); 
-	}
+	void update_title_from_xid(void);
 };
 
 #endif

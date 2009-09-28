@@ -1,7 +1,12 @@
+#include <stdlib.h>
+
 #include <FL/Fl_Pixmap.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
+#include <edelib/Debug.h>
+
 #include "TaskButton.h"
+#include "Netwm.h"
 #include "icons/window.xpm"
 
 static Fl_Pixmap image_window(window_xpm);
@@ -50,4 +55,18 @@ void TaskButton::draw(void) {
 
 	if(Fl::focus() == this)
 		draw_focus();
+}
+
+void TaskButton::update_title_from_xid(void) {
+	E_RETURN_IF_FAIL(xid >= 0);
+
+	char *title = netwm_get_window_title(xid);
+	if(!title) {
+		label("...");
+		tooltip("...");
+	} else {
+		copy_label(title);
+		tooltip(label());
+		free(title);
+	}
 }

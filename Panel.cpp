@@ -259,9 +259,10 @@ int Panel::handle(int e) {
 
 		case FL_PUSH:
 			clicked = Fl::belowmouse();
+
 			if(clicked == this)
 				clicked = 0;
-			else
+			else if(clicked->takesevents())
 				clicked->handle(e);
 
 			/* record push position for possible child drag */
@@ -272,7 +273,7 @@ int Panel::handle(int e) {
 		case FL_DRAG:
 			cursor(FL_CURSOR_MOVE);
 
-			if(clicked) {
+			if(clicked && clicked->takesevents()) {
 				/* moving the child */
 				//move_widget(this, clicked, sx, sy);
 				clicked->handle(e);
@@ -299,7 +300,7 @@ int Panel::handle(int e) {
 		case FL_RELEASE:
 			cursor(FL_CURSOR_DEFAULT);
 
-			if(clicked) {
+			if(clicked && clicked->takesevents()) {
 				clicked->handle(e);
 				clicked = 0;
 			}
