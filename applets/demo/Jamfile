@@ -10,4 +10,4 @@
 
 SubDir TOP ede-panel-new applets demo ;
 
-PanelApplet edepanel_demo : AppletDemo.cpp ;
+PanelApplet demo : AppletDemo.cpp ;

@@ -10,4 +10,4 @@
 
 SubDir TOP ede-panel-new applets quick-launch ;
 
-PanelApplet edepanel_quick_launch : QuickLaunch.cpp ;
+PanelApplet quick_launch : QuickLaunch.cpp ;

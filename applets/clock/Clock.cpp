@@ -13,7 +13,7 @@ private:
 	char buf[64];
 public:
 	Clock() : Fl_Box(450, 0, 80, 25, NULL) { 
-		box(FL_DOWN_BOX);
+		box(FL_THIN_DOWN_BOX);
 	}
 
 	~Clock() {
