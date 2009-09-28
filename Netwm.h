@@ -19,6 +19,13 @@ enum {
 	NETWM_CHANGED_WINDOW_LIST
 };
 
+enum WmStateValue {
+	WM_STATE_NONE      = -1,
+	WM_STATE_WITHDRAW  = 0,
+	WM_STATE_NORMAL    = 1,
+	WM_STATE_ICONIC    = 3
+};
+
 typedef void (*NetwmCallback)(int action, Window xid, void *data);
 
 /* register callback for NETWM_* changes */
@@ -65,5 +72,9 @@ Window netwm_get_active_window(void);
 
 /* try to focus given window */
 void netwm_set_active_window(Window win);
+
+/* not part of NETWM, but helpers until _NET_WM_STATE_* is implemented */
+WmStateValue wm_get_window_state(Window win);
+void         wm_set_window_state(Window win, WmStateValue state);
 
 #endif
