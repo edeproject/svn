@@ -13,6 +13,9 @@
 
 class Taskbar : public Fl_Group {
 public:
+	TaskButton *curr_activated;
+
+public:
 	Taskbar();
 	~Taskbar();
 
@@ -54,7 +57,7 @@ static void net_event_cb(int action, Window xid, void *data) {
 	}
 }
 
-Taskbar::Taskbar() : Fl_Group(0, 0, 40, 25) {
+Taskbar::Taskbar() : Fl_Group(0, 0, 40, 25), curr_activated(NULL) {
 	end();
 
 	/* assure display is openned */
@@ -80,7 +83,7 @@ void Taskbar::create_task_buttons(void) {
 
 	if(nwins) {
 		TaskButton *b;
-		int curr_workspace = netwm_get_current_workspace();
+		int   curr_workspace = netwm_get_current_workspace();
 		char *title;
 
 		for(int i = 0; i < nwins; i++) {
@@ -169,9 +172,25 @@ void Taskbar::update_active_button(int xid) {
 void Taskbar::activate_window(TaskButton *b) {
 	E_RETURN_IF_FAIL(b != NULL);
 
-	/* TODO: disallow activating already activated window */
-	netwm_set_active_window(b->get_window_xid());
-	update_active_button(b->get_window_xid());
+	Window xid = b->get_window_xid();
+
+	/* if clicked on activated button, it will be minimized, then next one will be activated */
+	if(b == curr_activated) {
+		if(wm_get_window_state(xid) != WM_STATE_ICONIC) {
+			wm_set_window_state(xid, WM_STATE_ICONIC);
+			update_active_button();
+		} else {
+			netwm_set_active_window(xid);
+			update_active_button(xid);
+		}
+
+		return;
+	} 
+	
+	netwm_set_active_window(xid);
+	update_active_button(xid);
+
+	curr_activated = b;
 }
 
 void Taskbar::update_child_title(Window xid) {

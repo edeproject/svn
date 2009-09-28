@@ -36,6 +36,8 @@ static Atom _XA_NET_WM_NAME;
 static Atom _XA_NET_WM_VISIBLE_NAME;
 static Atom _XA_NET_ACTIVE_WINDOW;
 
+static Atom _XA_WM_STATE;
+
 /* this macro is set in xlib when X-es provides UTF-8 extension (since XFree86 4.0.2) */
 #if X_HAVE_UTF8_STRING
 static Atom _XA_UTF8_STRING;
@@ -63,6 +65,8 @@ static void init_atoms_once(void) {
 	_XA_NET_WM_NAME = XInternAtom(fl_display, "_NET_WM_NAME", False);
 	_XA_NET_WM_VISIBLE_NAME = XInternAtom(fl_display, "_NET_WM_VISIBLE_NAME", False);
 	_XA_NET_ACTIVE_WINDOW = XInternAtom(fl_display, "_NET_ACTIVE_WINDOW", False);
+
+	_XA_WM_STATE = XInternAtom(fl_display, "WM_STATE", False);
 
 #ifdef X_HAVE_UTF8_STRING
 	_XA_UTF8_STRING = XInternAtom(fl_display, "UTF8_STRING", False);
@@ -448,4 +452,39 @@ void netwm_set_active_window(Window win) {
 	XSendEvent (fl_display, RootWindow(fl_display, fl_screen), False, 
 			SubstructureRedirectMask | SubstructureNotifyMask, &xev);
     XSync(fl_display, True);
+}
+
+WmStateValue wm_get_window_state(Window win) {
+	init_atoms_once();
+
+	Atom real;
+	int format;
+	unsigned long n, extra;
+	unsigned char* prop = 0;
+
+	int status = XGetWindowProperty(fl_display, RootWindow(fl_display, fl_screen), 
+			_XA_WM_STATE, 0L, sizeof(Atom), False, _XA_WM_STATE, &real, &format, &n, &extra, 
+			(unsigned char**)&prop);
+
+	if(status != Success || !prop)
+		return WM_STATE_NONE;
+
+	WmStateValue ret = WmStateValue(*(long*)prop);
+	XFree(prop);
+
+	return ret;
+}
+
+void wm_set_window_state(Window win, WmStateValue state) {
+	E_RETURN_IF_FAIL((int)state > 0);
+
+	if(state == WM_STATE_WITHDRAW) {
+		XWithdrawWindow(fl_display, win, fl_screen);
+		XSync(fl_display, True);
+	} else if(state == WM_STATE_ICONIC) {
+		XIconifyWindow(fl_display, win, fl_screen);
+		XSync(fl_display, True);
+	}
+	
+	/* nothing for WM_STATE_NORMAL */
 }
