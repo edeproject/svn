@@ -73,6 +73,15 @@ Window netwm_get_active_window(void);
 /* try to focus given window */
 void netwm_set_active_window(Window win);
 
+/* maximize window */
+void netwm_maximize_window(Window win);
+
+/* close window */
+void netwm_close_window(Window win);
+
+/* edewm specific: restore window to previous state */
+void wm_ede_restore_window(Window win);
+
 /* not part of NETWM, but helpers until _NET_WM_STATE_* is implemented */
 WmStateValue wm_get_window_state(Window win);
 void         wm_set_window_state(Window win, WmStateValue state);
