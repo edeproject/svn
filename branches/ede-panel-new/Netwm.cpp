@@ -123,12 +123,11 @@ void netwm_callback_add(NetwmCallback cb, void *data) {
 	fl_open_display();
 	init_atoms_once();
 
-#if 0
+	/* to catch _XA_NET_CURRENT_DESKTOP and such events */
 	if(!input_selected) {
 		XSelectInput(fl_display, RootWindow(fl_display, fl_screen), PropertyChangeMask | StructureNotifyMask);
 		input_selected = true;
 	}
-#endif
 
 	NetwmCallbackData cb_data;
 	cb_data.cb = cb;
@@ -462,7 +461,7 @@ WmStateValue wm_get_window_state(Window win) {
 	unsigned long n, extra;
 	unsigned char* prop = 0;
 
-	int status = XGetWindowProperty(fl_display, RootWindow(fl_display, fl_screen), 
+	int status = XGetWindowProperty(fl_display, win,
 			_XA_WM_STATE, 0L, sizeof(Atom), False, _XA_WM_STATE, &real, &format, &n, &extra, 
 			(unsigned char**)&prop);
 

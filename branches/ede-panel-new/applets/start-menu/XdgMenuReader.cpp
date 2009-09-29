@@ -14,6 +14,7 @@
 #include <edelib/Directory.h>
 #include <edelib/DesktopFile.h>
 #include <edelib/IconLoader.h>
+#include <edelib/Nls.h>
 
 #include "DesktopEntry.h"
 #include "MenuRules.h"
@@ -42,6 +43,9 @@ EDELIB_NS_USING(ICON_SIZE_SMALL)
 
 /* do not allow empty menus to be shown */
 #define NO_EMPTY_MENUS 1
+
+/* in FLTK, a default size */
+extern int FL_NORMAL_SIZE;
 
 struct MenuParseContext;
 struct MenuContext;
@@ -832,6 +836,8 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 
 	DesktopEntryListIt ds, de;
 
+	unsigned long initial_pos = pos;
+
 	for(; it != it_end; ++it) {
 		cc = *it;
 
@@ -848,7 +854,7 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 		mi[pos].user_data_ = 0;
 		mi[pos].labeltype_ = FL_NORMAL_LABEL;
 		mi[pos].labelfont_ = FL_HELVETICA;
-		mi[pos].labelsize_ = 12;
+		mi[pos].labelsize_ = FL_NORMAL_SIZE;
 		mi[pos].labelcolor_ = FL_BLACK;
 
 		mi[pos].image(NULL);
@@ -874,7 +880,7 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 				mi[pos].text = (*ds)->get_name();
 				mi[pos].flags = 0;
 				
-				//E_DEBUG("  {%s item}\n", mi[pos].text);
+				// E_DEBUG("  {%s item}\n", mi[pos].text);
 
 				/* some default values that must be filled */
 				mi[pos].shortcut_ = 0;
@@ -885,7 +891,7 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 
 				mi[pos].labeltype_ = FL_NORMAL_LABEL;
 				mi[pos].labelfont_ = FL_HELVETICA;
-				mi[pos].labelsize_ = 12;
+				mi[pos].labelsize_ = FL_NORMAL_SIZE;
 				mi[pos].labelcolor_ = FL_BLACK;
 				mi[pos].image(NULL);
 
@@ -895,7 +901,36 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 					mi[pos].image(img);
 				}
 			}
-		} 
+		}
+
+		/* to inject Logout button */
+		if(initial_pos == 0) {
+			//E_DEBUG("  {Logout item}\n");
+
+			mi[pos].text = _("Logout");
+
+			if(pos) 
+				mi[pos - 1].flags |= FL_MENU_DIVIDER;
+
+			mi[pos].flags = 0;
+			mi[pos].shortcut_ = 0;
+			mi[pos].image(NULL);
+			mi[pos].labeltype_ = FL_NORMAL_LABEL;
+			mi[pos].labelfont_ = FL_HELVETICA;
+			mi[pos].labelsize_ = FL_NORMAL_SIZE;
+			mi[pos].labelcolor_ = FL_BLACK;
+
+			/* set callback and callback data to be current entry */
+			mi[pos].callback_ = 0;
+			mi[pos].user_data_ = 0;
+	
+			if(IconLoader::inited()) {
+				Fl_Image *img = IconLoader::get("system-log-out", ICON_SIZE_SMALL);
+				mi[pos].image(img);
+			}
+
+			pos++;
+		}
 
 		/* end this menu */
 		mi[pos].text = NULL;
@@ -923,7 +958,7 @@ MenuItem *xdg_menu_load(void) {
 	unsigned int sz = menu_context_list_count(global_context_list);
 	E_RETURN_VAL_IF_FAIL(sz > 0, NULL);
 
-	MenuItem *mi = new MenuItem[sz + 1]; /* plus ending NULL */
+	MenuItem *mi = new MenuItem[sz + 2]; /* plus logout + ending NULL */
 
 	unsigned int pos = construct_edelib_menu(global_context_list, mi, 0);
 	mi[pos].text = NULL;
@@ -934,7 +969,7 @@ MenuItem *xdg_menu_load(void) {
 	 */
 	mi[pos].image(NULL);
 
-	E_ASSERT(pos <= sz + 1);
+	E_ASSERT(pos <= sz + 2);
 	return mi;
 }
 

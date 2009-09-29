@@ -4,16 +4,36 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 #include <edelib/Debug.h>
+#include <edelib/Nls.h>
+#include <edelib/MenuItem.h>
+#include <edelib/IconLoader.h>
 
 #include "TaskButton.h"
 #include "Netwm.h"
 #include "icons/window.xpm"
 
+EDELIB_NS_USING(MenuItem)
+EDELIB_NS_USING(IconLoader)
+EDELIB_NS_USING(ICON_SIZE_TINY)
+
 static Fl_Pixmap image_window(window_xpm);
+
+static MenuItem menu_[] = {
+	{_("Restore"), 0, 0, 0},
+	{_("Minimize"), 0, 0, 0},
+	{_("Maximize"), 0, 0, 0, FL_MENU_DIVIDER},
+	{_("Close"), 0, 0, 0},
+	{0}
+};
 
 TaskButton::TaskButton(int X, int Y, int W, int H, const char *l) : Fl_Button(X, Y, W, H, l), xid(0) { 
 	box(FL_UP_BOX);
 	align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_CLIP);
+
+	if(IconLoader::inited()) {
+		Fl_Shared_Image *img = IconLoader::get("process-stop", ICON_SIZE_TINY);
+		menu_[3].image((Fl_Image*)img);
+	}
 
 	image(image_window);
 }
@@ -55,6 +75,10 @@ void TaskButton::draw(void) {
 
 	if(Fl::focus() == this)
 		draw_focus();
+}
+
+void TaskButton::display_menu(void) {
+	menu_->popup(Fl::event_x(), Fl::event_y(), 0, 0, 0);
 }
 
 void TaskButton::update_title_from_xid(void) {

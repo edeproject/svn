@@ -5,26 +5,14 @@
 
 #include <FL/Fl_Group.H>
 #include <FL/Fl.H>
-#include <FL/x.H>
 #include <edelib/Debug.h>
-#include <edelib/List.h>
 
 #include "PagerButton.h"
-
-EDELIB_NS_USING(list);
-
-class Pager;
-
-/* Fl::add_handler() does not have additional parameter, so list is used to register multiple instances */
-typedef list<Pager*> PagerList;
-typedef list<Pager*>::iterator PagerListIt;
-
-static PagerList pager_list;
-static Atom _XA_NET_CURRENT_DESKTOP    = 0;
 
 class Pager : public Fl_Group {
 public:
 	Pager();
+	~Pager();
 	void init_workspace_boxes(void);
 	void workspace_changed(void);
 };
@@ -37,15 +25,13 @@ static void box_cb(Fl_Widget*, void *b) {
 	netwm_change_workspace(s);
 }
 
-static int xevent_handler(int e) {
-	if(fl_xevent->type == PropertyNotify && fl_xevent->xproperty.atom == _XA_NET_CURRENT_DESKTOP) { 
-		PagerListIt it = pager_list.begin(), it_end = pager_list.end();
+static void net_event_cb(int action, Window xid, void *data) {
+	E_RETURN_IF_FAIL(data != NULL);
 
-		for(; it != it_end; ++it)
-			(*it)->workspace_changed();
+	if(action == NETWM_CHANGED_CURRENT_WORKSPACE) {
+		Pager *p = (Pager*)data;
+		p->workspace_changed();
 	}
-
-	return 0;
 }
 
 Pager::Pager() : Fl_Group(0, 0, 25, 25, NULL) { 
@@ -54,15 +40,11 @@ Pager::Pager() : Fl_Group(0, 0, 25, 25, NULL) {
 	end();
 
 	init_workspace_boxes();
-	XSelectInput(fl_display, RootWindow(fl_display, fl_screen), PropertyChangeMask | StructureNotifyMask);
+	netwm_callback_add(net_event_cb, this);
+}
 
-	_XA_NET_CURRENT_DESKTOP = XInternAtom(fl_display, "_NET_CURRENT_DESKTOP", False);
-
-	/* so we do not register multiple handlers */
-	Fl::remove_handler(xevent_handler);
-	Fl::add_handler(xevent_handler);
-
-	pager_list.push_back(this);
+Pager::~Pager() {
+	netwm_callback_remove(net_event_cb);
 }
 
 void Pager::init_workspace_boxes(void) {
