@@ -5,6 +5,9 @@
 #include <time.h>
 
 #include <edelib/Debug.h>
+#include <edelib/Run.h>
+
+EDELIB_NS_USING(run_async)
 
 static void clock_refresh(void *o);
 
@@ -48,6 +51,10 @@ int Clock::handle(int e) {
 	switch(e) {
 		case FL_SHOW:
 			Fl::add_timeout(0, clock_refresh, this);
+			break;
+
+		case FL_RELEASE:
+			run_async("ede-timedate");
 			break;
 	}
 

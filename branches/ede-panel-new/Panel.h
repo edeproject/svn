@@ -5,6 +5,7 @@
 #include "AppletManager.h"
 
 #define EDE_PANEL_CAST_TO_PANEL(obj) ((Panel*)(obj))
+#define EDE_PANEL_GET_PANEL_OBJECT   (EDE_PANEL_CAST_TO_PANEL(parent()))
 
 EDELIB_NS_USING_AS(Window, PanelWindow)
 

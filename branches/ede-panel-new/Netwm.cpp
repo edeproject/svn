@@ -12,7 +12,7 @@ EDELIB_NS_USING(list)
 
 struct NetwmCallbackData {
 	NetwmCallback  cb;
-	void           *data;
+	void		   *data;
 };
 
 typedef list<NetwmCallbackData> CbList;
@@ -35,8 +35,15 @@ static Atom _XA_NET_WM_DESKTOP;
 static Atom _XA_NET_WM_NAME;
 static Atom _XA_NET_WM_VISIBLE_NAME;
 static Atom _XA_NET_ACTIVE_WINDOW;
+static Atom _XA_NET_CLOSE_WINDOW;
 
 static Atom _XA_WM_STATE;
+static Atom _XA_NET_WM_STATE;
+static Atom _XA_NET_WM_STATE_MAXIMIZED_HORZ;
+static Atom _XA_NET_WM_STATE_MAXIMIZED_VERT;
+
+static Atom _XA_EDE_WM_ACTION;
+static Atom _XA_EDE_WM_RESTORE_SIZE;
 
 /* this macro is set in xlib when X-es provides UTF-8 extension (since XFree86 4.0.2) */
 #if X_HAVE_UTF8_STRING
@@ -65,8 +72,15 @@ static void init_atoms_once(void) {
 	_XA_NET_WM_NAME = XInternAtom(fl_display, "_NET_WM_NAME", False);
 	_XA_NET_WM_VISIBLE_NAME = XInternAtom(fl_display, "_NET_WM_VISIBLE_NAME", False);
 	_XA_NET_ACTIVE_WINDOW = XInternAtom(fl_display, "_NET_ACTIVE_WINDOW", False);
+	_XA_NET_CLOSE_WINDOW = XInternAtom(fl_display, "_NET_CLOSE_WINDOW", False);
 
 	_XA_WM_STATE = XInternAtom(fl_display, "WM_STATE", False);
+	_XA_NET_WM_STATE = XInternAtom(fl_display, "_NET_WM_STATE", False);
+	_XA_NET_WM_STATE_MAXIMIZED_HORZ = XInternAtom(fl_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+	_XA_NET_WM_STATE_MAXIMIZED_VERT = XInternAtom(fl_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+
+	_XA_EDE_WM_ACTION = XInternAtom(fl_display, "_EDE_WM_ACTION", False);
+	_XA_EDE_WM_RESTORE_SIZE = XInternAtom(fl_display, "_EDE_WM_RESTORE_SIZE", False);
 
 #ifdef X_HAVE_UTF8_STRING
 	_XA_UTF8_STRING = XInternAtom(fl_display, "UTF8_STRING", False);
@@ -233,12 +247,12 @@ void netwm_change_workspace(int n) {
 	xev.xclient.window = root_win;
 	xev.xclient.display = fl_display;
 	xev.xclient.message_type = _XA_NET_CURRENT_DESKTOP;
-    xev.xclient.format = 32;
-    xev.xclient.data.l[0] = (long)n;
-    xev.xclient.data.l[1] = CurrentTime;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = (long)n;
+	xev.xclient.data.l[1] = CurrentTime;
 
 	XSendEvent (fl_display, root_win, False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-    XSync(fl_display, True);
+	XSync(fl_display, True);
 }
 
 int netwm_get_current_workspace(void) {
@@ -367,7 +381,7 @@ char *netwm_get_window_title(Window win) {
 	init_atoms_once();
 
 	XTextProperty xtp;
-	char          *title = NULL, *ret = NULL;
+	char		  *title = NULL, *ret = NULL;
 
 	Atom real;
 	int format;
@@ -444,13 +458,74 @@ void netwm_set_active_window(Window win) {
 	xev.xclient.window = win;
 	xev.xclient.display = fl_display;
 	xev.xclient.message_type = _XA_NET_ACTIVE_WINDOW;
-    xev.xclient.format = 32;
-    xev.xclient.data.l[0] = (long)win;
-    xev.xclient.data.l[1] = CurrentTime;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = (long)win;
+	xev.xclient.data.l[1] = CurrentTime;
 
 	XSendEvent (fl_display, RootWindow(fl_display, fl_screen), False, 
 			SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-    XSync(fl_display, True);
+	XSync(fl_display, True);
+}
+
+void netwm_maximize_window(Window win) {
+	init_atoms_once();	
+
+	XEvent xev;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.serial = 0;
+	xev.xclient.send_event = True;
+	xev.xclient.window = win;
+	xev.xclient.display = fl_display;
+	xev.xclient.message_type = _XA_NET_WM_STATE;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 0;
+	xev.xclient.data.l[1] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
+	xev.xclient.data.l[2] = _XA_NET_WM_STATE_MAXIMIZED_VERT;
+
+	XSendEvent (fl_display, RootWindow(fl_display, fl_screen), False, 
+			SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSync(fl_display, True);
+}
+
+void netwm_close_window(Window win) {
+	init_atoms_once();	
+
+	XEvent xev;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.serial = 0;
+	xev.xclient.send_event = True;
+	xev.xclient.window = win;
+	xev.xclient.display = fl_display;
+	xev.xclient.message_type = _XA_NET_CLOSE_WINDOW;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = (long)win;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent (fl_display, RootWindow(fl_display, fl_screen), False, 
+			SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSync(fl_display, True);
+}
+
+void wm_ede_restore_window(Window win) {
+	init_atoms_once();	
+
+	XEvent xev;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.serial = 0;
+	xev.xclient.send_event = True;
+	xev.xclient.window = win;
+	xev.xclient.display = fl_display;
+	xev.xclient.message_type = _XA_EDE_WM_ACTION;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = _XA_EDE_WM_RESTORE_SIZE;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent (fl_display, RootWindow(fl_display, fl_screen), False, 
+			SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSync(fl_display, True);
 }
 
 WmStateValue wm_get_window_state(Window win) {
