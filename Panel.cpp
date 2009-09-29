@@ -270,14 +270,16 @@ int Panel::handle(int e) {
 			sy = Fl::event_y();
 			return 1;
 
-		case FL_DRAG:
-			cursor(FL_CURSOR_MOVE);
-
+		case FL_DRAG: {
+#if 0
 			if(clicked && clicked->takesevents()) {
+				cursor(FL_CURSOR_MOVE);
 				/* moving the child */
 				//move_widget(this, clicked, sx, sy);
 				clicked->handle(e);
 			} else {
+#endif
+				cursor(FL_CURSOR_MOVE);
 				/* are moving the panel; only vertical moving is supported */
 				int sh = screen_h / 2;
 
@@ -293,9 +295,10 @@ int Panel::handle(int e) {
 					position(0, screen_h - h());
 					netwm_set_window_strut(this, 0, 0, 0, h());
 				}
-			}
+			// }
 
 			return 1;
+		}
 
 		case FL_RELEASE:
 			cursor(FL_CURSOR_DEFAULT);

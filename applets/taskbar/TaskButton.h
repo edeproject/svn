@@ -7,12 +7,13 @@
 class TaskButton : public Fl_Button {
 private:
 	/* window ID this button handles */
-	Window xid;
+	Window     xid;
 
 public:
 	TaskButton(int X, int Y, int W, int H, const char *l = 0);
 
 	void draw(void);
+	void display_menu(void);
 
 	void    set_window_xid(Window win) { xid = win; }
 	Window  get_window_xid(void) { return xid; }

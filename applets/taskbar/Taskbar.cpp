@@ -13,7 +13,7 @@
 
 class Taskbar : public Fl_Group {
 public:
-	TaskButton *curr_activated;
+	TaskButton *curr_active, *prev_active;
 
 public:
 	Taskbar();
@@ -31,7 +31,11 @@ public:
 
 static void button_cb(TaskButton *b, void *t) {
 	Taskbar *tt = (Taskbar*)t;
-	tt->activate_window(b);
+
+	if(Fl::event_button() == FL_RIGHT_MOUSE)
+		b->display_menu();
+	else 
+		tt->activate_window(b);
 }
 
 static void net_event_cb(int action, Window xid, void *data) {
@@ -57,7 +61,7 @@ static void net_event_cb(int action, Window xid, void *data) {
 	}
 }
 
-Taskbar::Taskbar() : Fl_Group(0, 0, 40, 25), curr_activated(NULL) {
+Taskbar::Taskbar() : Fl_Group(0, 0, 40, 25), curr_active(NULL), prev_active(NULL) {
 	end();
 
 	/* assure display is openned */
@@ -75,7 +79,10 @@ void Taskbar::create_task_buttons(void) {
 	/* erase all current elements */
 	clear();
 
-	/* redraw it, in case no windws exists in this workspace */
+	/* also current/prev storage */
+	curr_active = prev_active = NULL;
+
+	/* redraw it, in case no windows exists in this workspace */
 	parent()->redraw();
 
 	Window *wins;
@@ -175,22 +182,30 @@ void Taskbar::activate_window(TaskButton *b) {
 	Window xid = b->get_window_xid();
 
 	/* if clicked on activated button, it will be minimized, then next one will be activated */
-	if(b == curr_activated) {
+	if(b == curr_active) {
 		if(wm_get_window_state(xid) != WM_STATE_ICONIC) {
+			/* minimize if not so */
 			wm_set_window_state(xid, WM_STATE_ICONIC);
-			update_active_button();
-		} else {
-			netwm_set_active_window(xid);
-			update_active_button(xid);
-		}
 
-		return;
+			if(prev_active && 
+			   prev_active != b && 
+			   wm_get_window_state(prev_active->get_window_xid()) != WM_STATE_ICONIC) 
+			{
+				xid = prev_active->get_window_xid();
+				b   = prev_active;
+			} else {
+				return;
+			}
+		}
 	} 
-	
+
+	/* active or restore minimized */
 	netwm_set_active_window(xid);
 	update_active_button(xid);
 
-	curr_activated = b;
+	/* TODO: use stack for this (case when this can't handle: minimize three window, out of four on the workspace) */
+	prev_active = curr_active;
+	curr_active = b;
 }
 
 void Taskbar::update_child_title(Window xid) {
