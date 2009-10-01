@@ -89,6 +89,9 @@ struct MenuContext {
 	/* menu label */
 	String *name;
 
+	/* should this entry be displayed */
+	bool display_it;
+
 	/* menu icon */
 	String *icon;
 
@@ -100,7 +103,7 @@ struct MenuContext {
 };
 
 /* TODO: bug in edelib */
-static bool menu_parse_context_sorter(MenuParseContext* const& c1, MenuParseContext* const& c2) {
+static bool menu_context_sorter(MenuContext* const& c1, MenuContext* const& c2) {
 	return *(c1->name) < *(c2->name);
 }
 
@@ -380,12 +383,13 @@ static void scan_menu_tag(TiXmlNode *elem, MenuParseList &parse_list) {
 static bool menu_context_construct_name_and_get_icon(MenuParseContext *m, 
 													 MenuParseContext *top, 
 													 String **ret_name, 
-													 String **ret_icon) 
+													 String **ret_icon,
+													 bool *should_be_displayed)
 {
 	E_RETURN_VAL_IF_FAIL(m != NULL, false);
 
 	*ret_name = *ret_icon = NULL;
-	bool should_be_displayed = true;
+	*should_be_displayed = true;
 
 	if(!m->dir_files.empty()) {
 		/*
@@ -412,10 +416,8 @@ static bool menu_context_construct_name_and_get_icon(MenuParseContext *m,
 
 				if(df && (df.type() == DESK_FILE_TYPE_DIRECTORY)) {
 					/* check if it can be displayed */
-					if(df.no_display()) {
-						should_be_displayed = false;
-						continue;
-					}
+					if(df.no_display())
+						*should_be_displayed = false;
 
 					char buf[NAME_BUFSZ];
 
@@ -444,10 +446,8 @@ static bool menu_context_construct_name_and_get_icon(MenuParseContext *m,
 				df.load(tmp.c_str());
 				if(df && (df.type() == DESK_FILE_TYPE_DIRECTORY)) {
 					/* check if it can be displayed */
-					if(df.no_display()) {
-						should_be_displayed = false;
-						continue;
-					}
+					if(df.no_display())
+						*should_be_displayed = false;
 
 					char buf[NAME_BUFSZ];
 
@@ -465,9 +465,6 @@ static bool menu_context_construct_name_and_get_icon(MenuParseContext *m,
 		}
 	}	
 
-	if(!should_be_displayed)
-		return false;
-
 	E_RETURN_VAL_IF_FAIL(m->name != NULL, false);
 
 	/* if there are no files and can be displayed, use context name; let icon name be NULL */
@@ -475,85 +472,57 @@ static bool menu_context_construct_name_and_get_icon(MenuParseContext *m,
 	return true;
 }
 
-static void menu_context_apply_include_rules(MenuContext *ctx, 
-											 MenuParseContext *m, 
-											 MenuParseContext *top, 
-											 MenuRulesList &rules)
-{
+static void apply_include_rules(MenuContext *ctx, DesktopEntryList &items, MenuRulesList &rules) {
+	if(items.empty() || rules.empty())
+		return;
+
 	MenuRulesListIt     rit, rit_end = rules.end();
-	DesktopEntryListIt  dit = m->desk_files.begin(), dit_end = m->desk_files.end();
+	DesktopEntryListIt  it = items.begin(), it_end = items.end();
 
 	DesktopEntry *entry;
 	bool         eval_true;
 
-	/* check rules for the current list */
-	for(; dit != dit_end; ++dit) {
+	for(; it != it_end; ++it) {
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			entry = *dit;
+			entry = *it;
 
 			eval_true = menu_rules_eval(*rit, entry);
-			/* E_DEBUG("%i %s\n", eval_true, entry->get_path()); */
 
 			/* append entry if matches to the rule, and mark it as allocated */
 			if(eval_true) {
 				entry->mark_as_allocated();
 				ctx->items.push_back(entry);
 
-				/* do not scan rules any more */
-				break;
-			}
-		}
-	}
-
-	/* be sure to not compare the same node twice */
-	if(m == top)
-		return;
-
-	/* check rules for the top list */
-	dit = top->desk_files.begin(), dit_end = top->desk_files.end();
-	for(; dit != dit_end; ++dit) {
-		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			entry = *dit;
-
-			eval_true = menu_rules_eval(*rit, entry);
-			/* E_DEBUG("%i %s\n", eval_true, entry->get_path()); */
-
-			/* append entry if matches to the rule, and mark it as allocated */
-			if(eval_true) {
-				entry->mark_as_allocated();
-				ctx->items.push_back(entry);
-
-				/* do not scan rules any more */
+				/* do not scan rules any more; go to the next item */
 				break;
 			}
 		}
 	}
 }
 
-static void menu_context_apply_exclude_rules(MenuContext *ctx, 
-											 MenuParseContext *m, 
-											 MenuRulesList &rules)
-{
-	MenuRulesListIt    rit, rit_end = rules.end();
-	/* we exclude 'included' items */
-	DesktopEntryListIt dit = ctx->items.begin(), dit_end = ctx->items.end();
-	bool found;
+static void apply_exclude_rules(DesktopEntryList& items, MenuRulesList &rules) {
+	if(items.empty() || rules.empty())
+		return;
 
-	while(dit != dit_end) {
-		found = false;
+	MenuRulesListIt    rit, rit_end = rules.end();
+	DesktopEntryListIt it = items.begin(), it_end = items.end();
+	bool eval_true;
+
+	while(it != it_end) {
+		eval_true = false;
 
 		for(rit = rules.begin(); rit != rit_end; ++rit) {
-			/* pop entry if matches */
-			if(menu_rules_eval(*rit, *dit)) {
-				/* E_DEBUG("Dumping %s\n", (*dit)->get_path()); */
-				dit = ctx->items.erase(dit);
-				found = true;
+			eval_true = menu_rules_eval(*rit, *it);
+
+			if(eval_true) {
+				/* pop entry if matches */
+				it = items.erase(it);
 				break;
 			}
 		}
 
-		if(!found) 
-			++dit;
+		if(!eval_true) 
+			++it;
 	}
 }
 
@@ -562,10 +531,14 @@ static void menu_context_apply_exclude_rules(MenuContext *ctx,
 static void menu_context_delete(MenuContext *c);
 #endif
 
-static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, MenuParseContext *top) {
+static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, 
+													   MenuParseContext *top,
+													   DesktopEntryList *all_unallocated) 
+{
 	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
 
-	if(m->deleted)
+	/* make sure we are not processing only_unallocated node when not get all_unallocated */
+	if(m->only_unallocated && !all_unallocated)
 		return NULL;
 
 	/* 
@@ -573,8 +546,18 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	 * went wrong
 	 */
 	String *n, *ic;
-	if(!menu_context_construct_name_and_get_icon(m, top, &n, &ic))
+	bool   should_be_displayed;
+
+	if(!menu_context_construct_name_and_get_icon(m, top, &n, &ic, &should_be_displayed))
 		return NULL;
+
+	/* 
+	 * nodes marked as 'NoDisplay' (from .directory file) or '<Deleted>' (from applications.menu) must
+	 * be processed as ordinary nodes, since this operation will correctly setup allocated
+	 * (<OnlyUnallocated> and <NotOnlyUnallocated>) entries
+	 */
+	if(m->deleted)
+		should_be_displayed = false;
 
 	/* assure we got name here; icon can be NULL */
 	E_RETURN_VAL_IF_FAIL(n != NULL, NULL);
@@ -582,14 +565,23 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	MenuContext *ctx = new MenuContext;
 	ctx->name = n;
 	ctx->icon = ic;
+	ctx->display_it = should_be_displayed;
 
 	//E_DEBUG("+ Menu: %s %i\n", ctx->name->c_str(), m->include_rules.size());
 
-	/* fill MenuContext items */
-	menu_context_apply_include_rules(ctx, m, top, m->include_rules);
+	/* fill MenuContext items, depending on what list was passed */
+	if(all_unallocated) {
+		apply_include_rules(ctx, *all_unallocated, m->include_rules);
+	} else {
+		apply_include_rules(ctx, m->desk_files, m->include_rules);
+		/* check the rules for top list, but make sure we are not applying them on the same node again */
+		if(m != top)
+			apply_include_rules(ctx, top->desk_files, m->include_rules);
+	}
 
 	/* pop filled MenuContext items if match the rule */
-	menu_context_apply_exclude_rules(ctx, m, m->exclude_rules);
+	apply_exclude_rules(ctx->items, m->exclude_rules);
+
 	//E_DEBUG("- Menu: %s %i\n", ctx->name->c_str(), ctx->items.size());
 	
 	/* sort entries via their full names */
@@ -597,14 +589,11 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 	
 	/* process submenus */
 	if(!m->submenus.empty()) {
-		/* sort submenus via menu names */
-		m->submenus.sort(menu_parse_context_sorter);
-
 		MenuParseListIt mit = m->submenus.begin(), mit_end = m->submenus.end();
 		MenuContext *sub_ctx;
 
 		for(; mit != mit_end; ++mit) {
-			sub_ctx = menu_parse_context_to_menu_context(*mit, top);
+			sub_ctx = menu_parse_context_to_menu_context(*mit, top, all_unallocated);
 
 			if(sub_ctx)
 				ctx->submenus.push_back(sub_ctx);
@@ -625,18 +614,51 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 static void menu_context_delete(MenuContext *c) {
 	E_RETURN_IF_FAIL(c != NULL);
 
-	delete c->name;
-	delete c->icon;
-
-	c->items.clear();
-
 	if(!c->submenus.empty()) {
 		MenuContextListIt it = c->submenus.begin(), it_end = c->submenus.end();
 		for(; it != it_end; ++it)
 			menu_context_delete(*it);
 	}
 
+	c->items.clear();
+	delete c->name;
+	delete c->icon;
 	delete c;
+}
+
+static void menu_parse_context_list_get_all_unallocated_desk_files(MenuParseList &parse_list, DesktopEntryList &ret) {
+	if(parse_list.empty())
+		return;
+
+	MenuParseListIt     it = parse_list.begin(), it_end = parse_list.end();
+	DesktopEntryListIt  dit, dit_end;
+	MenuParseContext    *parse_ctx;
+
+	for(; it != it_end; ++it) {
+		parse_ctx = *it;
+
+		dit = parse_ctx->desk_files.begin();
+		dit_end = parse_ctx->desk_files.end();
+
+		for(; dit != dit_end; ++dit) {
+			if((*dit)->is_allocated() == false)
+				ret.push_back(*dit);
+		}
+
+		/* recurse */
+		menu_parse_context_list_get_all_unallocated_desk_files(parse_ctx->submenus, ret);
+	}
+}
+
+static void menu_context_list_sort(MenuContextList &lst) {
+	if(lst.empty())
+		return;
+
+	lst.sort(menu_context_sorter);
+
+	MenuContextListIt it = lst.begin(), it_end = lst.end();
+	for(; it != it_end; ++it)
+		menu_context_list_sort((*it)->submenus);
 }
 
 static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_list, 
@@ -648,7 +670,7 @@ static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_li
 
 	for(; it != it_end; ++it) {
 		parse_ctx = *it;
-		
+
 		/* remove duplicate id's */
 		desktop_entry_list_remove_duplicates(parse_ctx->desk_files);
 
@@ -656,11 +678,47 @@ static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_li
 		desktop_entry_list_load_all(parse_ctx->desk_files);
 
 		/* now convert it to usable menu node */
-		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx);
+		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx, NULL);
 
 		if(ctx)
 			ret.push_back(ctx);
 	}
+
+	/* now, pickup all unallocated items */
+	DesktopEntryList all_unallocated;
+	menu_parse_context_list_get_all_unallocated_desk_files(parse_list, all_unallocated);
+
+	/* 
+	 * second pass; process unallocated items, but put them in second list that will later be
+	 * merged; this is to preserve the order got in the first list
+	 */
+	MenuContextList unallocated_list;
+
+	for(it = parse_list.begin(); it != it_end; ++it) {
+		parse_ctx = *it;
+
+		/* now convert it to usable menu node */
+		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx, &all_unallocated);
+
+		if(ctx)
+			unallocated_list.push_back(ctx);
+	}
+
+	/* 
+	 * both list have the same root node, so we skip the first node and merge below it; the first node is 
+	 * top level <Menu> and is often only menu name and description
+	 */
+	E_RETURN_IF_FAIL(ret.size() == 1);
+	E_RETURN_IF_FAIL(unallocated_list.size() == 1);
+
+	MenuContext *head = ret.front(), *unallocated_head = unallocated_list.front();
+	MenuContextListIt uit = unallocated_head->submenus.begin(), uit_end = unallocated_head->submenus.end();
+
+	for(; uit != uit_end; ++uit)
+		head->submenus.push_back(*uit);
+
+	/* sort everthing at the end */
+	menu_context_list_sort(ret);
 }
 
 /* 
@@ -760,6 +818,9 @@ static void menu_context_list_dump(MenuContextList &lst) {
 	DesktopEntryListIt ds, de;
 
 	for(; it != it_end; ++it) {
+		if((*it)->display_it == false)
+			continue;
+
 		ds = (*it)->items.begin();
 		de = (*it)->items.end();
 
@@ -829,6 +890,9 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 	for(; it != it_end; ++it) {
 		cc = *it;
 
+		if(!cc->display_it)
+			continue;
+
 		mi[pos].text = cc->name->c_str();
 
 		/* every MenuContext is submenu for itself */
@@ -868,7 +932,7 @@ static unsigned int construct_edelib_menu(MenuContextList &lst, MenuItem *mi, un
 				mi[pos].text = (*ds)->get_name();
 				mi[pos].flags = 0;
 				
-				// E_DEBUG("  {%s item}\n", mi[pos].text);
+				//E_DEBUG("  {%s item}\n", mi[pos].text);
 
 				/* some default values that must be filled */
 				mi[pos].shortcut_ = 0;

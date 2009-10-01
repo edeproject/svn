@@ -47,18 +47,28 @@ static void close_cb(Fl_Widget*, void *b) {
 static void restore_cb(Fl_Widget*, void *b) {
 	TaskButton *bb = (TaskButton*)b;
 	wm_ede_restore_window(bb->get_window_xid());
+
+	netwm_set_active_window(bb->get_window_xid());
 	redraw_whole_panel(bb);
 }
 
 static void minimize_cb(Fl_Widget*, void *b) {
 	TaskButton *bb = (TaskButton*)b;
-	wm_set_window_state(bb->get_window_xid(), WM_STATE_ICONIC);
+
+	if(wm_get_window_state(bb->get_window_xid()) != WM_STATE_ICONIC) {
+		wm_set_window_state(bb->get_window_xid(), WM_STATE_ICONIC);
+		netwm_set_active_window(bb->get_window_xid());
+	}
+
 	redraw_whole_panel(bb);
 }
 
 static void maximize_cb(Fl_Widget*, void *b) {
 	TaskButton *bb = (TaskButton*)b;
+
+	netwm_set_active_window(bb->get_window_xid());
 	netwm_maximize_window(bb->get_window_xid());
+
 	redraw_whole_panel(bb);
 }
 

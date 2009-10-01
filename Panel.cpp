@@ -251,9 +251,11 @@ int Panel::handle(int e) {
 	switch(e) {
 		case FL_SHOW: {
 			int ret = PanelWindow::handle(e);
+			position(0, screen_h - h());
+
 			if(shown())
 				netwm_set_window_strut(this, 0, 0, 0, h());
-			position(0, screen_h - h());
+
 			return ret;
 		}
 
@@ -262,7 +264,7 @@ int Panel::handle(int e) {
 
 			if(clicked == this)
 				clicked = 0;
-			else if(clicked->takesevents())
+			else if(clicked && clicked->takesevents())
 				clicked->handle(e);
 
 			/* record push position for possible child drag */
@@ -320,5 +322,6 @@ void Panel::load_applets(void) {
 	mgr.load("./applets/pager/edepanel_pager.so");
 	mgr.load("./applets/clock/edepanel_clock.so");
 	mgr.load("./applets/taskbar/edepanel_taskbar.so");
+
 	mgr.fill_group(this);
 }
