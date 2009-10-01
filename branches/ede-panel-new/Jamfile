@@ -35,6 +35,8 @@ rule PanelApplet
 	LINKFLAGS on $(target) = -shared -rdynamic [ on $(target) return $(LINKFLAGS) ] ;
 	LINKLIBS  on $(target) = [ on $(target) return $(LINKLIBS) ] $(3) ;
 
+	InstallData $(EDE_PANEL_APPLETS_DIR) : $(target) ;
+
 	Clean clean : $(target) ;
 }
 
