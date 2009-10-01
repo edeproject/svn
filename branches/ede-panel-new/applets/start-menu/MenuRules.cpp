@@ -69,11 +69,6 @@ static void eval_with_stack(MenuRules *m, DesktopEntry *en, Stack &result_stack)
 		return;
 	}
 
-	if(m->rule_operator == MENU_RULES_OPERATOR_NOT) {
-		result_stack.push_front(false);
-		return;
-	}
-
 	if(m->rule_operator == MENU_RULES_OPERATOR_FILENAME) {
 		bool st = (m->data == en->get_id());
 		result_stack.push_front(st);
@@ -101,16 +96,20 @@ static void eval_with_stack(MenuRules *m, DesktopEntry *en, Stack &result_stack)
 		return;
 	}
 
-	if(m->rule_operator == MENU_RULES_OPERATOR_OR) {
+	/* operators 'not' and 'or' behaves much the same, except 'not' reverse the result additionally */
+	if(m->rule_operator == MENU_RULES_OPERATOR_OR || m->rule_operator == MENU_RULES_OPERATOR_NOT) {
 		StackIt it = result_stack.begin(), it_end = result_stack.end();
 
-		/* 'or' always evalutes to false */
+		/* 'or' and 'not' always evalutes to false */
 		bool st = false;
 
 		while(it != it_end) {
 			st |= *it;
 			it = result_stack.erase(it);
 		}
+
+		if(m->rule_operator == MENU_RULES_OPERATOR_NOT)
+			st = !st;
 
 		result_stack.push_front(st);
 		return;
@@ -124,9 +123,19 @@ bool menu_rules_eval(MenuRules *m, DesktopEntry *en) {
 	if(result_stack.size() == 1)
 		goto get_first;
 	else {
-		E_WARNING(E_STRLOC ": Stack size mismatch. Got %i elements\n", result_stack.size());
-		if(result_stack.size() < 0)
-			return false;
+		/* 
+		 * From the spec: "Each rule in a list of rules has a logical OR relationship, that is, desktop entries 
+		 * which  match any rule are included in the menu."
+		 */
+		bool result = false;
+
+		StackIt it = result_stack.begin(), it_end = result_stack.end();
+		while(it != it_end) {
+			result |= *it;
+			result_stack.erase(it);
+		}
+
+		return result;
 	}
 
 get_first:

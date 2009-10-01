@@ -91,7 +91,7 @@ static void init_atoms_once(void) {
 
 static int xevent_handler(int e) {
 	if(fl_xevent->type == PropertyNotify) {
-		int action = 0;
+		int action = -1;
 
 		E_DEBUG("==> %s\n", XGetAtomName(fl_display, fl_xevent->xproperty.atom));
 
@@ -105,8 +105,10 @@ static int xevent_handler(int e) {
 			action = NETWM_CHANGED_CURRENT_WORKAREA;
 		else if(fl_xevent->xproperty.atom == _XA_NET_ACTIVE_WINDOW)
 			action = NETWM_CHANGED_ACTIVE_WINDOW;
-		else if(fl_xevent->xproperty.atom == _XA_NET_WM_NAME || fl_xevent->xproperty.atom == XA_WM_NAME)
+		else if(fl_xevent->xproperty.atom == _XA_NET_WM_NAME || fl_xevent->xproperty.atom == XA_WM_NAME) {
+			E_DEBUG("XXXX\n");
 			action = NETWM_CHANGED_WINDOW_NAME;
+		}
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_VISIBLE_NAME)
 			action = NETWM_CHANGED_WINDOW_VISIBLE_NAME;
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_DESKTOP)
@@ -114,9 +116,9 @@ static int xevent_handler(int e) {
 		else if(fl_xevent->xproperty.atom == _XA_NET_CLIENT_LIST)
 			action = NETWM_CHANGED_WINDOW_LIST;
 		else
-			action = 0;
+			action = -1;
 
-		if(action && !callback_list.empty()) {
+		if(action >= 0 && !callback_list.empty()) {
 			Window xid = fl_xevent->xproperty.window;
 
 			/* TODO: locking here */
