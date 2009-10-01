@@ -562,7 +562,7 @@ static void menu_context_apply_exclude_rules(MenuContext *ctx,
 static void menu_context_delete(MenuContext *c);
 #endif
 
-static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, MenuParseContext *top, TiXmlNode *menu_node) {
+static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, MenuParseContext *top) {
 	E_RETURN_VAL_IF_FAIL(m != NULL, NULL);
 
 	if(m->deleted)
@@ -604,7 +604,7 @@ static MenuContext *menu_parse_context_to_menu_context(MenuParseContext *m, Menu
 		MenuContext *sub_ctx;
 
 		for(; mit != mit_end; ++mit) {
-			sub_ctx = menu_parse_context_to_menu_context(*mit, top, menu_node);
+			sub_ctx = menu_parse_context_to_menu_context(*mit, top);
 
 			if(sub_ctx)
 				ctx->submenus.push_back(sub_ctx);
@@ -640,7 +640,6 @@ static void menu_context_delete(MenuContext *c) {
 }
 
 static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_list, 
-														 TiXmlNode *head, 
 														 MenuContextList &ret)
 {
 	MenuParseListIt it = parse_list.begin(), it_end = parse_list.end();
@@ -657,7 +656,7 @@ static void menu_parse_context_list_to_menu_context_list(MenuParseList &parse_li
 		desktop_entry_list_load_all(parse_ctx->desk_files);
 
 		/* now convert it to usable menu node */
-		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx, head);
+		ctx = menu_parse_context_to_menu_context(parse_ctx, parse_ctx);
 
 		if(ctx)
 			ret.push_back(ctx);
@@ -723,17 +722,6 @@ static void menu_all_parse_lists_clear(MenuParseList &parse_list, MenuContextLis
 }
 
 static TiXmlNode *load_menu_file(TiXmlDocument &doc) {
-#if 0
-	//if(!doc.LoadFile("applets/start-menu/applications.menu")) {
-	//if(!doc.LoadFile("applications.menu")) {
-	if(!doc.LoadFile("/etc/xdg/menu/xfce-applications.menu")) {
-	//if(!doc.LoadFile("/etc/xfce/xdg/menus/xfce-applications.menu")) {
-	//if(!doc.LoadFile("/etc/kde/xdg/menus/applications.menu")) {
-		E_WARNING(E_STRLOC ": Can't load menu\n");
-		return NULL;
-	}
-#endif
-
 	char   *menu_prefix = getenv("XDG_MENU_PREFIX");
 	String  menu_file;
 
@@ -801,7 +789,7 @@ static void menu_all_parse_lists_load(MenuParseList &parse_list, MenuContextList
 	scan_menu_tag(elem, parse_list);
 
 	/* convert it to our list */
-	menu_parse_context_list_to_menu_context_list(parse_list, elem, content);
+	menu_parse_context_list_to_menu_context_list(parse_list, content);
 }
 
 void xdg_menu_dump_for_test_suite(void) {
