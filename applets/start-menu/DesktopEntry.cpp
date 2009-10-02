@@ -24,7 +24,6 @@ DesktopEntry::~DesktopEntry() {
 	delete comment;
 	delete icon;
 	delete exec;
-	delete try_exec;
 }
 
 void DesktopEntry::assign_path(const char *dir, const char *p, const char *basedir) {
@@ -98,9 +97,6 @@ bool DesktopEntry::load(void) {
 
 	if(df.exec(buf, sizeof(buf)))
 		exec = new String(buf);
-
-	if(df.try_exec(buf, sizeof(buf)))
-		try_exec = new String(buf);
 
 	return true;
 }
