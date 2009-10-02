@@ -240,8 +240,12 @@ void Panel::show(void) {
 		Fl::screen_xywh(X, Y, W, H);
 
 	resize(X, Y + H - DEFAULT_PANEL_H, W, DEFAULT_PANEL_H);
+
+	screen_x = X;
+	screen_y = Y;
 	screen_w = W;
 	screen_h = H;
+	screen_h_half = screen_h / 2;
 
 	do_layout();
 	window_xid_create(this, netwm_make_me_dock);
@@ -283,18 +287,16 @@ int Panel::handle(int e) {
 #endif
 				cursor(FL_CURSOR_MOVE);
 				/* are moving the panel; only vertical moving is supported */
-				int sh = screen_h / 2;
 
 				/* snap it to the top or bottom, depending on pressed mouse location */
-				if(Fl::event_y_root() <= sh && y() > sh) {
-					/* TODO: use area x and area y */
-					position(0, 0);
+				if(Fl::event_y_root() <= screen_h_half && y() > screen_h_half) {
+					position(screen_x, screen_y);
 					netwm_set_window_strut(this, 0, 0, h(), 0);
 				} 
 				
-				if(Fl::event_y_root() > sh && y() < sh) {
+				if(Fl::event_y_root() > screen_h_half && y() < screen_h_half) {
 					/* TODO: use area x and area y */
-					position(0, screen_h - h());
+					position(screen_x, screen_h - h());
 					netwm_set_window_strut(this, 0, 0, 0, h());
 				}
 			// }

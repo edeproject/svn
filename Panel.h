@@ -13,7 +13,7 @@ class Panel : public PanelWindow {
 private:
 	Fl_Widget *clicked;
 	int        sx, sy;
-	int        screen_w, screen_h;
+	int        screen_x, screen_y, screen_w, screen_h, screen_h_half;
 	bool       can_move_widgets;
 
 	AppletManager mgr;
@@ -21,7 +21,8 @@ private:
 	void do_layout(void);
 
 public:
-	Panel() : PanelWindow(300, 30), clicked(0), sx(0), sy(0), screen_w(0), screen_h(0), can_move_widgets(false) 
+	Panel() : PanelWindow(300, 30), clicked(0), sx(0), sy(0), 
+	screen_x(0), screen_y(0), screen_w(0), screen_h(0), screen_h_half(0), can_move_widgets(false) 
 	{ box(FL_UP_BOX); }
 
 	int  handle(int e);
