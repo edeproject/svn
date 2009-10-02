@@ -53,6 +53,19 @@ void menu_rules_delete(MenuRules *r) {
  * Rules are evaluated starting from the deepest one, and are much more like
  * lisp expressions. Each rule behaves like function, returning false or true and top function
  * gets applied on those results.
+ *
+ * TODO: this case will not work (KDE 3.5.x applications.menu):
+ * <And>
+ *   <Or>
+ *     <Category>c1</Category>
+ *     <Category>c2</Category>
+ *     <Category>c3</Category>
+ *   </Or>
+ *   <Not><Category>c4</Category></Not>
+ * </And>
+ *
+ * because due recrusion '<Not>...</Not>' result will be calculated inside '<Or>...</Or>' expression and
+ * '<And>' will receive the only one value.
  */
 static void eval_with_stack(MenuRules *m, DesktopEntry *en, Stack &result_stack) {
 	if(!m->subrules.empty()) {
