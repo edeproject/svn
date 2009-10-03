@@ -105,10 +105,8 @@ static int xevent_handler(int e) {
 			action = NETWM_CHANGED_CURRENT_WORKAREA;
 		else if(fl_xevent->xproperty.atom == _XA_NET_ACTIVE_WINDOW)
 			action = NETWM_CHANGED_ACTIVE_WINDOW;
-		else if(fl_xevent->xproperty.atom == _XA_NET_WM_NAME || fl_xevent->xproperty.atom == XA_WM_NAME) {
-			E_DEBUG("XXXX\n");
+		else if(fl_xevent->xproperty.atom == _XA_NET_WM_NAME || fl_xevent->xproperty.atom == XA_WM_NAME)
 			action = NETWM_CHANGED_WINDOW_NAME;
-		}
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_VISIBLE_NAME)
 			action = NETWM_CHANGED_WINDOW_VISIBLE_NAME;
 		else if(fl_xevent->xproperty.atom == _XA_NET_WM_DESKTOP)

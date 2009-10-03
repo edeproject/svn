@@ -55,10 +55,8 @@ static void restore_cb(Fl_Widget*, void *b) {
 static void minimize_cb(Fl_Widget*, void *b) {
 	TaskButton *bb = (TaskButton*)b;
 
-	if(wm_get_window_state(bb->get_window_xid()) != WM_STATE_ICONIC) {
+	if(wm_get_window_state(bb->get_window_xid()) != WM_STATE_ICONIC)
 		wm_set_window_state(bb->get_window_xid(), WM_STATE_ICONIC);
-		netwm_set_active_window(bb->get_window_xid());
-	}
 
 	redraw_whole_panel(bb);
 }
@@ -136,9 +134,8 @@ void TaskButton::display_menu(void) {
 	tooltip(NULL);
 
 	const MenuItem *item = menu_->popup(Fl::event_x(), Fl::event_y(), 0, 0, 0);
-	if(item && item->callback()) {
+	if(item && item->callback())
 		item->do_callback(this);
-	}
 
 	tooltip(t);
 }
