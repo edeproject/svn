@@ -5,6 +5,8 @@
 #include <edelib/Debug.h>
 #include <edelib/List.h>
 #include <edelib/WindowXid.h>
+#include <edelib/Resource.h>
+#include <edelib/Util.h>
 
 #include "Panel.h"
 #include "Netwm.h"
@@ -24,7 +26,10 @@
 #define MAX(x,y)  ((x) > (y) ? (x) : (y))
 
 EDELIB_NS_USING(list)
+EDELIB_NS_USING(Resource)
+EDELIB_NS_USING(String)
 EDELIB_NS_USING(window_xid_create)
+EDELIB_NS_USING(build_filename)
 
 typedef list<Fl_Widget*> WidgetList;
 typedef list<Fl_Widget*>::iterator WidgetListIt;
@@ -319,11 +324,34 @@ int Panel::handle(int e) {
 }
 
 void Panel::load_applets(void) {
-	mgr.load("./applets/start-menu/edepanel_start_menu.so");
-	mgr.load("./applets/quick-launch/edepanel_quick_launch.so");
-	mgr.load("./applets/pager/edepanel_pager.so");
-	mgr.load("./applets/clock/edepanel_clock.so");
-	mgr.load("./applets/taskbar/edepanel_taskbar.so");
+	/* FIXME: hardcoded order */
+	static const char *applets[] = {
+		"start_menu.so",
+		"quick_launch.so",
+		"pager.so",
+		"clock.so",
+		"taskbar.so",
+		0
+	};
+
+	String dir = Resource::find_data("panel-applets");
+	if(dir.empty())
+		return;
+
+	String tmp;
+	for(int i = 0; applets[i]; i++) {
+		tmp = build_filename(dir.c_str(), applets[i]);
+		mgr.load(tmp.c_str());
+	}
 
 	mgr.fill_group(this);
+
+#if 0
+	mgr.load("./applets/start-menu/start_menu.so");
+	mgr.load("./applets/quick-launch/quick_launch.so");
+	mgr.load("./applets/pager/pager.so");
+	mgr.load("./applets/clock/clock.so");
+	mgr.load("./applets/taskbar/taskbar.so");
+	mgr.fill_group(this);
+#endif
 }

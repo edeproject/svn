@@ -62,7 +62,8 @@ Taskbar::~Taskbar() {
 
 void Taskbar::create_task_buttons(void) {
 	/* erase all current elements */
-	clear();
+	if(children())
+		clear();
 
 	/* also current/prev storage */
 	curr_active = prev_active = NULL;
@@ -73,7 +74,7 @@ void Taskbar::create_task_buttons(void) {
 	Window *wins;
 	int     nwins = netwm_get_mapped_windows(&wins);
 
-	if(nwins) {
+	if(nwins > 0) {
 		TaskButton *b;
 		int   curr_workspace = netwm_get_current_workspace();
 		char *title;
@@ -90,6 +91,12 @@ void Taskbar::create_task_buttons(void) {
 				b = new TaskButton(0, 0, DEFAULT_CHILD_W, 25);
 				b->set_window_xid(wins[i]);
 				b->update_title_from_xid();
+
+				/* 
+				 * catch name changes 
+				 * TODO: put this in Netwm.{h,cpp} 
+				 */
+				XSelectInput(fl_display, wins[i], PropertyChangeMask | StructureNotifyMask);
 
 				b->callback((Fl_Callback*)button_cb, this);
 				add(b);

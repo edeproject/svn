@@ -35,12 +35,14 @@ StartMenu::StartMenu() : MenuBase(0, 0, 80, 25, "EDE"), mcontent(NULL) {
 
 	mcontent = xdg_menu_load();
 
-	/* skip the first item, since it often contains only one submenu */
-	if(mcontent->submenu()) {
-		MenuItem *mc = mcontent + 1;
-		menu(mc);
-	} else {
-		menu(mcontent);
+	if(mcontent) {
+		/* skip the first item, since it often contains only one submenu */
+		if(mcontent->submenu()) {
+			MenuItem *mc = mcontent + 1;
+			menu(mc);
+		} else {
+			menu(mcontent);
+		}
 	}
 }
 
