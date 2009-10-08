@@ -1,0 +1,17 @@
+Introduction
+============
+
+Equinox Desktop Environment or EDE is small desktop environment, built to be simple and fast.
+
+EDE has a separated components, so each of them can be built, installed and used independently. 
+Of course, the full power comes when they are combined together.
+
+One of the main goals for EDE is to make desktop environment simple for usage and as much as 
+possible productive. So, when you start it, it is already assumed you know where the things are. 
+This is accomplished with familliar look and feel without needs to learn how to start some application
+or how to shutdown environment or computer.
+
+It is based on http://www.fltk.org[FLTK] GUI library with addition of our 'edelib' library.
+
+EDE strives to be http://freedesktop.org[freedesktop.org] friendly following proposed standards. This 
+allows easier integration with other desktop environments, their components or data.
