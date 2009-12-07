@@ -1,0 +1,22 @@
+
+OPTIM = ;
+
+EDELIBDIR = /opt/ede ;
+
+SRC = ede-scriptbus.cpp sys.cpp string.cpp comm.cpp tinyscheme/scheme.c ;
+FLAGS = -Wall -g3 -I$(EDELIBDIR)/include -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
+
+ObjectC++Flags $(SRC) : $(FLAGS) ;
+ObjectCcFlags  $(SRC) : $(FLAGS) ;
+
+Main ede-scriptbus : $(SRC) ;
+LINKLIBS on ede-scriptbus = -L$(EDELIBDIR)/lib -ledelib_dbus 
+											   -ledelib_gui 
+											   -ledelib 
+											   -ldbus-1 
+											   -lfltk 
+											   -ldl 
+											   -lm 
+											   -lXext 
+											   -lX11 
+											   -lstdc++ ;
