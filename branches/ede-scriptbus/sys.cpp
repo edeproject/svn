@@ -63,7 +63,6 @@ static pointer s_clock(scheme* sc, pointer args) {
 	return mk_real(sc, (double)clock());
 }
 
-/* originaly 'random-next' sucked badly so this is, hopefully, a better replacement */
 static int seed_inited = 0;
 
 static pointer s_random(scheme* sc, pointer args) {
@@ -83,6 +82,35 @@ static pointer s_random(scheme* sc, pointer args) {
 
 	long v = sc->vptr->ivalue(a);
 	return mk_integer(sc, rand() % v);
+}
+
+/* to speed up some things */
+static pointer s_fast_foreach(scheme *sc, pointer args) {
+	if(args == sc->NIL)
+		return sc->F;
+
+	pointer proc, lst, item;
+
+	proc = sc->vptr->pair_car(args);
+	if(proc == sc->NIL || !sc->vptr->is_closure(proc))
+		return sc->F;
+
+	args = sc->vptr->pair_cdr(args);
+	lst = sc->vptr->pair_car(args);
+	if(lst == sc->NIL || !sc->vptr->is_pair(lst))
+		return sc->F;
+
+	while(1) {
+		item = sc->vptr->pair_car(lst);
+		if(item == sc->NIL)
+			break;
+
+		/* apply function */
+		scheme_call(sc, proc, _cons(sc, item, sc->NIL, 0));
+		lst = sc->vptr->pair_cdr(lst);
+	}
+
+	return sc->T;
 }
 
 void register_sys_functions(scheme* sc) {
@@ -109,4 +137,10 @@ void register_sys_functions(scheme* sc) {
 		sc->global_env,
 		sc->vptr->mk_symbol(sc, "random"),
 		sc->vptr->mk_foreign_func(sc, s_random));
+
+	sc->vptr->scheme_define(
+		sc,
+		sc->global_env,
+		sc->vptr->mk_symbol(sc, "fast-for-each"),
+		sc->vptr->mk_foreign_func(sc, s_fast_foreach));
 }

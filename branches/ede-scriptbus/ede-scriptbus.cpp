@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 				}
 				expr = argv[2];
 			} else {
-				printf("Unrecognized option. Use '%s --help' for options\n", argv[0]);
+				printf("Unrecognized option. Use 'ede-scriptbus --help' for options\n");
 				return 1;
 			}
 		}

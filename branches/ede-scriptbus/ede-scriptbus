@@ -1,0 +1,21 @@
+#!/bin/sh
+
+rlwrap_bin=`which rlwrap 2>/dev/null`
+
+script_bin="ede-scriptbus-bin"
+script_completions="completions"
+
+# intentionaly dumped '-' character, so names like 'query-xsettings' can be autocompleted
+break_chars="(){}[],+=&^%$#@;|\\"
+
+# if given some command, pass it directly to executable or invoke it with wrapper
+if [ "x$@" = "x" ]; then
+	if [ "x$rlwrap_bin" = "x" ]; then
+		echo "'rlwrap' not found; running interpreter without readline support..."
+		$script_bin
+	else
+		$rlwrap_bin -b $break_chars -f $script_completions $script_bin
+	fi
+else
+	$script_bin $@
+fi
