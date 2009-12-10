@@ -1,4 +1,5 @@
 clock
+exec
 fast-for-each
 flush-xsettings
 foreign-callback-call

@@ -3,17 +3,19 @@
 #include <stdlib.h>
 #include <time.h>
 #include <edelib/Missing.h>
+#include <edelib/Run.h>
 
 #include "tinyscheme/scheme-private.h"
 #include "tinyscheme/scheme.h"
 #include "sys.h"
 
+EDELIB_NS_USING(run_sync)
+
 extern char** environ;
 
 /*
  * (getenv <what>) => <string>
- * returns environment value for <what>; if <what> is not
- * given, returns a list of all environment key/value pairs
+ * returns environment value for <what>; if <what> is not given, returns a list of all environment key/value pairs
  */
 static pointer s_getenv(scheme* sc, pointer arg) {
 	if(arg == sc->NIL) {
@@ -38,6 +40,7 @@ static pointer s_getenv(scheme* sc, pointer arg) {
 	return sc->F;
 }
 
+/* (setenv var value) */
 static pointer s_setenv(scheme* sc, pointer args) {
 	if(args == sc->NIL)
 		return sc->F;
@@ -59,12 +62,14 @@ static pointer s_setenv(scheme* sc, pointer args) {
 	return sc->F;
 }
 
+/* (clock) */
 static pointer s_clock(scheme* sc, pointer args) {
 	return mk_real(sc, (double)clock());
 }
 
 static int seed_inited = 0;
 
+/* (random [optional-max]) */
 static pointer s_random(scheme* sc, pointer args) {
 	if(!seed_inited) {
 		srand(time(0));
@@ -113,6 +118,21 @@ static pointer s_fast_foreach(scheme *sc, pointer args) {
 	return sc->T;
 }
 
+/* (exec cmd) */
+static pointer s_exec(scheme* sc, pointer args) {
+	if(args == sc->NIL)
+		return sc->F;
+
+	pointer a = sc->vptr->pair_car(args);
+	if(a == sc->NIL || !sc->vptr->is_string(a)) {
+		/* TODO: this should be an error */
+		return sc->F;
+	}
+
+	const char *cmd = sc->vptr->string_value(a);
+	return mk_integer(sc, run_sync(cmd));
+}
+
 void register_sys_functions(scheme* sc) {
 	sc->vptr->scheme_define(
 		sc,
@@ -143,4 +163,10 @@ void register_sys_functions(scheme* sc) {
 		sc->global_env,
 		sc->vptr->mk_symbol(sc, "fast-for-each"),
 		sc->vptr->mk_foreign_func(sc, s_fast_foreach));
+
+	sc->vptr->scheme_define(
+		sc,
+		sc->global_env,
+		sc->vptr->mk_symbol(sc, "exec"),
+		sc->vptr->mk_foreign_func(sc, s_exec));
 }
