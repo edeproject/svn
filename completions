@@ -12,6 +12,8 @@ random
 set-xsettings
 setenv
 string-split
+wm-get-window-list
+wm-get-window-title
 
 
 *colon-hook*

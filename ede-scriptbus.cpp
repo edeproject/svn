@@ -7,6 +7,7 @@
 #include "sys.h"
 #include "comm.h"
 #include "string.h"
+#include "wm.h"
 
 static void help(void) {
 	puts("Usage: ede-scriptbus [OPTIONS] [FILE]");
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
 	register_sys_functions(&sc);
 	register_communication_functions(&sc);
 	register_string_functions(&sc);
+	register_wm_functions(&sc);
 
 	if(!expr) {
 		/* load file or go into console */
