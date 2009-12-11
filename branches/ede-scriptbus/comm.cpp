@@ -89,6 +89,9 @@ static pointer s_query_xsettings_all(scheme *sc, pointer args) {
 						   "GetAll");
 
 	c.send_with_reply_and_block(msg, 1000, ret);
+	
+	if(ret.size() != 1)
+		return lst_ret;
 
 	EdbusMessage::const_iterator el = ret.begin();
 	if((*el).is_array()) {
