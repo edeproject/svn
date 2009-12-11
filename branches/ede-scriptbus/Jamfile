@@ -3,7 +3,7 @@ OPTIM = ;
 
 EDELIBDIR = /opt/ede ;
 
-SRC = ede-scriptbus.cpp sys.cpp string.cpp comm.cpp tinyscheme/scheme.c ;
+SRC = ede-scriptbus.cpp sys.cpp wm.cpp string.cpp comm.cpp tinyscheme/scheme.c ;
 FLAGS = -Wall -g3 -I$(EDELIBDIR)/include -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include ;
 
 ObjectC++Flags $(SRC) : $(FLAGS) ;
