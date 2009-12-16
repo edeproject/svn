@@ -11,6 +11,7 @@ query-xsettings-type
 random
 set-xsettings
 setenv
+string-find
 string-split
 wm-get-window-list
 wm-get-window-title
