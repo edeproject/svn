@@ -38,3 +38,20 @@
             (newline)
           )
  all)
+
+(display "\n*** some matching ***\n")
+
+(call/cc (lambda (return)
+          (for-each (lambda (id)
+                     (define title (wm-get-window-title id))
+                     (define pos   (string-find title "XMMS - "))
+
+                     (when pos
+                      (set! pos (+ pos (string-length "XMMS - ")))
+
+                      (display (substring title pos))
+                      (newline)
+                      (return))
+                    )
+           all)
+))
