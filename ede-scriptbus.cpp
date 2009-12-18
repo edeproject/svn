@@ -65,6 +65,16 @@ int main(int argc, char **argv) {
 	register_string_functions(&sc);
 	register_wm_functions(&sc);
 
+	/* construct *args* */
+	pointer args = sc.NIL;
+	for(int i = 0; i < argc; i++) {
+		pointer value = mk_string(&sc, argv[i]);
+		args = cons(&sc, value, args);
+	}
+
+	args = scheme_reverse(&sc, args);
+	scheme_define(&sc, sc.global_env, mk_symbol(&sc, "*args*"), args);
+
 	if(!expr) {
 		/* load file or go into console */
 		if(!fin) {
