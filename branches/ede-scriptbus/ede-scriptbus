@@ -9,7 +9,7 @@ script_completions="completions"
 break_chars="(){}[],+=&^%$#@;|\\"
 
 # if given some command, pass it directly to executable or invoke it with wrapper
-if [ "x$@" = "x" ]; then
+if [ $# -eq 0 ]; then
 	if [ "x$rlwrap_bin" = "x" ]; then
 		echo "'rlwrap' not found; running interpreter without readline support..."
 		$script_bin
@@ -17,5 +17,5 @@ if [ "x$@" = "x" ]; then
 		$rlwrap_bin -b $break_chars -f $script_completions $script_bin
 	fi
 else
-	$script_bin $@
+	$script_bin "$@"
 fi
