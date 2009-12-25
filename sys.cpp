@@ -3,13 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <edelib/Missing.h>
-#include <edelib/Run.h>
 
 #include "tinyscheme/scheme-private.h"
 #include "tinyscheme/scheme.h"
 #include "sys.h"
-
-EDELIB_NS_USING(run_sync)
 
 extern char** environ;
 
@@ -118,7 +115,7 @@ static pointer s_fast_foreach(scheme *sc, pointer args) {
 	return sc->T;
 }
 
-/* (exec cmd) */
+/* (exec cmd) => (output list) */
 static pointer s_exec(scheme* sc, pointer args) {
 	if(args == sc->NIL)
 		return sc->F;
@@ -130,7 +127,31 @@ static pointer s_exec(scheme* sc, pointer args) {
 	}
 
 	const char *cmd = sc->vptr->string_value(a);
-	return mk_integer(sc, run_sync(cmd));
+	FILE *fd = popen(cmd, "r");
+	if(!fd)
+		return sc->F;
+
+	pointer lst = sc->NIL;
+	char    buf[256];
+	int     len;
+
+	while(fgets(buf, sizeof(buf), fd)) {
+		len = strlen(buf);
+
+		/* remove appended newline */
+		if(len > 1 && buf[len - 1] == '\n') {
+			buf[len - 1] = '\0';
+			len--;
+		} else {
+			/* do not append empty lines or possible newlines */
+			continue;
+		}
+
+		lst = cons(sc, mk_counted_string(sc, buf, len), lst);
+	}
+
+	pclose(fd);
+	return scheme_reverse(sc, lst);
 }
 
 void register_sys_functions(scheme* sc) {
