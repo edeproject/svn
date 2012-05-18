@@ -1,0 +1,186 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2000-2007 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+# jam by default set 711 for executable files which is
+# too restrictive disabling shell scripts to be excuted.
+# Here I'm changing it to default used
+EXEMODE = 755 ;
+
+# MakeInstallPrivate [location-dir] : [targets] : [opt-file-mode] : [opt-chown] : [opt-chgrp] ;
+rule MakeInstallPrivate
+{
+	local i t s ;
+	local dir ;
+
+	# use DESTDIR as make use it and is targeted for packagers primarly; FDirName is not used since
+	# it do not understainds external variables well
+	if $(DESTDIR) {
+		dir = $(DESTDIR)$(1) ;
+	} else {
+		dir = $(1) ;
+	}
+
+	MkDir $(dir) ;
+
+	# This was pain-in-the-ass to set up (bad docs)
+	# but this is the shortest possible explaination of it:
+	# files must be gristed (or foo/foo will not be build) and _after_
+	# that apply SEARCH on it, consulting SUBDIR. Otherwise
+	# known targets will be compiled, but unknown (icons etc.) will not
+	# be recognized as installable entity.
+	s = [ FGristFiles $(2) ] ;
+	SEARCH on $(s) = $(SUBDIR) ;
+
+	for i in $(s) {
+		t = $(i:BSR=$(dir):G=installed) ;
+		LocalDepends $(t) : $(i) ;
+		LocalDepends $(t) : $(dir) ;
+
+		LocalDepends install : $(t) ;
+		LocalClean uninstall : $(t) ;
+
+		Install1 $(t) : $(i) ;
+
+		if $(3) {
+			MODE on $(t) = $(3) ;
+			Chmod $(t) ;
+		}
+
+		if $(4) {
+			OWNER on $(t) = $(4) ;
+			Chown $(t) ;
+		}
+
+		if $(5) {
+			GROUP on $(t) = $(5) ;
+			Chgrp $(t) ;
+		}
+	}
+}
+
+# InstallAny [location-dir] : [targets] : [opt-file-mode] : [opt-chown] : [opt-chgrp] ;
+# Install [targets] and [location-dir] directory. If directory does not exists, it will
+# be created (the same applies for it's parents).
+# [opt-file-mode], if given, is mode for installed files, which can be EXEMODE, FILEMODE or manually
+# supplied one (chmod will be called). [opt-chown], if given, will run chown with given
+# name and change owner of installed targets. [opt-chgrp], if given, will run chgrp and change
+# group of installed targets.
+rule InstallAny
+{
+	MakeInstallPrivate $(1) : $(2) : $(3) : $(4) : $(5) ;
+}
+
+# InstallProgram [location-dir] : [targets] : [opt-chown] : [opt-chgrp] ;
+rule InstallProgram
+{
+	MakeInstallPrivate $(1) : $(2) : $(EXEMODE) : $(3) : $(4) ;
+}
+
+# InstallData [location-dir] : [targets] : [opt-chown] : [opt-chgrp] ;
+rule InstallData
+{
+	MakeInstallPrivate $(1) : $(2) : $(FILEMODE) : $(3) : $(4) ;
+}
+
+# InstallEdeProgram [targets] ;
+rule InstallEdeProgram
+{
+	InstallProgram $(EDE_BIN_DIR) : $(<) ;
+}
+
+# InstallEdeIcons [app-dir:] [targets] ;
+rule InstallEdeIcons
+{
+	if $(2) {
+		InstallData [ FDirName $(EDE_ICON_DIR) $(1) ] : $(2) ;
+	} else {
+		InstallData $(EDE_ICON_DIR) : $(1) ;
+	}
+}
+
+# InstallEdeConfigFiles [targets] ;
+rule InstallEdeConfigFiles
+{
+	InstallData $(EDE_CONFIG_DIR) : $(<) ;
+}
+
+# InstallEdeTips [targets] ;
+rule InstallEdeTips
+{
+	InstallData $(EDE_TIPS_DIR) : $(<) ;
+}
+
+# InstallEdeMenu [targets] ;
+rule InstallEdeMenu [targets]
+{
+	InstallData $(EDE_MENU_DIR) : $(<) ;
+}
+
+# InstallEdeMimeFiles [targets] ;
+# Installs XDG mime files and run update-mime-database
+rule InstallEdeMimeFiles
+{
+	# First check if we have 'update-mime-database' command
+	# TODO: this should be set globaly
+	local matches = [ Glob $(PATH) : update-mime-database ] ;
+
+	if ! $(matches) {
+		return ;
+	} else {
+		local update_cmd pakdir ;
+
+		update_cmd = $(matches[1]) ;
+
+		# Files must be instaled in $(EDE_MIME_DIR)/packages or
+		# update-mime-database will not see it
+		pakdir = [ FDirName $(EDE_MIME_DIR) packages ] ;
+		InstallData $(pakdir) : $(<) ;
+
+		MIME_UPDATE_DATABASE = $(update_cmd) ;
+
+		# Shut up jam warning
+		NotFile $(EDE_MIME_DIR) ;
+
+		# Call update-mime-database after install/uninstall
+		# Just hoping this will be executed after files are copied/removed...
+		MimeUpdater install : $(EDE_MIME_DIR) ;
+		MimeUpdater uninstall : $(EDE_MIME_DIR) ;
+	}
+}
+
+# InstallEdeDoc [targets] ;
+# Installs targets to EDE_DOC_DIR directory
+rule InstallEdeDoc
+{
+	InstallData $(EDE_DOC_DIR) : $(1) ;
+}
+
+# InstallDbusService [targets] ;
+# Installs D-BUS service targets to D-BUS known directory
+rule InstallDbusService
+{
+	InstallData $(DBUS_SERVICE_DIR) : $(1) ;
+}
+
+# make sure the file was deleted first; if not, some re-installed objects (e.g. plugins)
+# will cause app to crash
+actions Install1
+{
+	$(RM) "$(<)"
+	$(CP) "$(>)" "$(<)"
+}
+
+actions updated together MimeUpdater
+{
+	$(MIME_UPDATE_DATABASE) "$(>)"
+}
+
+NotFile install uninstall ;
+Always install uninstall ;

@@ -1,0 +1,79 @@
+#!/bin/sh
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2007-2009 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+# Main script responsible for starting and setting needed environment parts.
+# Details about XDG_XXX data and how they are set is at:
+# http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
+
+PREFIX="@prefix@"
+SYSCONFDIR="@my_sysconfdir@"
+
+if [ "x$XDG_DATA_HOME" = "x" ]; then
+	XDG_DATA_HOME="$HOME/.local/share"
+fi
+
+if [ "x$XDG_CONFIG_HOME" = "x" ]; then
+	XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+if [ "x$XDG_CACHE_HOME" = "x" ]; then
+	XDG_CACHE_HOME="$HOME/.cache"
+fi
+
+if [ "x$XDG_DATA_DIRS" = "x" ]; then
+	XDG_DATA_DIRS="/usr/local/share:/usr/share:$PREFIX/share"
+fi
+
+if [ "x$XDG_CONFIG_DIRS" = "x" ]; then
+	XDG_CONFIG_DIRS="$SYSCONFDIR/xdg"
+fi
+
+# prefix for applications.menu
+if [ "x$XDG_MENU_PREFIX" = "x" ]; then
+	XDG_MENU_PREFIX="ede-"
+fi
+
+[ -d $XDG_DATA_HOME ] || mkdir -p $XDG_DATA_HOME
+[ -d $XDG_CONFIG_HOME ] || mkdir -p $XDG_CONFIG_HOME
+[ -d $XDG_CACHE_HOME ] || mkdir -p $XDG_CACHE_HOME
+
+export XDG_DATA_HOME
+export XDG_CONFIG_HOME
+export XDG_CACHE_HOME
+export XDG_DATA_DIRS
+export XDG_CONFIG_DIRS
+export XDG_MENU_PREFIX
+
+PATH=$PATH:$PREFIX:$PREFIX/bin
+export PATH
+
+userresources=$HOME/.Xdefaults
+sysresources=/usr/X11R6/lib/X11/xinit/.Xresources
+
+if [ -f $sysresources ]; then
+	xrdb -merge $sysresources
+fi
+
+if [ -f $userresources ]; then
+	xrdb -merge $userresources
+fi
+
+# set background inside X
+XSETROOT=`which xsetroot 2> /dev/null`
+if [ "$XSETROOT" ]; then
+	$XSETROOT -solid black
+fi
+
+# remove leftovers if evoke crashed
+rm -f /tmp/.evoke.lock
+
+# start the session
+evoke --startup

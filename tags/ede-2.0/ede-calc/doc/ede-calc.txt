@@ -1,0 +1,7 @@
+ede-calc documentation
+======================
+
+ede-calc is small calculator with scientific functions. It is based on
+modified flCalc by Yves Usson.
+
+image:images/ede-calc.jpg[ede-calc]

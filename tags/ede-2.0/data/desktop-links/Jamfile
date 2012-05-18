@@ -1,0 +1,20 @@
+#
+# $Id$
+#
+# Part of Equinox Desktop Environment (EDE).
+# Copyright (c) 2009 EDE Authors.
+#
+# This program is licensed under terms of the 
+# GNU General Public License version 2 or newer.
+# See COPYING for details.
+
+SubDir TOP data desktop-links ;
+
+actions quietly existing InstallIfEmpty
+{
+	./$(>)/install-in-desktop-dir.sh
+}
+
+# use 'all' pseudotarget not 'install' because 'install' will be often run as superuser, installing 
+# data in superuser directory, not user directory
+InstallIfEmpty all : $(SUBDIR) ;

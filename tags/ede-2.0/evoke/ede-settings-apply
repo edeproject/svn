@@ -1,0 +1,7 @@
+#!/bin/sh
+# Apply common settings at EDE startup. This script should not be called manually; 
+# it is called from evoke.
+
+ede-bell-conf --apply
+ede-keyboard-conf --apply
+edelib-update-font-cache

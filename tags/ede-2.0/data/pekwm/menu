@@ -1,0 +1,4 @@
+# Menu config for pekwm
+
+# Variables
+INCLUDE = "vars"
