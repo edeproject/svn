@@ -1,0 +1,36 @@
+<% (define *page-title* "desktop environment") %>
+<%include header.html %>
+    <div class="row">
+      <div class="span4">
+        <p style="font-size: 110%;">
+          EDE is small desktop environment built to be responsive, light in resource usage and to have
+          familiar look and feel. It runs on Linux, *BSD, Solaris, Minix, Zaurus and even on XBox.
+        </p>
+        <br/>
+        <p>
+          <a class="btn btn-success btn-large" href="http://equinox-project.org/wiki/Download">Download version 2.0</a>
+        </p>
+        <p>
+          or you can <a href="http://sourceforge.net/projects/ede/files">browse</a> for older releases.
+        </p>
+      </div>
+
+      <div class="span8" style="text-align: center;">
+        <img src="<% (site-media {img/main.png}) %>" />
+      </div>
+    </div> <br/><br/>
+
+    <div class="row">
+      <div class="span6">
+        <div class="alert alert-info">
+          <strong>News:</strong> <a href="/news"><?news-title?></a>
+        </div>
+      </div>
+
+      <div class="span6">
+        <div class="alert alert-info">
+          <strong>Blog:</strong> <a href="<?devlog-item-link?>"><?devlog-item?></a>
+        </div>
+      </div>
+    </div>
+<%include footer.html %>

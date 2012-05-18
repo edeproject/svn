@@ -1,0 +1,7 @@
+<% (define *page-title* "- news archive") %>
+<% (define *template-custom-css* "css/news.css") %>
+<%include header.html %>
+<h2>News archive</h2><br/>
+<% (news->html *page-news*) %>
+<br/>
+<%include footer.html %>

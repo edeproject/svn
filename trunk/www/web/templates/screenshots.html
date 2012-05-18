@@ -1,0 +1,151 @@
+<%
+ (define *page-title* "- screenshots")
+ (define *template-custom-css* "css/screenshots.css")
+%>
+<%include header.html %>
+<h2>Screenshots</h2><br/>
+<div class="gallery">
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>2.0 Beta screenshots (with old window manager)</h4>
+  <li class="span2">
+    <a href="<% (site-media {screenshots/20b_shot1.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_20b_shot1.png}) %>" alt="th_20b_shot1.png">
+    </a>
+  </li>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/20b_shot2.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_20b_shot2.png}) %>" alt="th_20b_shot2.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>EDE on Minix 3 and sXb (Slackware based distro for Xbox)</h4>
+  <li class="span2">
+    <a href="<% (site-media {screenshots/minix3.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_minix3.png}) %>" alt="th_minix3.png">
+    </a>
+  </li>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/sxb.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_sxb.png}) %>" alt="th_sxb.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>1.0.2 screenshots with xft support</h4>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot_xft.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot_xft.png}) %>" alt="th_102shot_xft.png">
+    </a>
+  </li>
+	
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot_xft1.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot_xft1.png}) %>" alt="th_102shot_xft1.png">
+    </a>
+  </li>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot_xft2.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot_xft2.png}) %>" alt="th_102shot_xft2.png">
+    </a>
+  </li>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot_xft3.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot_xft3.png}) %>" alt="th_102shot_xft3.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>1.0.2 version shots without xft</h4>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot.png}) %>" alt="th_102shot.png">
+    </a>
+  </li>
+	
+  <li class="span2">
+    <a href="<% (site-media {screenshots/102shot1.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_102shot1.png}) %>" alt="th_102shot1.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>Shots from 1.0.1 version</h4>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/101shot.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_101shot.png}) %>" alt="th_101shot.png">
+    </a>
+  </li>
+	
+  <li class="span2">
+    <a href="<% (site-media {screenshots/101shot1.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_101shot1.png}) %>" alt="th_101shot1.png">
+    </a>
+  </li>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/101shot2.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_101shot2.png}) %>" alt="th_101shot2.png">
+    </a>
+  </li>
+	
+  <li class="span2">
+    <a href="<% (site-media {screenshots/101shot3.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_101shot3.png}) %>" alt="th_101shot3.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+ <ul class="thumbnails">
+  <div class="row">
+  <h4>Some screenshots from old 1.0 version</h4>
+
+  <li class="span2">
+    <a href="<% (site-media {screenshots/10shot.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_10shot.png}) %>" alt="th_10shot.png">
+    </a>
+  </li>
+	
+  <li class="span2">
+    <a href="<% (site-media {screenshots/10shot1.png}) %>" class="thumbnail">
+      <img src="<% (site-media {screenshots/th_10shot1.png}) %>" alt="th_10shot1.png">
+    </a>
+  </li>
+
+  </div>
+ </ul>
+ <br />
+
+</div> <!-- gallery -->
+<%include footer.html %>
