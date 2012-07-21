@@ -1,7 +1,7 @@
 [General]
 # what version this config requires; if is larger than the current script, the script will
 # report it and quit (optional)
-requires = 1.0
+requires = 1.2
 
 # url for patches (mandatory)
 patches = http://equinox-project.org/patches
@@ -24,27 +24,12 @@ checksum = "acb1a82ac79ee2000bf50b204d81ab89"
 # patch name for this module; downloaded from 'patches/patch'
 # patch = 
 
-# if given, configure will not be run
-# no_configure =
-
-# flags for configure script
-# configure_flags = 
-
-# configure command (default is ./configure)
-# configure_cmd =
-
-# compilation command (default is make)
-# compile_cmd =
-
-# install command (default is 'make install')
-# install_cmd =
-
-# if found in PATH, module will not be compiled
-#  skip_if_found = 
+# building in form of sequence of commands
+build = ["./configure", "make", "make install"]
 
 
 [efltk]
 package  = "efltk-2.0.6.tar.bz2"
 checksum = "125c1deade9da94453758fa3cdac1c6a"
 patch    = "gcc432.patch"
-configure_flags = " --disable-unixODBC --disable-mysql"
+build    = ["./configure --disable-unixODBC --disable-mysql", "make", "make install"]

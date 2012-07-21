@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # 
-# EDE installer from single script
+# EDE installer from a single script
 # Copyright (C) 2005-2012 Sanel Zukan
 # 
 # This program is free software; you can redistribute it and/or
@@ -27,7 +27,7 @@ import ConfigParser
 import tarfile
 
 __author__  = "Sanel Zukan <karijes@users.sourceforge.net>"
-__version__ = "1.0"
+__version__ = "1.1"
 
 # from where to download config files
 netinstall_cfg_url = "http://equinox-project.org/netinstall-configs"
@@ -35,6 +35,23 @@ netinstall_cfg_url = "http://equinox-project.org/netinstall-configs"
 # some mutable globals
 mirrors_url = []
 patches_url = None
+
+class NetinstallConfigParser(ConfigParser.ConfigParser):
+	"""ConfigParser with support for lists inside values, e.g:
+	[section]
+	key = [1, 2, 3, 4]
+	"""
+	def getlist(self, section, option):
+		"""Return a list of elements from given key. Note that splitting will be done by ',', no matter
+		if string was quoted or not.
+		"""
+		value = self.get(section, option)
+		if (value[0] == "[") and (value[-1] == "]"):
+			elements = value[1:-1].split(",")
+			elements = map(lambda x: x.strip().strip('"'), elements)
+			return elements
+		else:
+			raise ConfigParser.ParsingError("Expected list as value in '%s' expression" % value)
 
 class Module:
 	"""The class that represents each item that will be downloaded, compiled and installed."""
@@ -44,32 +61,24 @@ class Module:
 		self.checksum = None
 		self.patch = None
 		self.url = None
-		self.configure_flags = None
-		self.no_configure = False
 
 		# module will not be compiled if this executable was found
 		self.skip_if_found = False
 
 		# default
-		self.configure_cmd = "./configure"
-		self.compile_cmd   = "make"
-		self.install_cmd   = "make install"
+		self.build_cmds = ["./configure", "make", "make install"]
 
 	def print_details(self):
 		"""Display module details."""
-		print "name              : %s" % self.name
-		print "archive           : %s" % self.package
-		print "checksum          : %s" % self.checksum
-		print "patch             : %s" % self.patch
-		print "configure flags   : %s" % self.configure_flags
-		print "configure command : %s" % self.configure_cmd
-		print "compile command   : %s" % self.compile_cmd
-		print "install command   : %s" % self.install_cmd
+		print "name     : %s" % self.name
+		print "archive  : %s" % self.package
+		print "checksum : %s" % self.checksum
+		print "patch    : %s" % self.patch
+		print "build    : %s" % self.build_cmds
 
 	def print_short_info(self):
 		"""Display module short info."""
 		print " %s (%s)" % (self.name, self.package)
-
 
 def do_message(msg, is_head = False):
 	"""Prints a message."""
@@ -148,7 +157,8 @@ def fetch_and_parse_config(config_name, is_local):
 		path = "%s/%s" % (netinstall_cfg_url, config_name)
 		download_from(path, config_name, False)
 
-	config = ConfigParser.ConfigParser()
+	#config = ConfigParser.ConfigParser()
+	config = NetinstallConfigParser()
 
 	try:
 		config.read(config_name)
@@ -204,20 +214,8 @@ def fetch_and_parse_config(config_name, is_local):
 			m.checksum = config.get(i, "checksum").strip('"')
 
 		# optional keys
-		if config.has_option(i, "no_configure"):
-			m.no_configure = config.getboolean(i, "no_configure")
-
-		if config.has_option(i, "configure_flags"):
-			m.configure_flags = config.get(i, "configure_flags").strip('"')
-
-		if config.has_option(i, "configure_cmd"):
-			m.configure_cmd = config.get(i, "configure_cmd ").strip('"')
-
-		if config.has_option(i, "compile_cmd"):
-			m.compile_cmd = config.get(i, "compile_cmd").strip('"')
-
-		if config.has_option(i, "install_cmd"):
-			m.install_cmd = config.get(i, "install_cmd").strip('"')
+		if config.has_option(i, "build"):
+			m.build_cmds = config.getlist(i, "build")
 
 		if config.has_option(i, "skip_if_found"):
 			m.skip_if_found = config.get(i, "skip_if_found").strip('"')
@@ -225,8 +223,7 @@ def fetch_and_parse_config(config_name, is_local):
 		if config.has_option(i, "url"):
 			m.url = config.get(i, "url").strip('"')
 
-		# this depends on global 'patches' key; if not existing, from where to fetch
-		# the patches then ;)
+		# this depends on global 'patches' key; if not existing, from where to fetch the patches then ;)
 		if config.has_option(i, "patch"):
 			if not patches_url:
 				do_error("Module '%s' needs to be patched, but global patches url is not given" % i)
@@ -375,28 +372,18 @@ def extract_compile_and_install_module(module):
 
 	# top directory, so we know how to return
 	top_dir = os.getcwd()
+
 	# go in this directory
 	os.chdir(dirname)
 
-	do_message("Compiling %s..." % module.name, True)
+	do_message("Building %s..." % module.name, True)
 
-	# run configure if 'no_configure' wasn't true
-	if not module.no_configure:
-		ret = os.system("%s %s" % (module.configure_cmd, module.configure_flags))
+	# execute commands in the order
+	for cmd in module.build_cmds:
+		ret = os.system(cmd)
 		if ret > 0:
-			do_error("configure failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
+			do_error("'%s' failed, receiving '%i' from the shell. Please check the output and see if something can be fixed" % (cmd, ret))
 
-	# compile
-	ret = os.system(module.compile_cmd)
-	if ret > 0:
-		do_error("Compilation failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
-
-	# install
-	ret = os.system(module.install_cmd)
-	if ret > 0:
-		do_error("Installation failed, reciving '%i' from the shell. There should be some output, right :-)" % ret)
-
-	# return where we started
 	os.chdir(top_dir)
 
 def check_prerequisites(check_for_root):
