@@ -1,0 +1,9 @@
+EDELIB_CFLAGS = "-I/opt/ede/include" ;
+EDELIB_LIBS   = "-L/opt/ede/lib -L/usr/local/lib -ledelib_gui -lfltk_images -lpng -lz -ljpeg -lfltk -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lm -lX11 -lXpm -ledelib -lstdc++" ; 
+
+SRC = eml-run.cpp ;
+
+ObjectC++Flags $(SRC) : $(EDELIB_CFLAGS) -g3 ;
+
+Main eml-run : $(SRC) ;
+LINKLIBS on eml-run = $(EDELIB_LIBS) ;
