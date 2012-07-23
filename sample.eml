@@ -1,0 +1,29 @@
+;; -*- mode: lisp -*-
+;; sample window with label and button
+
+(defun print-me ()
+  "Callback done when 'Save' button was pressed."
+  (println "Hellooooo"))
+
+(Widget :type  button
+		:id    "xbutton"
+		:label _"Save"
+		:x     10
+		:y     10
+		:w     90
+		:h     25
+		:callback print-me)
+
+(Widget :type label
+		:id   "xlabel"
+		:x    10
+		:y    (+ 5 (eml-get "xbutton" :y))
+		:w    (eml-get "xbutton" :w)
+		:h    (eml-get "xbutton" :h))
+
+(Widget :type edelib-window
+		:id   "xwindow"
+		:main #t
+		:add  (list "xbutton" "xlabel"))
+
+;(println (eml-get-all-ids))
