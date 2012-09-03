@@ -25,11 +25,10 @@ checksum = "acb1a82ac79ee2000bf50b204d81ab89"
 # patch = 
 
 # building in form of sequence of commands
-build = ["./configure", "make", "make install"]
-
+build = ["./configure --prefix=${PREFIX}", "make", "make install"]
 
 [efltk]
 package  = "efltk-2.0.6.tar.bz2"
 checksum = "125c1deade9da94453758fa3cdac1c6a"
 patch    = "gcc432.patch"
-build    = ["./configure --disable-unixODBC --disable-mysql", "make", "make install"]
+build    = ["./configure --disable-unixODBC --disable-mysql --prefix=${PREFIX}", "make", "make install"]
