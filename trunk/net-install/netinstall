@@ -35,6 +35,7 @@ netinstall_cfg_url = "http://equinox-project.org/netinstall-configs"
 # some mutable globals
 mirrors_url = []
 patches_url = None
+prefix_path = "/usr/local"
 
 class NetinstallConfigParser(ConfigParser.ConfigParser):
 	"""ConfigParser with support for lists inside values, e.g:
@@ -113,9 +114,26 @@ def in_path(file):
 			return True
 	return False
 
+def fix_command_if_needed(cmd):
+	"""
+	Scan command and do some work:
+	* if found ${PREFIX}, replace it with user/default prefix content
+	* if found 'export', cal python functions for exporting, since os.system can't do that
+	"""
+	def replace_variables(cmd):
+		return cmd.replace("${PREFIX}", prefix_path)	
+
+	if cmd.startswith("export "):
+		kv = cmd.split()[1]
+		k, v = kv.split("=")
+		os.environ[k] = replace_variables(v)
+		return None
+
+	return replace_variables(cmd)
+
 def download_from(url, save_as, show_progress = True):
 	"""Download from the given url."""
-	# don't import it at the top since it's slows startup time
+	# didn't put inport at the top since it's slows startup time
 	import urllib 
 
 	kbs = 1024
@@ -365,8 +383,12 @@ def extract_compile_and_install_module(module):
 
 	# do actual patching	
 	if module.patch:
+		if not in_path("patch"):
+			do_error("Fatal: this module needs to be patched but 'patch' tool can't be found. Please install 'patch' and run this script again.")
+
 		if not file_exists(module.patch):
-			do_error("Fatal: module patch was downloaded, but can't be found. Please try again")
+			do_error("Fatal: module patch was downloaded, but can't be found. Please try again.")
+
 		do_message("Patching %s..." % module.package, True)
 		os.system("patch -t -p0 < %s" % module.patch)
 
@@ -380,6 +402,10 @@ def extract_compile_and_install_module(module):
 
 	# execute commands in the order
 	for cmd in module.build_cmds:
+		cmd = fix_command_if_needed(cmd)
+		# continue, as 'fix_command_if_needed' already done some work
+		if(cmd == None): continue
+
 		ret = os.system(cmd)
 		if ret > 0:
 			do_error("'%s' failed, receiving '%i' from the shell. Please check the output and see if something can be fixed" % (cmd, ret))
@@ -388,9 +414,6 @@ def extract_compile_and_install_module(module):
 
 def check_prerequisites(check_for_root):
 	"""Mandatory things before we do anything useful."""
-	if not in_path("patch"):
-		do_error("Unable to find 'patch' tool. Please install it first and start this script again.")
-
 	if check_for_root and not os.getuid() == 0:
 		do_error("You must be a root to run this tool. Since some packages depends on each other", False)
 		do_error("they must be system wide installed. On other hand, if you are not sure what this script", False)
@@ -429,7 +452,9 @@ def help():
 	print ""
 	print "Options:" 
 	print "   --help                  this help" 
-	print "   --version               script version" 
+	print "   --version               show script version" 
+	print ""
+	print "   --prefix        [PATH]  set where all modules will be installed (e.g. /usr or /opt; default is /usr/local)"
 	print ""
 	print "   --module-info   [NAME]  display information about [NAME] module"
 	print "   --show-modules          list modules that will be compiled" 
@@ -437,7 +462,6 @@ def help():
 	print "   --config        [NAME]  use [NAME] as main config file (default is 'netinstall.cfg')"
 	print "   --config-local  [NAME]  use local config (only for debugging)"
 	print "   --no-root-check         do not check if script was started as root (only for debugging)"
-	print ""
 	print "   --list-configs          lists known config files with their description"
 	print ""
 	print "Report bugs at <http://bugs.equinox-project.org>."
@@ -454,7 +478,7 @@ def main():
 		try:
 			import getopt
 			opts, args = getopt.getopt(sys.argv[1:], "h", 
-					["help", "version", "show-modules", "module-info=", "build-dir=", "config=", 
+					["help", "version", "prefix=", "show-modules", "module-info=", "build-dir=", "config=", 
 						"config-local=", "no-root-check", "list-configs"])
 		except getopt.GetoptError, err:
 			print "Bad option; rerun 'netinstall --help' for command details"
@@ -482,6 +506,9 @@ def main():
 			elif o == "--list-configs":
 				list_config_files()
 				return
+			elif o == "--prefix":
+				global prefix_path
+				prefix_path = a
 
 	# do prerequisites first
 	check_prerequisites(check_for_root)
