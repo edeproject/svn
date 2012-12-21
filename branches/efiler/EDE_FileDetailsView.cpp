@@ -10,7 +10,7 @@
  * See COPYING for details.
  */
 
-
+#include <string>
 #include "EDE_FileView.h"
 
 #include <FL/Fl_Input.H>
@@ -21,6 +21,7 @@
 
 #include <edelib/Nls.h>
 #include <edelib/IconTheme.h>
+#include <edelib/IconLoader.h>
 #include <edelib/String.h>
 #include <edelib/Debug.h>
 
@@ -180,16 +181,16 @@ Fl_Image* FileDetailsView::try_icon(edelib::String icon_name) {
 
 fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 
-	icon_path = edelib::IconTheme::get(icon_name.c_str(), edelib::ICON_SIZE_TINY);
+	icon_path = edelib::IconLoader::get_path(icon_name.c_str(), edelib::ICON_SIZE_TINY);
 	if (icon_path!="")
 		return Fl_Shared_Image::get(icon_path.c_str());
 
 	// Because edelib doesn't resample icons, we need to do that manually
-	icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_SMALL);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_MEDIUM);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_LARGE);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_HUGE);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_ENORMOUS);
+	icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_SMALL);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_MEDIUM);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_LARGE);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_HUGE);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_ENORMOUS);
 
 	if (icon_path!="") {
 		Fl_Image *temp = Fl_Shared_Image::get(icon_path.c_str());
@@ -287,7 +288,7 @@ void FileDetailsView::update_path(const char* oldpath,const char* newpath) {
 	bucket.add(c);
 
 	// Update filename in list
-	char* oldline = strchr(text(row), column_char());
+	const char* oldline = strchr(text(row), column_char());
 	edelib::String line = fl_filename_name(newpath);
 	line += oldline;
 	text(row, line.c_str());

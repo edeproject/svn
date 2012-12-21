@@ -58,7 +58,7 @@ const char* twstrim(const char *string);
 // Finds in haystack any of strings contained in string "needles". The substrings
 // are divided with separator.
 // Not actually used...
-char* strstrmulti(const char *haystack, const char *needles, const char *separator);
+const char* strstrmulti(const char *haystack, const char *needles, const char *separator);
 
 /*! \fn const char* edelib::nice_size(double size)
 

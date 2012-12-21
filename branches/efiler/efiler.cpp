@@ -24,14 +24,15 @@
 #include "efiler.xpm"
 
 
-#include <Fl/Fl.H>
-#include <Fl/Fl_Menu_Bar.H>
-#include <Fl/Fl_Menu_Button.H>
-#include <Fl/filename.H>
-#include <Fl/Fl_File_Input.H> // location bar
+#include <FL/Fl.H>
+#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_Button.H>
+#include <FL/filename.H>
+#include <FL/Fl_File_Input.H> // location bar
 
 #include <edelib/Directory.h>
 #include <edelib/DirWatch.h>
+#include <edelib/FileTest.h>
 #include <edelib/IconTheme.h> // for setting the icon theme
 #include <edelib/MessageBox.h>
 #include <edelib/MimeType.h>
@@ -332,9 +333,9 @@ void loaddir(const char *path) {
 	int size=0;
 	dirent **files;
 	if (ignorecase) 
-		size = scandir(current_dir, &files, 0, ede_versioncasesort);
+		size = scandir(current_dir, &files, 0, (int(*)(const dirent**, const dirent**))ede_versioncasesort);
 	else
-		size = scandir(current_dir, &files, 0, ede_versionsort);
+		size = scandir(current_dir, &files, 0, (int(*)(const dirent**, const dirent**))ede_versionsort);
 
 	if (size<1) { // there should always be at least '.' and '..'
 		edelib::alert(_("Permission denied!"));
@@ -495,11 +496,11 @@ void file_open(const char* path, MailcapAction action) {
 	}
 
 	const char *o2 = tsprintf(opener,path); // opener should contain %s
-	fprintf (stderr, "run_program: %s\n", o2);
+	fprintf (stderr, "run_sync: %s\n", o2);
 
 	if (action == MAILCAP_EXEC) {
 		// File is an executable - run it
-		int k=edelib::run_program(path,false); fprintf(stderr, "Xretval: %d\n", k); 
+		int k=edelib::run_async(path); fprintf(stderr, "Xretval: %d\n", k); 
 	} else if (mime_resolver.type() == "application/x-executable") {
 		edelib::MessageBox mb;
 		mb.label(_("Warning"));
@@ -508,9 +509,9 @@ void file_open(const char* path, MailcapAction action) {
 		mb.add_button(_("&No"), edelib::MSGBOX_BUTTON_RETURN);
 		mb.add_button(_("&Yes"));
 		int k=mb.run();
-		if (k==1) k=edelib::run_program(path,false); fprintf(stderr, "Xretval: %d\n", k); 
+		if (k==1) k=edelib::run_async(path); fprintf(stderr, "retval: %d\n", k); 
 	} else if (opener) {
-		int k=edelib::run_program(o2,false); fprintf(stderr, "retval: %d\n", k); 
+		int k=edelib::run_async(o2); fprintf(stderr, "retval: %d\n", k); 
 	} else {
 		// Show "Open with..." dialog
 		ow->show(path, mime_resolver.type().c_str(), mime_resolver.type().c_str());
@@ -561,15 +562,18 @@ void open_cb(Fl_Widget*w, void*data) {
 // TODO: make a list of openers etc.
 void openwith_cb(Fl_Widget*, void*) {
 
-	const char* file = view->path(view->get_focus());
-	mime_resolver.set(file);
-	ow->show(file, mime_resolver.type().c_str(), mime_resolver.comment().c_str());
+	const char* file;
+	if(file = view->path(view->get_focus())){
+		mime_resolver.set(file);
+		ow->show(file, mime_resolver.type().c_str(), mime_resolver.comment().c_str());
+	}
+	// else show a dialog that nothing has been selected (or ignore)
 } 
 
 // File > New (efiler window)
 void new_cb(Fl_Widget*, void*) {
 	// FIXME: use program path, in case it's not in PATH
-	edelib::run_program(tsprintf("efiler %s",current_dir),false); 
+	edelib::run_async("efiler %s",current_dir); 
 }
 
 // File > Quit
@@ -672,7 +676,7 @@ void about_cb(Fl_Widget*, void*) { fprintf(stderr, "callback\n"); }
 // Help > About EDE
 void aboutede_cb(Fl_Widget*, void*) { 
 	// Sanel created an external app for About EDE called eabout
-	edelib::run_program("eabout", /*wait=*/false);
+	edelib::run_sync("ede-about", false);
 }
 
 
@@ -746,7 +750,7 @@ void location_input_cb(Fl_Widget*, void*) {
 
 		} else {
 			// sigh, we need to scandir....
-			char* k;
+			const char* k;
 			if (!(k=strrchr(loc,'/'))) return;
 			char* updir = strdup(loc);
 			updir[k-loc+1] = '\0';
@@ -842,25 +846,6 @@ void directory_change_cb(const char* dir, const char* what_changed, int flags, v
 	}
 	view->redraw();
 }
-
-
-// Function returns true if file is executable
-bool file_executable(const char* path) {
-	if (stat64(path,&stat_buffer)) return false; // error
-
-	static uid_t uid = stat_buffer.st_uid, uuid = getuid();
-	static gid_t gid = stat_buffer.st_gid, ugid = getgid();
-	mode_t mode = stat_buffer.st_mode;
-
-	if (S_ISDIR(mode)) return false;
-	
-	if (uid == uuid && mode&S_IXUSR) return true;
-	if (gid == ugid && mode&S_IXGRP) return true;
-	if (mode&S_IXOTH) return true;
-	return false;
-}
-
-
 
 /*-----------------------------------------------------------------
 	Load / store user preferences
@@ -1011,7 +996,7 @@ void context_cb(Fl_Widget*, void*) {
 		if (k->label()!=0 && strcmp(k->label(),_("Pri&nt"))==0)
 			if (actions&MAILCAP_PRINT) k->show(); else k->hide();
 		if (k->label()!=0 && strcmp(k->label(),_("&Execute"))==0)
-			if (file_executable(path)) k->show(); else k->hide();
+			if (file_test(path, edelib::FILE_TEST_IS_EXECUTABLE)) k->show(); else k->hide();
 		k++;
 	}
 
@@ -1069,6 +1054,7 @@ FL_NORMAL_SIZE=12;
 	// Main GUI design
 	win = new EFiler_Window(default_window_width, default_window_height);
 
+	/* Not needeed anymore? - bocke
 	win->init(); // new method required by edelib::Window
 	if (new_icon_theme) {
 		fprintf(stderr, "Inicijalizujem %s\n", new_icon_theme);
@@ -1076,6 +1062,7 @@ FL_NORMAL_SIZE=12;
 		edelib::IconTheme::init(new_icon_theme);
 		free(new_icon_theme);
 	}
+	*/
 
 	win->begin();
 		main_menu = new Fl_Menu_Bar(0,0,default_window_width,menubar_height);

@@ -17,8 +17,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <Fl/Fl.H>
-#include <Fl/Fl_Window.H>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 
 
@@ -515,7 +515,7 @@ int EDE_Browser::Heading::handle(int event) {
 			Fl_Widget* r = resizable(); if (!r) r = this;
 			
 			// Calculate where the new boundary (newx) should be 
-			int newx; 
+			int newx = 0; 
 			if (sdrag&DRAGH) {
 				newx = Fl::event_x()-sdx;
 				if (newx < r->x()) newx = r->x();
