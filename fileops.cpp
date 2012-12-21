@@ -19,11 +19,11 @@
 
 #include <sys/stat.h>
 
-#include <Fl/Fl_Window.H>
-#include <Fl/Fl_Progress.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Menu_Button.H>
-#include <Fl/filename.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Progress.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Menu_Button.H>
+#include <FL/filename.H>
 
 #include <edelib/File.h>
 #include <edelib/Directory.h>

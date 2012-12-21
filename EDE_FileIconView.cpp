@@ -23,6 +23,7 @@
 #include <edelib/Nls.h>
 #include <edelib/String.h>
 #include <edelib/IconTheme.h>
+#include <edelib/IconLoader.h>
 #include <edelib/Debug.h>
 
 
@@ -183,16 +184,16 @@ Fl_Image* FileIconView::try_icon(edelib::String icon_name) {
 
 fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 
-	icon_path = edelib::IconTheme::get(icon_name.c_str(), edelib::ICON_SIZE_MEDIUM);
+	icon_path = edelib::IconLoader::get_path(icon_name.c_str(), edelib::ICON_SIZE_MEDIUM);
 	if (icon_path!="")
 		return Fl_Shared_Image::get(icon_path.c_str());
 
 	// Because edelib doesn't resample icons, we need to do that manually
-	icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_SMALL);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_TINY);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_LARGE);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_HUGE);
-	if (icon_path=="") icon_path = edelib::IconTheme::get(icon_name.c_str(),edelib::ICON_SIZE_ENORMOUS);
+	icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_SMALL);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_TINY);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_LARGE);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_HUGE);
+	if (icon_path=="") icon_path = edelib::IconLoader::get_path(icon_name.c_str(),edelib::ICON_SIZE_ENORMOUS);
 
 	if (icon_path!="") {
 		Fl_Image *temp = Fl_Shared_Image::get(icon_path.c_str());
@@ -910,8 +911,12 @@ EDEBUG(DBG"in child %d\n",i);
 
 		// Right button - call context menu
 		if (Fl::event_button() == 3) {
+
+
 			Fl::event_is_click(0); // prevent doubleclicking with right button
 			if (context_callback_) context_callback_(this, (void*)path(get_focus()));
+EDEBUG(DBG"Right click.\n");
+
 		}
 
 		// Double-click operation

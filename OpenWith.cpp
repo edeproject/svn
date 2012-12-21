@@ -17,6 +17,7 @@
 #include "OpenWith.h"
 
 #include <edelib/IconTheme.h>
+#include <edelib/IconLoader.h>
 #include <edelib/Run.h>
 
 #include <FL/Fl.H>
@@ -59,7 +60,8 @@ void openwith_ok_cb(Fl_Widget*w, void*i) {
 	}
 
 	// Run program
-	int k = edelib::run_program(tsprintf("%s '%s'", inpt->value(), win->_file), /*wait=*/false);
+	int k = edelib::run_async("%s '%s'", inpt->value(), win->_file);
+	fprintf(stderr, "-- openwith_ok_cb: %s '%s'", inpt->value(), win->_file);
 	win->hide();
 }
 
@@ -151,8 +153,8 @@ OpenWith::OpenWith()  : edelib::Window(DIALOG_WIDTH, DIALOG_HEIGHT, _("Choose pr
 	end();
 
 	// Set icon
-	if(edelib::IconTheme::inited()) {
-		i = Fl_Shared_Image::get(edelib::IconTheme::get("dialog-question", edelib::ICON_SIZE_MEDIUM).c_str());
+	if(edelib::IconLoader::inited()) {
+		i = Fl_Shared_Image::get(edelib::IconLoader::get_path("dialog-question", edelib::ICON_SIZE_MEDIUM).c_str());
 		if(!i) return;
 	
 		img->image(i);

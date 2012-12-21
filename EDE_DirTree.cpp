@@ -29,6 +29,7 @@
 
 #include <edelib/Nls.h>
 #include <edelib/IconTheme.h>
+#include <edelib/IconLoader.h>
 #include <edelib/StrUtil.h>
 
 
@@ -84,6 +85,7 @@ static struct {
 	{"ext2",	"Linux legacy (%s)",		"drive-harddisk"},
 	{"ext2fs",	"Linux legacy (%s)",		"drive-harddisk"},
 	{"ext3",	"Linux disk (%s)",		"drive-harddisk"},
+	{"ext4",	"Linux disk (%s)",		"drive-harddisk"},
 	{"reiserfs",	"Linux alternative (%s)",	"drive-harddisk"},
 	{"ffs",		"BSD disk (%s)",		"drive-harddisk"},
 	{"ufs",		"Unix disk (%s)",		"drive-harddisk"},
@@ -169,14 +171,14 @@ void DirTree::init()
 
 	// Top level icon
 	add(_("System"));
-	set_icon(1, Fl_Shared_Image::get(edelib::IconTheme::get("computer",edelib::ICON_SIZE_TINY).c_str()));
+	set_icon(1, Fl_Shared_Image::get(edelib::IconLoader::get_path("computer",edelib::ICON_SIZE_TINY).c_str()));
 	// TODO: use OS icons: Tux for Linux, devil for FreeBSD...
 	data(1, strdup("about:sysinfo"));
 
 	// Home icon
 	snprintf(buffer,PATH_MAX,_("%s's Home"), getenv("USER"));
 	add(strdup(buffer));
-	set_icon(2, Fl_Shared_Image::get(edelib::IconTheme::get("user-home",edelib::ICON_SIZE_TINY).c_str()));
+	set_icon(2, Fl_Shared_Image::get(edelib::IconLoader::get_path("user-home",edelib::ICON_SIZE_TINY).c_str()));
 	strncpy(buffer,getenv("HOME"),PATH_MAX);
 	make_end_with_slash(buffer);
 	data(2, strdup(buffer));
@@ -184,9 +186,9 @@ void DirTree::init()
 
 	// Root icon
 	add(_("Whole disk"));
-	edelib::String root_icon = edelib::IconTheme::get("folder_red",edelib::ICON_SIZE_TINY);
+	edelib::String root_icon = edelib::IconLoader::get_path("folder_red",edelib::ICON_SIZE_TINY);
 	if (root_icon=="") // sigh...
-		root_icon = edelib::IconTheme::get("folder",edelib::ICON_SIZE_TINY);
+		root_icon = edelib::IconLoader::get_path("folder",edelib::ICON_SIZE_TINY);
 	set_icon(3, Fl_Shared_Image::get(root_icon.c_str()));
 	data(3,strdup("/"));
 	indent(3,1);
@@ -231,7 +233,7 @@ void DirTree::init()
 
 				snprintf(buffer, PATH_MAX, filesystems[i].uiname, shortdev);
 				add(strdup(buffer));
-				set_icon(num_files+1, Fl_Shared_Image::get( edelib::IconTheme::get(filesystems[i].icon,edelib::ICON_SIZE_TINY).c_str()));
+				set_icon(num_files+1, Fl_Shared_Image::get( edelib::IconLoader::get_path(filesystems[i].icon,edelib::ICON_SIZE_TINY).c_str()));
 				data(num_files+1, strdup(mountpoint));
 				indent(num_files+1, 1);
 				num_files++;
@@ -269,7 +271,7 @@ bool DirTree::subdir_scan(int line) {
 	char fullpath[FL_PATH_MAX];
 	char* directory = (char*)data(line);
 	if (ignore_case_)
-		size = scandir(directory, &files, 0, mmyversionsort);
+		size = scandir(directory, &files, 0, (int(*)(const dirent **, const dirent**))mmyversionsort);
 	else
 		size = scandir(directory, &files, 0, versionsort);
 
@@ -292,7 +294,7 @@ bool DirTree::subdir_scan(int line) {
 		if (!S_ISDIR(buf.st_mode)) continue; // not a directory
 
 		insert(pos, strdup(n), strdup(fullpath));
-		set_icon(pos, Fl_Shared_Image::get(edelib::IconTheme::get("folder", edelib::ICON_SIZE_TINY).c_str()));
+		set_icon(pos, Fl_Shared_Image::get(edelib::IconLoader::get_path("folder", edelib::ICON_SIZE_TINY).c_str()));
 		indent(pos++, indent(line)+1);
 	}
 	free(files[size-1]); free(files); // see scandir(3)

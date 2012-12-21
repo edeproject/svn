@@ -241,12 +241,12 @@ const char* nice_time(long int epoch) {
 
 
 // Find in haystack any of needles (divided with separator)
-char* strstrmulti(const char *haystack, const char *needles, const char *separator) {
+const char* strstrmulti(const char *haystack, const char *needles, const char *separator) {
 	if (!haystack || !needles || (strlen(haystack)==0) || (strlen(needles)==0)) 
 		return (char*)haystack; // this means that empty search returns true
 	char *copy = strdup(needles);
 	char *token = strtok(copy, separator);
-	char *result = 0;
+	const char *result = 0;
 	do {
 		if ((result = strstr(haystack,token))) break;
 	} while ((token = strtok(NULL, separator)));

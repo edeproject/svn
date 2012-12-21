@@ -169,7 +169,7 @@ public:
 	 * doubleclicked or Enter key is pressed. Callback function is standard
 	 * Fl_Callback.
 	 */
-	void callback(Fl_Callback*cb) { browser->callback(cb); icons->callback(cb);}
+	void callback(Fl_Callback* cb) { browser->callback(cb); icons->callback(cb);}
 
 	/**
 	 * Define callback function which is called when file renaming is attempted. 
@@ -205,7 +205,7 @@ public:
 	 * callback is defined, nothing will happen (default). Callback 
 	 * function is standard Fl_Callback.
 	 */
-	void context_callback(Fl_Callback* cb) { browser->context_callback(cb); icons->context_callback(cb); }
+	void context_callback(Fl_Callback *cb) { browser->context_callback(cb); icons->context_callback(cb); }
 
 	/**
 	 * Remove item with index i from view. Note that index is 1 to n

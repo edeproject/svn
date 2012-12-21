@@ -23,6 +23,7 @@
 #include <grp.h> // for getgrent()
 
 #include <edelib/Nls.h>
+#include <edelib/IconLoader.h>
 
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Button.H>
@@ -158,11 +159,11 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 		file_tab = new Fl_Group(0, 25, w(), h()-60, _("&File"));
 		file_tab->begin();
 			// Icon
-			if(edelib::IconTheme::inited()) {
+			if(edelib::IconLoader::inited()) {
 				Fl_Box *img = new Fl_Box(10, 35, 65, 65);
 				//img->box(FL_DOWN_BOX);
-				edelib::String icon = edelib::IconTheme::get(mime_resolver.icon_name().c_str(), edelib::ICON_SIZE_HUGE);
-				if (icon=="") icon = edelib::IconTheme::get("empty", edelib::ICON_SIZE_HUGE, edelib::ICON_CONTEXT_MIMETYPE);
+				edelib::String icon = edelib::IconLoader::get_path(mime_resolver.icon_name().c_str(), edelib::ICON_SIZE_HUGE);
+				if (icon=="") icon = edelib::IconLoader::get_path("empty", edelib::ICON_SIZE_HUGE, edelib::ICON_CONTEXT_MIMETYPE);
 				Fl_Image *i = Fl_Shared_Image::get(icon.c_str());
 				if(i) img->image(i);
 			} else {
