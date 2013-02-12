@@ -261,6 +261,10 @@ def validate_md5sum(module):
 	if not file_exists(module.package):
 		return False
 
+	# in case we are not interested in checksum
+	if module.checksum == "none":
+		return True
+
 	m = md5.new()
 	f = open(module.package).read()
 	m.update(f)
