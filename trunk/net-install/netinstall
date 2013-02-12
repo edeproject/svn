@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # 
 # EDE installer from a single script
-# Copyright (C) 2005-2012 Sanel Zukan
+# Copyright (C) 2005-2013 Sanel Zukan
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -71,15 +71,15 @@ class Module:
 
 	def print_details(self):
 		"""Display module details."""
-		print "name     : %s" % self.name
-		print "archive  : %s" % self.package
-		print "checksum : %s" % self.checksum
-		print "patch    : %s" % self.patch
-		print "build    : %s" % self.build_cmds
+		print("name     : %s" % self.name)
+		print("archive  : %s" % self.package)
+		print("checksum : %s" % self.checksum)
+		print("patch    : %s" % self.patch)
+		print("build    : %s" % self.build_cmds)
 
 	def print_short_info(self):
 		"""Display module short info."""
-		print " %s (%s)" % (self.name, self.package)
+		print(" %s (%s)" % (self.name, self.package))
 
 def do_message(msg, is_head = False):
 	"""Prints a message."""
@@ -313,12 +313,12 @@ def decompress_file(file):
 	for f in tarobj:
 		if f.isdir():
 			try:
-				os.makedirs(f.name, 0777)
-			except OSError, (errno, strerror):
-				if errno == 17:
+				os.makedirs(f.name)
+			except OSError, e:
+				if e.errno == 17:
 					pass
 				else:
-					do_error("Unable to make directory '%s' (%s : %i)" % (f.name, strerror, errno))
+					do_error("Unable to make directory '%s' (%s : %i)" % (f.name, e.strerror, e.errno))
 		else:
 			tarobj.extract(f)
 
@@ -433,8 +433,8 @@ def list_config_files():
 
 	try:
 		content = open(target).read()
-	except IOError, (errno, strerror):
-		do_error("Fatal: Unable to open fetched file (%s)" % strerror)
+	except IOError, e:
+		do_error("Fatal: Unable to open fetched file (%s)" % e.strerror)
 
 	# remove the file
 	file_remove(target)
@@ -444,27 +444,27 @@ def list_config_files():
 	if content[:17] != "## Config list ##":
 		do_error("Managed to fetch a list, but seems how the list contains a garbage. Please try again")
 
-	print content
+	print(content)
 
 def help():
-	print "Usage: netinstall [OPTIONS]" 
-	print "Download, compile and install EDE with a single command :-)" 
-	print ""
-	print "Options:" 
-	print "   --help                  this help" 
-	print "   --version               show script version" 
-	print ""
-	print "   --prefix        [PATH]  set where all modules will be installed (e.g. /usr or /opt; default is /usr/local)"
-	print ""
-	print "   --module-info   [NAME]  display information about [NAME] module"
-	print "   --show-modules          list modules that will be compiled" 
-	print "   --build-dir     [NAME]  directory where modules will be downloaded and compiled (default is 'build')"
-	print "   --config        [NAME]  use [NAME] as main config file (default is 'netinstall.cfg')"
-	print "   --config-local  [NAME]  use local config (only for debugging)"
-	print "   --no-root-check         do not check if script was started as root (only for debugging)"
-	print "   --list-configs          lists known config files with their description"
-	print ""
-	print "Report bugs at <http://bugs.equinox-project.org>."
+	print("Usage: netinstall [OPTIONS]")
+	print("Download, compile and install EDE with a single command") 
+	print("")
+	print("Options:")
+	print("   --help                  this help")
+	print("   --version               show script version")
+	print("")
+	print("   --prefix        [PATH]  set where all modules will be installed (e.g. /usr or /opt; default is /usr/local)")
+	print("")
+	print("   --module-info   [NAME]  display information about [NAME] module")
+	print("   --show-modules          list modules that will be compiled")
+	print("   --build-dir     [NAME]  directory where modules will be downloaded and compiled (default is 'build')")
+	print("   --config        [NAME]  use [NAME] as main config file (default is 'netinstall.cfg')")
+	print("   --config-local  [NAME]  use local config (only for debugging)")
+	print("   --no-root-check         do not check if script was started as root (only for debugging)")
+	print("   --list-configs          lists known config files with their description")
+	print("")
+	print("Report bugs at <http://bugs.equinox-project.org>")
 
 def main():
 	show_modules = False
@@ -480,8 +480,8 @@ def main():
 			opts, args = getopt.getopt(sys.argv[1:], "h", 
 					["help", "version", "prefix=", "show-modules", "module-info=", "build-dir=", "config=", 
 						"config-local=", "no-root-check", "list-configs"])
-		except getopt.GetoptError, err:
-			print "Bad option; rerun 'netinstall --help' for command details"
+		except getopt.GetoptError:
+			print("Bad option; rerun 'netinstall --help' for command details")
 			return
 
 		for o, a in opts:
@@ -489,7 +489,7 @@ def main():
 				help()
 				return
 			if o == "--version":
-				print __version__
+				print(__version__)
 				return
 			if o == "--show-modules":
 				show_modules = True
@@ -545,11 +545,11 @@ def main():
 
 	# for building part, create build directory and go in it
 	try:
-		os.makedirs(build_dir, 0777)
-	except OSError, (errno, strerror):
+		os.makedirs(build_dir)
+	except OSError, e:
 		# 17 means directory already exists and that is ok
-		if errno != 17:
-			do_error("Unable to create directory %s (%s)" % (build_dir, strerror))
+		if e.errno != 17:
+			do_error("Unable to create directory %s (%s)" % (build_dir, e.strerror))
 
 	# a directory where we started; full path is needed so we can return to it at the end
 	starting_dir = os.getcwd()
