@@ -143,6 +143,14 @@ def download_from(url, save_as, show_progress = True):
 	if show_progress:
 		# callback for urllib.urlretrieve(); shows some percentage
 		def download_report_hook(transfered, block_size, total):
+			# in case we are not able to get package size from server, just print out
+			# currently received size
+			if total < 0:
+				sz = transfered * block_size
+				sys.stdout.write("\r [%i B]" % sz)
+				sys.stdout.flush()
+				return
+
 			if total > mbs:
 				# use float so we can get better precision
 				total_str = "%.1f MB" % (float(total) / mbs)
@@ -227,9 +235,7 @@ def fetch_and_parse_config(config_name, is_local):
 		else:
 			m.package = config.get(i, "package").strip('"')
 
-		if not config.has_option(i, "checksum"):
-			do_error("Module '%s' is missing a 'checksum' section" % i)
-		else:
+		if config.has_option(i, "checksum"):
 			m.checksum = config.get(i, "checksum").strip('"')
 
 		# optional keys
@@ -243,7 +249,7 @@ def fetch_and_parse_config(config_name, is_local):
 			m.url = config.get(i, "url").strip('"')
 
 		if config.has_option(i, "full_url"):
-			m.url = config.get(i, "full_url")
+			m.full_url = config.get(i, "full_url")
 
 		# this depends on global 'patches' key; if not existing, from where to fetch the patches then ;)
 		if config.has_option(i, "patch"):
@@ -266,7 +272,7 @@ def validate_md5sum(module):
 		return False
 
 	# in case we are not interested in checksum
-	if module.checksum == "none":
+	if module.checksum == None:
 		return True
 
 	m = md5.new()
@@ -365,7 +371,7 @@ def fetch_module(module):
 		# this useful for retrieving files where source file is generated (e.g. viewvc) and should be stored
 		# as specific name
 		if module.full_url == "true":
-			path = module.full_url
+			path = module.url
 		else:
 			path = "%s/%s" % (mirror, module.package)
 
