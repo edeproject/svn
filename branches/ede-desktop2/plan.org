@@ -1,0 +1,13 @@
+
+Desktop rewrite todo list
+
+* Scripting support [0/1]
+
+  - [ ] menu context from scripts
+	
+* Configurable Desktop path
+
+* Multi-monitor support
+  
+* Periodic icon position save
+
