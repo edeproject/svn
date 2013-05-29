@@ -368,7 +368,7 @@ void Wallpaper::set_rootpmap(void) {
 			_XA_XROOTPMAP_ID, XA_PIXMAP, 32, PropModeReplace, (unsigned char *)&rootpmap_pixmap, 1);	
 }
 
-bool Wallpaper::load(const char* path, int s) {
+bool Wallpaper::load(const char* path, int s, bool do_rootpmap) {
 	E_ASSERT(path != NULL);
 
 	Fl_Shared_Image* i = Fl_Shared_Image::get(path);
@@ -405,7 +405,7 @@ bool Wallpaper::load(const char* path, int s) {
 	state = s;
 
 	/* set root pixmap for pseudo transparency */
-	set_rootpmap();
+	if(do_rootpmap) set_rootpmap();
 	return true;
 }
 

@@ -241,8 +241,10 @@ void Desktop::read_config(void) {
 				wallpaper = new Wallpaper(0, 0, w(), h());
 			
 			int s;
+			bool rootpmap_use;
 			conf->get("Desktop", "wallpaper_mode", s, WALLPAPER_CENTER);
-			wallpaper->load(buf, s);
+			conf->get("Desktop", "wallpaper_rootpmap", rootpmap_use, true);
+			wallpaper->load(buf, s, rootpmap_use);
 
 			/*
 			 * wallpaper is another widget, but we add it to the bottom of the list
