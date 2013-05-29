@@ -44,7 +44,7 @@ public:
 	rootpmap_pixmap(0), state(WALLPAPER_CENTER), stretched_alloc(NULL) { }
 	~Wallpaper();
 
-	bool load(const char *path, int s);
+	bool load(const char *path, int s, bool do_rootpmap = true);
 
 	virtual void draw(void);
 	virtual int handle(int event);
