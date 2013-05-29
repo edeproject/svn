@@ -106,6 +106,7 @@ DesktopIcon::DesktopIcon(const char *l, int W, int H) : Fl_Widget(1, 1, W, H, l)
 	box(FL_FLAT_BOX);
 	color(FL_RED);
 	label(l);
+	align(FL_ALIGN_WRAP);
 	
 	/* default values unless given explicitly */
 	labelfont(FL_HELVETICA);
