@@ -44,6 +44,7 @@
 #include "DesktopIcon.h"
 #include "Wallpaper.h"
 #include "Utils.h"
+#include "IconDialog.h"
 
 EDELIB_NS_USING(MenuButton)
 EDELIB_NS_USING(MenuItem)
@@ -135,8 +136,9 @@ static void icons_conf_cb(Fl_Widget*, void*) {
 	run_async("ede-launch ede-desktop-conf --icons");
 }
 
-static void launcher_create_cb(Fl_Widget*, void*) {
-	//icon_dialog_icon_create();
+static void launcher_create_cb(Fl_Widget*, void* d) {
+	Desktop *self = (Desktop*)d;
+	icon_dialog_icon_create(self);
 }
 
 static void arrange_icons_cb(Fl_Widget*, void *d) {
@@ -172,15 +174,20 @@ Desktop::Desktop() : EDE_DESKTOP_WINDOW(0, 0, 100, 100, EDE_DESKTOP_APP) {
 
 	moving = false;
 
-	read_config();
+	/*
+	 * first update workarea _then_ read configuration, as it will have correct size for
+	 * wallpaper which will prevent wallpaper load and scalle image twice
+	 */
 	update_workarea();
-	read_desktop_folder(build_filename(dir_home().c_str(), "Desktop").c_str());
+	read_config();
+	read_desktop_folder(desktop_path());
 
 	foreign_callback_add(this, EDE_DESKTOP_APP, settings_changed_cb);
 
 	dmenu = new MenuButton(0, 0, 500, 0);
 	dmenu->menu(desktop_menu);
 	desktop_menu[1].image((Fl_Image*)IconLoader::get("folder", ICON_SIZE_TINY));
+	desktop_menu[0].user_data(this);
 	desktop_menu[1].user_data(this);
 	desktop_menu[2].user_data(this);
 	add(dmenu);
@@ -192,6 +199,12 @@ Desktop::~Desktop() {
 	delete conf;
 	delete icon_opts;
 	delete selbox;
+}
+
+const char *Desktop::desktop_path(void) {
+	if(dpath.empty())
+		dpath = build_filename(dir_home().c_str(), "Desktop");
+	return dpath.c_str();
 }
 
 void Desktop::show(void) {
@@ -594,7 +607,6 @@ void Desktop::draw(void) {
 		 * This will assure that does not happened.
 		 */
 		fl_overlay_clear();
-
 		EDE_DESKTOP_WINDOW::draw();
 		//E_DEBUG(E_STRLOC ": REDRAW ALL\n");
 	}
