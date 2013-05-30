@@ -58,6 +58,8 @@ EDELIB_NS_USING(netwm_callback_add)
 EDELIB_NS_USING(foreign_callback_add)
 EDELIB_NS_USING(str_ends)
 EDELIB_NS_USING(dir_home)
+EDELIB_NS_USING(dir_empty)
+EDELIB_NS_USING(dir_remove)
 EDELIB_NS_USING(build_filename)
 EDELIB_NS_USING(run_async)
 EDELIB_NS_USING(input)
@@ -415,8 +417,18 @@ void Desktop::arrange_icons(void) {
 
 bool Desktop::remove_icon(DesktopIcon *di, bool real_delete) {
 	bool ret = true;
-	if(real_delete)
-		ret = file_remove(di->get_path());
+
+	if(real_delete) {
+		if(di->get_icon_type() == DESKTOP_ICON_TYPE_FOLDER) {
+			if(!dir_empty(di->get_path())) {
+				alert(_("This folder is not empty. Recursive removal of not empty folders is not yet implemented :S"));
+				return false;
+			}
+			ret = dir_remove(di->get_path());
+		} else {
+			ret = file_remove(di->get_path());
+		}
+	}
 
 	remove(di);
 	redraw();
@@ -454,8 +466,9 @@ bool Desktop::save_icons_positions(void) {
 }
 
 bool Desktop::create_folder(const char *name) {
-	/* TODO: needs generic desktop path function */
-	String path = build_filename(dir_home().c_str(), "Desktop", name);
+	String path = desktop_path();
+	path += E_DIR_SEPARATOR;
+	path += name;
 
 	if(!dir_create(path.c_str())) {
 		alert(_("Unable to create directory '%s'! Please check if directory already exists or you have enough permissions to create it"), path.c_str());
