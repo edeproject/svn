@@ -83,6 +83,8 @@ EDELIB_NS_USING(ICON_SIZE_TINY)
 #undef MAX
 #define MAX(x,y)  ((x) > (y) ? (x) : (y))
 
+#define ICONS_POS_FILE "ede-desktop-icons"
+
 static void background_conf_cb(Fl_Widget*, void*);
 static void icons_conf_cb(Fl_Widget*, void*);
 static void folder_create_cb(Fl_Widget*, void*);
@@ -310,7 +312,7 @@ void Desktop::read_desktop_folder(const char *dpath) {
 	E_RETURN_IF_FAIL(dir != NULL);
 	
 	DesktopConfig pos;
-	pos.load("ede-desktop-icons");
+	pos.load(ICONS_POS_FILE);
 
 	dirent *d;
 	while((d = readdir(dir)) != NULL) {
@@ -434,6 +436,23 @@ bool Desktop::rename_icon(DesktopIcon *di, const char *name) {
 	return df.save(di->get_path());
 }
 
+bool Desktop::save_icons_positions(void) {
+	DesktopConfig pos;
+	DesktopIcon   *o;
+	char          *base;
+
+	for(int i = 0; i < children(); i++) {
+		if(NOT_SELECTABLE(child(i))) continue;
+
+		o = (DesktopIcon*)child(i);
+		base = get_basename(o->get_path());
+		pos.set(base, "X", o->x());
+		pos.set(base, "Y", o->y());
+	}
+	
+	return pos.save(ICONS_POS_FILE);
+}
+
 bool Desktop::create_folder(const char *name) {
 	/* TODO: needs generic desktop path function */
 	String path = build_filename(dir_home().c_str(), "Desktop", name);
@@ -523,15 +542,17 @@ void Desktop::move_selection(int x, int y, bool apply) {
 	selection_x = x;
 	selection_y = y;
 
-	/* redraw the whole screen so it reflects new icon position */
-	if(apply) redraw();
-	
 	/*
 	 * move the last moved icon on the top of the stack, so it be drawn the top most; also
 	 * when called arrange_icons(), last moved icon will be placed last in the list
 	 */
 	ic = selectionbuf.back();
 	insert(*ic, children());
+	
+	if(apply) {
+		redraw();
+		save_icons_positions();
+	}
 }
 
 /*
