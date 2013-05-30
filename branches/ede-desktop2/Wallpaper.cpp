@@ -252,9 +252,8 @@ static Pixmap create_xpixmap(Fl_Image* img, XImage** xim, Pixmap pix, int wp_w, 
 	 *
 	 * FIXME: drawable background should be the same color as wallpaper background
 	 */
-
-	Window drawable = XCreateSimpleWindow(fl_display, RootWindow(fl_display, fl_screen), 0, 0, wp_w,
-              wp_h, 0, 0, BlackPixel(fl_display, fl_screen));
+	Window drawable = XCreateSimpleWindow(fl_display, RootWindow(fl_display, fl_screen), 0, 0, wp_w, wp_h,
+										  0, 0, BlackPixel(fl_display, fl_screen));
 
 	pix = XCreatePixmap(fl_display, drawable, wp_w, wp_h, fl_visual->depth);
 
@@ -352,9 +351,9 @@ Wallpaper::~Wallpaper() {
 void Wallpaper::set_rootpmap(void) {
 	E_RETURN_IF_FAIL(image() != NULL);
 
-	XImage* rootpmap_image = 0;
+	XImage *rootpmap_image = 0;
 	Atom    _XA_XROOTPMAP_ID;
-
+	
 	rootpmap_pixmap = create_xpixmap(image(), &rootpmap_image, rootpmap_pixmap, w(), h());
 	E_RETURN_IF_FAIL(rootpmap_pixmap != 0);
 
@@ -365,47 +364,54 @@ void Wallpaper::set_rootpmap(void) {
 	_XA_XROOTPMAP_ID = XInternAtom(fl_display, "_XROOTPMAP_ID", False);
 
 	XChangeProperty(fl_display, RootWindow(fl_display, fl_screen), 
-			_XA_XROOTPMAP_ID, XA_PIXMAP, 32, PropModeReplace, (unsigned char *)&rootpmap_pixmap, 1);	
+					_XA_XROOTPMAP_ID, XA_PIXMAP, 32, PropModeReplace, (unsigned char *)&rootpmap_pixmap, 1);	
 }
 
-bool Wallpaper::load(const char* path, int s, bool do_rootpmap) {
+bool Wallpaper::load(const char *path, int s, bool rootpmap) {
 	E_ASSERT(path != NULL);
+	
+	/* in case this function gets multiple calls */
+	if(wpath == path && state == s && rootpmap == use_rootpmap)
+		return true;
 
-	Fl_Shared_Image* i = Fl_Shared_Image::get(path);
-	E_RETURN_VAL_IF_FAIL(i != NULL, false);
+	Fl_Shared_Image *img = Fl_Shared_Image::get(path);
+	E_RETURN_VAL_IF_FAIL(img != NULL, false);
 	
 	if(s != WALLPAPER_CENTER && s != WALLPAPER_TILE && s != WALLPAPER_STRETCH)
 		s = WALLPAPER_CENTER;
 	
 	if(s == WALLPAPER_TILE) {
-		Fl_RGB_Image* tiled;
+		Fl_RGB_Image *tiled;
 
-		create_tile((Fl_Image*)i, &tiled, x(), y(), w(), h());
+		create_tile((Fl_Image*)img, &tiled, x(), y(), w(), h());
 		image(tiled);
 	} else if(s == WALLPAPER_STRETCH) {
-		Fl_Image* stretched = NULL;
+		Fl_Image *stretched = NULL;
 
-		if(i->w() == w() && i->h() == h())
-			stretched = i;
+		if(img->w() == w() && img->h() == h())
+			stretched = img;
 		else {
 			/* valgrind reports it as possible lost, but FLTK should free it */
 			delete stretched_alloc;
 
-			stretched = i->copy(w(), h());
-			i->release();
-
+			stretched = img->copy(w(), h());
+			img->release();
 			stretched_alloc = stretched;
 		}
 
 		image(stretched);
 	} else {
-		image(i);
+		image(img);
 	}
 
-	state = s;
-
 	/* set root pixmap for pseudo transparency */
-	if(do_rootpmap) set_rootpmap();
+	if(rootpmap) set_rootpmap();
+	
+	state = s;
+	use_rootpmap = rootpmap;
+	/* prevent self assignment or bad things will happen */
+	if(wpath != path) wpath = path;
+
 	return true;
 }
 
@@ -465,4 +471,21 @@ int Wallpaper::handle(int event) {
 	}
 
 	return 0;
+}
+
+void Wallpaper::resize(int X, int Y, int W, int H) {
+	if(X == x() && Y == y() && W == w() && H == h())
+		return;
+
+	Fl_Box::resize(X, Y, W, H);
+	if(image()) {
+		/*
+		 * It is safe to call 'load()' again, as Fl_Shared_Image::get() will cache successfully loaded image.
+		 * Also benefit is that image transormations (scaling, tiling) will be done again on original image, so
+		 * there will be no lost data.
+		 *
+		 * TODO: Fl_Shared_Image will eat a memory; this needs some investigation.
+		 */
+		load(wpath.c_str(), state, use_rootpmap);
+	}
 }

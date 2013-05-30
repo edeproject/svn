@@ -23,6 +23,7 @@
 
 #include <FL/Fl_Box.H>
 #include <FL/x.H>
+#include <edelib/String.h>
 
 enum {
 	WALLPAPER_CENTER,
@@ -37,17 +38,20 @@ private:
 	Pixmap    rootpmap_pixmap;
 	int       state;
 	Fl_Image* stretched_alloc; /* FLTK issue */
+	bool      use_rootpmap;
+	EDELIB_NS_PREPEND(String) wpath;
 
 	void set_rootpmap(void);
 public:
 	Wallpaper(int X, int Y, int W, int H) : Fl_Box(X, Y, W, H),
-	rootpmap_pixmap(0), state(WALLPAPER_CENTER), stretched_alloc(NULL) { }
+		rootpmap_pixmap(0), state(WALLPAPER_CENTER), stretched_alloc(NULL), use_rootpmap(false) { }
 	~Wallpaper();
 
 	bool load(const char *path, int s, bool do_rootpmap = true);
 
-	virtual void draw(void);
-	virtual int handle(int event);
+	void draw(void);
+	int handle(int event);
+	void resize(int X, int Y, int W, int H);
 };
 
 #endif

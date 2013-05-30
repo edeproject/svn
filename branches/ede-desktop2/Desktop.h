@@ -25,6 +25,7 @@
 #include <edelib/DesktopFile.h>
 #include <edelib/Config.h>
 #include <edelib/List.h>
+#include <edelib/String.h>
 
 #ifdef USE_EDELIB_WINDOW
 # include <edelib/Window.h>
@@ -52,6 +53,7 @@ private:
 	DesktopConfig    *conf;
 	IconOptions      *icon_opts;
 
+	EDELIB_NS_PREPEND(String) dpath;
 	EDELIB_NS_PREPEND(MenuButton) *dmenu;
 	Wallpaper                     *wallpaper;
 	
@@ -65,6 +67,8 @@ private:
 public:
 	Desktop();
 	~Desktop();
+
+	const char *desktop_path(void);
 
 	void show(void);
 	void update_workarea(void);
