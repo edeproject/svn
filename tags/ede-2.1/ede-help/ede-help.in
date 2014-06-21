@@ -1,0 +1,81 @@
+#!/bin/sh
+
+help_dir="@ededocdir@/manual"
+browser_list="firefox mozilla chromium-browser konqueror opera navigator dillo"
+
+program="ede-help"
+url=""
+
+if [ "$1" = "--help" ]; then
+	cat <<EOF
+Usage: $program [OPTIONS] [TITLE]
+Display EDE Manual in the web browser
+
+Options:
+  --help         this help
+  --titles       show known titles
+
+Example:
+   $program evoke - display evoke help
+EOF
+	exit 1
+fi
+
+if [ "$1" = "--titles" ]; then
+	echo "Known titles:"
+
+	content=`ls $help_dir/ | sort -f | sed 's/^images$//'`
+	for c in $content; do
+		# show only files (readable), stripping extension
+		[ -r "$help_dir/$c" ] && echo " " $c | sed 's/\.html//g'
+	done
+	exit 0
+fi
+
+if [ "x$1" = "x" ]; then
+	url="$help_dir/index.html"
+else
+	url="$help_dir/$1.html"
+	if [ ! -r "$url" ]; then
+		echo "Unable to open $1. Going to start page..."
+		url="$help_dir/index.html"
+	fi
+fi
+
+# let browser knows it is a file
+url="file://$url"
+
+# try to find browser
+if [ "x$BROWSER" = "x" ]; then
+	for i in $browser_list; do
+		if command -v $i > /dev/null 2>&1; then
+			BROWSER="$i"
+			break;
+		fi
+	done
+fi
+
+if [ "x$BROWSER" = "x" ]; then
+	ede-dialog --title "$program error" --error "
+Failed to find any of known browsers!
+
+If you think how this is mistake, please try to set \
+BROWSER environment variable with the full path pointing to the browser binary and run $program again"
+
+	exit 1
+fi
+
+# run browser
+$BROWSER $url
+
+if [ $? -ne 0 ]; then
+	ede-dialog --title "$program error" --error "
+Unable to run $BROWSER browser!
+
+Please check if program path is correct or \
+adjust BROWSER environment variable pointing to the correct binary file"
+
+	exit 1
+fi
+
+exit 0

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Encoding=UTF-8
+Exec=ede-launch --launch terminal
+Icon=utilities-terminal
+Categories=Utility;
+Name=Terminal
+Comment=X11 terminal

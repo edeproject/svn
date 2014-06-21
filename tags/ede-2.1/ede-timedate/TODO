@@ -1,0 +1,14 @@
+TODO with etimedate:
+* calendar
+- Add text box for direct date entry
+- Make month and year display into Fl_Choice
+- Display number of week (within current year) somewhere... (probably in 
+tooltip)
+
+* clock
+- redesign clock - use bitmaps for background and possibly hands
+- make hands movable with mouse
+
+* timezones
+- add city coordinates (find in evolution / kde), draw current zone on map
+- make map sensitive / hotspots on city coordinates
