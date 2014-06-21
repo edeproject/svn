@@ -1,0 +1,22 @@
+{edeversion} manual
+===================
+:Revision: 0.2
+
+*Introduction*
+
+- link:README.html[Readme First]
+- link:introduction.html[Introduction]
+
+*Programs*
+
+- link:ede-calc.html[ede-calc]
+- link:ede-help.html[ede-help]
+- link:ede-tip.html[ede-tip]
+- link:evoke.html[evoke]
+- link:ede-notify-daemon.html[ede-notify-daemon]
+
+*Development*
+
+- link:hacking.html[Contributing (in your spare time ;-)]
+- link:dbus-usage.html[D-BUS usage]
+- link:@EDELIB_API_INDEX@[edelib reference]
